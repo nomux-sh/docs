@@ -12,7 +12,7 @@ The ADRs use the terms from the [glossary](../src/content/docs/reference/glossar
 |---|---|---|
 | [0001](0001-session-holder-model.md) | Session holder model | Accepted |
 | [0002](0002-protocol-protobuf-and-binary-frames.md) | Protocol: protobuf and binary frames | Accepted |
-| [0003](0003-vt-library.md) | VT library | Proposed |
+| [0003](0003-vt-library.md) | VT library | Accepted |
 | [0004](0004-gpui-desktop.md) | GPUI for the desktop client | Accepted |
 | [0005](0005-extension-model.md) | Extension model | Accepted |
 | [0006](0006-licensing.md) | Licensing | Accepted |
