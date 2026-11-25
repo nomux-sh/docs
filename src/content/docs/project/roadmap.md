@@ -19,7 +19,8 @@ The [release guide](https://github.com/nomux-sh/.github/blob/main/RELEASING.md) 
 ## State today
 
 The repository skeletons are done: [`.github`](https://github.com/nomux-sh/.github), [`nomux`](https://github.com/nomux-sh/nomux), [`proto`](https://github.com/nomux-sh/proto) and [`docs`](https://github.com/nomux-sh/docs) exist, with CI and the first architecture decisions.
-All stages in the table are planned. No stage is in progress.
+The first protocol crate is published: [`nomux-proto` 0.1.0](https://crates.io/crates/nomux-proto).
+Stage M1 is in progress. The work items are the issues of the [0.1.0](https://github.com/nomux-sh/nomux/milestone/1) and [0.2.0](https://github.com/nomux-sh/nomux/milestone/2) milestones of the `nomux` repository. All other stages are planned.
 
 ## Stages
 
@@ -35,7 +36,7 @@ A state is one of these values:
 
 | Stage | Goal | Done when | Repositories | State |
 |---|---|---|---|---|
-| **M1** Persistent terminal core | A terminal Session continues on the Host when the client disconnects, when the daemon stops and after a restart of the Host. The CLI creates Sessions and attaches to them. | You start a Session on an SSH Host, close the laptop, open it and attach: the screen is the same. You stop `nomuxd` with `kill -9`: the Session continues. After a restart of the Host, the first screen shows in 1 second. | `nomux`, `proto` | `planned` |
+| **M1** Persistent terminal core | A terminal Session continues on the Host when the client disconnects, when the daemon stops and after a restart of the Host. The CLI creates Sessions and attaches to them. | You start a Session on an SSH Host, close the laptop, open it and attach: the screen is the same. You stop `nomuxd` with `kill -9`: the Session continues. After a restart of the Host, the first screen shows in 1 second. | `nomux`, `proto` | `in progress` |
 | **M2** Remote Hosts | One command adds a remote Host through SSH and installs the binaries on it. Typing stays fast on a slow connection. | You add a new server with `nomux host add`: nomux installs the binaries and opens a Session. With 100 ms of latency and 2% packet loss, typing feels the same as on a local Host. | `nomux`, `proto` | `planned` |
 | **M3** Extension host with git and files | The daemon runs extensions as separate processes. The first official extensions supply git status and file access. The data model of Projects and Worktrees is in place. | Not defined. | `nomux`, `extension-api`, `extensions` | `planned` |
 | **M4** Agent status engine and Teams | nomux shows the status of each Agent run and each Child work together with the source of the status. Agents of different tools work together in a Team. | Not defined. | `nomux`, `proto`, `extensions` | `planned` |

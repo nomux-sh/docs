@@ -19,7 +19,8 @@ Sürüm kuralları ve yayın adımları [sürüm rehberinde](https://github.com/
 ## Bugünkü durum
 
 Repo iskeletleri hazır: [`.github`](https://github.com/nomux-sh/.github), [`nomux`](https://github.com/nomux-sh/nomux), [`proto`](https://github.com/nomux-sh/proto) ve [`docs`](https://github.com/nomux-sh/docs) açıldı; CI'ları çalışıyor, ilk mimari kararlar yazıldı.
-Tablodaki aşamaların hepsi planlama durumunda. Henüz başlamış bir aşama yok.
+İlk protokol crate'i yayında: [`nomux-proto` 0.1.0](https://crates.io/crates/nomux-proto).
+M1 aşaması başladı. Yapılacak işler `nomux` repo'sunun [0.1.0](https://github.com/nomux-sh/nomux/milestone/1) ve [0.2.0](https://github.com/nomux-sh/nomux/milestone/2) milestone'larındaki issue'lar. Diğer aşamalar planlama durumunda.
 
 ## Aşamalar
 
@@ -35,7 +36,7 @@ Durum sütununda şu değerlerden biri bulunur:
 
 | Aşama | Hedef | Ne zaman bitmiş sayılır | Repolar | Durum |
 |---|---|---|---|---|
-| **M1** Kalıcı terminal çekirdeği | İstemci kopsa, daemon dursa ya da Host yeniden başlasa bile terminal Session'ı Host'ta yaşamaya devam eder. Session'lar CLI ile açılır, CLI ile bağlanılır. | SSH ile bağlandığınız bir Host'ta Session açıp laptop'u kapatırsınız; açıp yeniden bağlandığınızda ekran bıraktığınız gibidir. `nomuxd`'yi `kill -9` ile öldürürsünüz, Session yaşar. Host yeniden başladıktan sonra ilk ekran 1 saniyede gelir. | `nomux`, `proto` | `planlandı` |
+| **M1** Kalıcı terminal çekirdeği | İstemci kopsa, daemon dursa ya da Host yeniden başlasa bile terminal Session'ı Host'ta yaşamaya devam eder. Session'lar CLI ile açılır, CLI ile bağlanılır. | SSH ile bağlandığınız bir Host'ta Session açıp laptop'u kapatırsınız; açıp yeniden bağlandığınızda ekran bıraktığınız gibidir. `nomuxd`'yi `kill -9` ile öldürürsünüz, Session yaşar. Host yeniden başladıktan sonra ilk ekran 1 saniyede gelir. | `nomux`, `proto` | `sürüyor` |
 | **M2** Uzak Host'lar | Tek komut, uzaktaki bir Host'u SSH üzerinden ekler ve binary'leri oraya kurar. Yavaş bağlantıda bile yazarken gecikme hissedilmez. | Yeni bir sunucuyu `nomux host add` ile eklersiniz; nomux binary'leri kurar ve bir Session açar. 100 ms gecikme ve %2 paket kaybında yazmak, local Host'ta yazmaktan farksızdır. | `nomux`, `proto` | `planlandı` |
 | **M3** Extension host'u, git ve dosyalar | Daemon, extension'ları ayrı process'ler olarak çalıştırır. İlk resmi extension'lar git durumunu ve dosya erişimini getirir. Proje ve Worktree veri modeli yerine oturur. | Tanımlanmadı. | `nomux`, `extension-api`, `extensions` | `planlandı` |
 | **M4** Agent durum motoru ve Takımlar | nomux her Agent çalışmasının ve her Alt işin durumunu, o durumun kaynağıyla birlikte gösterir. Farklı araçların agent'ları aynı Takımda birlikte çalışır. | Tanımlanmadı. | `nomux`, `proto`, `extensions` | `planlandı` |
