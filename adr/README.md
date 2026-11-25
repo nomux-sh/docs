@@ -17,6 +17,7 @@ The ADRs use the terms from the [glossary](../src/content/docs/reference/glossar
 | [0005](0005-extension-model.md) | Extension model | Accepted |
 | [0006](0006-licensing.md) | Licensing | Accepted |
 | [0007](0007-status-source-order.md) | Status source order | Accepted |
+| [0008](0008-release-early-pre-releases.md) | Release early with pre-releases | Accepted |
 
 ## Status values
 
@@ -34,9 +35,8 @@ The ADRs use the terms from the [glossary](../src/content/docs/reference/glossar
 2. Copy [`template.md`](template.md) to `adr/NNNN-short-title.md`. Use lowercase words and hyphens in the file name.
 3. Fill in all sections. Set the status to `Proposed`.
 4. Add a row to the index in this file.
-5. Add a row to the two site index pages: `src/content/docs/reference/decisions.md` and `src/content/docs/tr/reference/decisions.md`.
-6. Open a pull request. The discussion occurs in the pull request.
-7. When the maintainers agree, set the status to `Accepted` or `Rejected` and merge the pull request.
+5. Open a pull request. The discussion occurs in the pull request.
+6. When the maintainers agree, set the status to `Accepted` or `Rejected` and merge the pull request.
 
 ## Rules
 
@@ -45,10 +45,10 @@ The ADRs use the terms from the [glossary](../src/content/docs/reference/glossar
 - You can correct errors and add links in an accepted ADR.
 - If a question is not decided, write it in the "Open questions" section. Do not write a guess as a decision.
 - When an open question gets an answer, move the answer into the related section and remove the question. If the answer changes the decision, write a new ADR.
-- Keep the status in the ADR file, in the index in this file and in the two site index pages the same.
+- Keep the status in the ADR file and in the index in this file the same.
+- If an ADR names a roadmap stage (M1 to M10), link to the [roadmap](../src/content/docs/project/roadmap.md) in the same file.
 
-## Site integration
+## Site
 
-The site shows an index of the ADRs with links to the files in this directory.
-The site does not show the full text of the ADRs.
-Full site integration is deferred. It is owned by milestone M10, when the documentation site gets its full content.
+The site has one page about the ADRs: `src/content/docs/reference/decisions.md`, with a Turkish page at the same path below `tr/`.
+The page links to this index. It does not copy the index or the text of an ADR.

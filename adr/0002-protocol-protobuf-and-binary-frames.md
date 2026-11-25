@@ -79,8 +79,10 @@ We took the credit windows and did not take the channels without types. Each nom
 
 ## Open questions
 
-- The exact layout of the frame header (field order and field sizes) is not set. Owner: the `proto` repository, milestone M1.
+The stage identifiers (M1 to M10) come from the [roadmap](../src/content/docs/project/roadmap.md).
+
+- The exact layout of the frame header (field order and field sizes) is not set. Owner: the `proto` repository, stage M1.
 - The full list of capability flags is not set. Only `waits` and `pane_state_events` are named. Owner: the `proto` repository.
-- The sizes of the credit windows and the packet size for interactive channels are not set. Owner: milestones M1 and M2, from measurement.
-- The condition that starts zstd compression on a link with low bandwidth is not set. Owner: milestone M2.
-- The format of the event log and of the snapshot and delta synchronization for mobile clients is not set. Owner: milestone M9.
+- The sizes of the credit windows and the packet size for interactive channels are not set. Owner: stages M1 and M2, from measurement.
+- The condition that starts zstd compression on a link with low bandwidth is not set. Owner: stage M2.
+- The format of the event log and of the snapshot and delta synchronization for mobile clients is not set. Owner: stage M9.

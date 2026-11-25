@@ -89,7 +89,9 @@ We did not select it. A dependency on tmux is a thing that nomux does not take f
 
 ## Open questions
 
-- The interval between checkpoints and the size of the ring buffer are not set. Owner: milestone M1.
-- The size of the warm pool has a default of 2 to 3 holders. The final value comes from measurement. Owner: milestone M1.
-- The `rmux-pty`, `rmux-ipc` and `rmux-proto` crates are under review for reuse in the holder and the daemon. The result is not known. Owner: milestone M0.
+The stage identifiers (M1 to M10) come from the [roadmap](../src/content/docs/project/roadmap.md).
+
+- The interval between checkpoints and the size of the ring buffer are not set. Owner: stage M1.
+- The size of the warm pool has a default of 2 to 3 holders. The final value comes from measurement. Owner: stage M1.
+- The `rmux-pty`, `rmux-ipc` and `rmux-proto` crates are under review for reuse in the holder and the daemon. The result is not known. Owner: the preparation work before stage M1.
 - The VT library that the holder uses is not selected. See [ADR-0003](0003-vt-library.md).

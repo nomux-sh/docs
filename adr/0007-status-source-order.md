@@ -63,7 +63,9 @@ We did not select it. It does not agree with the honesty principle, and the user
 
 ## Open questions
 
-- OSC 7501 support is verified for Claude Code, Codex and Qwen Code. Gemini CLI does not have it. OpenCode and Goose are not examined. Owner: milestone M4.
-- OSC 7501 is a proposal (specification revision 0.4). The keys can change. Owner: milestone M4, with a test for each tool.
-- Claude Code and Codex also send OSC 21337 (tab status) in one terminal. The holder can read it. It is not decided if the holder reads it and where it is in the order. Owner: milestone M4.
-- The full rules for conflicts between sources in one tool are not part of this record. The rules for each tool belong to its adapter extension. Owner: milestone M4.
+The stage identifiers (M1 to M10) come from the [roadmap](../src/content/docs/project/roadmap.md).
+
+- OSC 7501 support is verified for Claude Code, Codex and Qwen Code. Gemini CLI does not have it. OpenCode and Goose are not examined. Owner: stage M4.
+- OSC 7501 is a proposal (specification revision 0.4). The keys can change. Owner: stage M4, with a test for each tool.
+- Claude Code and Codex also send OSC 21337 (tab status) in one terminal. The holder can read it. It is not decided if the holder reads it and where it is in the order. Owner: stage M4.
+- The full rules for conflicts between sources in one tool are not part of this record. The rules for each tool belong to its adapter extension. Owner: stage M4.
