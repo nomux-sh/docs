@@ -21,6 +21,7 @@ Laptop'u kapatsanız, bağlantı kopsa ya da daemon dursa bile terminal ve agent
 **Çekirdek neredeyse boştur. Her özellik bir extension'dır.**
 Git, dosyalar, agent adapter'ları, browser, bildirim kanalları, programlama dili desteği, temalar ve arayüz dilleri birer extension'dır.
 Hepsini tek tek kurup kaldırabilirsiniz. Kullanmadığınız extension hiç yüklenmez.
+Bunun bugün ne kadarının var olduğunu [extension'lar sayfası](/docs/tr/concepts/extensions/) anlatır.
 
 **Her durumun kaynağı bellidir.**
 nomux bir agent'ın durumunu adapter event'lerinden, OSC 7501 terminal dizisinden, agent'ın kendi bildiriminden ya da son çare olarak bir yedek kaynaktan okur.
