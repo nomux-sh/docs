@@ -24,16 +24,27 @@ export default defineConfig({
       social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/nomux-sh' }],
       sidebar: [
         {
+          label: 'Guides',
+          translations: { tr: 'Rehberler' },
+          items: [{ slug: 'guides/install' }, { slug: 'guides/quick-start' }],
+        },
+        {
           label: 'Concepts',
           translations: { tr: 'Kavramlar' },
-          items: [{ slug: 'concepts/overview' }],
+          items: [{ slug: 'concepts/overview' }, { slug: 'concepts/how-it-works' }],
         },
         {
           label: 'Reference',
           translations: { tr: 'Başvuru' },
-          items: [{ slug: 'reference/glossary' }, { slug: 'reference/decisions' }],
+          items: [
+            { slug: 'reference/cli' },
+            { slug: 'reference/performance' },
+            { slug: 'reference/glossary' },
+            { slug: 'reference/decisions' },
+          ],
         },
         { slug: 'project/roadmap' },
+        { slug: 'project/contributing' },
       ],
       // The build fails if a page has a broken internal link or anchor.
       plugins: [starlightLinksValidator()],

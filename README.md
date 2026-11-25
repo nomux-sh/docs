@@ -8,7 +8,7 @@ This repository is a part of [nomux](https://github.com/nomux-sh), a native and 
 
 In development. Versions earlier than 1.0.0 are pre-releases: interfaces can change between minor versions.
 
-The site has the concepts overview, the glossary, the roadmap and a page about the architecture decisions, in English and in Turkish. This repository also has eight architecture decision records and the index of reference projects. There are no user guides at this time. The [roadmap](https://github.com/nomux-sh/docs/blob/main/src/content/docs/project/roadmap.md) shows the order of the future work.
+The site has the user guides (install, quick start), the concepts pages, the CLI reference, the performance targets, the glossary, the roadmap, the contribution page and a page about the architecture decisions, in English and in Turkish. This repository also has eight architecture decision records and the index of reference projects. The [roadmap](https://github.com/nomux-sh/docs/blob/main/src/content/docs/project/roadmap.md) shows the order of the future work.
 
 The site has no version. Each merge to `main` publishes it.
 

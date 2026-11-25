@@ -5,26 +5,42 @@ template: splash
 hero:
   tagline: A native agentic development environment. Sessions stay alive on the host when the client disconnects.
   actions:
+    - text: Quick start
+      link: /docs/guides/quick-start/
+      icon: right-arrow
     - text: Read the concepts
       link: /docs/concepts/overview/
-      icon: right-arrow
-    - text: Open the glossary
-      link: /docs/reference/glossary/
       variant: minimal
 ---
 
 ## Status
 
 nomux is in development. Versions earlier than 1.0.0 are pre-releases: interfaces can change between minor versions.
-The [roadmap](/docs/project/roadmap/) shows what exists now and what comes next.
+
+Now the CLI starts, lists and ends Sessions, and a Session continues when the daemon stops. A client cannot attach to the terminal of a Session yet.
+No release exists yet. The first release is in preparation, and you can [build the binaries from source](/docs/guides/install/#build-from-source).
+
+The [roadmap](/docs/project/roadmap/) is the one place that shows what comes next.
 This site grows with the product. A page is added only when its content is ready.
 
-## What you can read now
+## Use nomux
+
+- [Install](/docs/guides/install/) tells you how to get the binaries, where they go and how to remove them.
+- [Quick start](/docs/guides/quick-start/) starts a Session, stops the daemon and shows that the Session continues.
+- [CLI reference](/docs/reference/cli/) has each command, its JSON output and the exit codes.
+
+## Understand nomux
 
 - [Concepts](/docs/concepts/overview/) tells you what nomux is and how its parts fit together.
+- [How it works](/docs/concepts/how-it-works/) describes the three processes and why a Session continues when the daemon stops.
+- [Performance targets](/docs/reference/performance/) lists the targets and the values measured so far.
 - [Glossary](/docs/reference/glossary/) gives the one name of each concept. Code, the CLI and the UI use the same names.
 - [Architecture decisions](/docs/reference/decisions/) tells you where the decision records are and how a decision changes.
+
+## Follow and contribute
+
 - [Roadmap](/docs/project/roadmap/) shows the stages of the work in order and the state of each one.
+- [Contributing](/docs/project/contributing/) links the guides of the organization and shows which repository has which part.
 
 ## Languages
 
