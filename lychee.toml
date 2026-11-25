@@ -1,0 +1,11 @@
+# Link check of the built site: lychee 'dist/**/*.html'
+
+# Check only the links between the built files. Make no network requests.
+offline = true
+no_progress = true
+include_fragments = "full"
+index_files = ["index.html"]
+
+# The build writes the site to dist/docs/, the same path as its URL below /docs/.
+# Thus a link without the base path resolves to a file that does not exist.
+root_dir = "dist"

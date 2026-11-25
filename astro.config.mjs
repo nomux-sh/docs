@@ -4,13 +4,18 @@ import { defineConfig } from 'astro/config';
 import starlightLinksValidator from 'starlight-links-validator';
 
 export default defineConfig({
-  site: 'https://nomux.sh',
+  // GitHub Pages serves the site below /docs/. Each internal link in a page starts with this base path.
+  site: 'https://nomux-sh.github.io',
+  base: '/docs',
+  // The output tree has the same paths as the URLs, thus the link check finds a link that has no base path.
+  outDir: './dist/docs',
+  trailingSlash: 'always',
   integrations: [
     starlight({
       title: 'nomux',
       description:
         'Documentation for nomux, a native agentic development environment. Sessions stay alive on the host when the client disconnects.',
-      // English is the default locale and is served from the site root.
+      // English is the default locale and has no language prefix in the URL.
       defaultLocale: 'root',
       locales: {
         root: { label: 'English', lang: 'en' },
@@ -28,6 +33,7 @@ export default defineConfig({
           translations: { tr: 'Başvuru' },
           items: [{ slug: 'reference/glossary' }, { slug: 'reference/decisions' }],
         },
+        { slug: 'project/roadmap' },
       ],
       // The build fails if a page has a broken internal link or anchor.
       plugins: [starlightLinksValidator()],
