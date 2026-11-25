@@ -25,6 +25,18 @@ If you need a new concept, add it to this table first, in English and in Turkish
 | Tab | Tab | One content item in a Pane. A registry of content types supplies the type of the Tab. |
 | Surface ID | Yüzey kimliği | The identifier of a Tab. It does not change during the life of the Tab. The Session gets it through an environment variable. |
 
+## Processes and files
+
+These terms name the processes of a Host and their files. Write them in lowercase.
+
+| English term | Turkish term | Definition |
+|---|---|---|
+| holder | holder | The process that keeps the PTY of one Session. One holder runs for each Session. Its binary is `nomux-holder`. |
+| daemon | daemon | The process that starts the holders, finds them again after a restart and answers the clients. One daemon runs for each user on a Host. Its binary is `nomuxd`. |
+| client | istemci | A program that connects to the daemon to show or change Sessions. The CLI (`nomux`), the desktop application and the mobile applications are clients. |
+| runtime directory | runtime dizini | The directory in which the daemon and the holders keep their sockets and their discovery files: `~/.nomux/run`. |
+| session identifier | session kimliği | The name of one Session on a Host. The daemon makes it: 8 characters from `a` to `z` and `2` to `7`. The CLI prints it and accepts it. |
+
 ## How the concepts relate
 
 ```text
@@ -44,5 +56,5 @@ Thus a desktop client and a mobile client can connect to the same Session with d
 
 - Use the exact term. Do not use a synonym, for example "workspace" for Project or "window" for Pane.
 - In English text, write the English term. In Turkish text, write the Turkish term.
-- Five terms are the same in the two languages: Host, Worktree, Session, Pane and Tab.
+- Seven terms are the same in the two languages: Host, Worktree, Session, Pane, Tab, holder and daemon.
 - Names in code follow the English term. Examples are the database tables `sessions`, `agent_runs` and `child_work`, and the environment variable `NOMUX_SURFACE_ID`.
