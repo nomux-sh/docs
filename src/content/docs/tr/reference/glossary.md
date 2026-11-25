@@ -37,6 +37,18 @@ Bu terimler bir Host'ta çalışan process'leri ve onların dosyalarını adland
 | runtime dizini | runtime directory | Daemon'un ve holder'ların socket'lerini ve keşif dosyalarını tuttuğu dizin: `~/.nomux/run`. |
 | session kimliği | session identifier | Bir Session'ın o Host'taki adı. Daemon üretir: `a`-`z` ve `2`-`7` karakterlerinden oluşan 8 karakter. CLI bu kimliği yazdırır ve komutlarda bu kimliği bekler. |
 
+## Attach ve extension'lar
+
+Bu terimler de küçük harfle yazılır.
+
+| Türkçe terim | İngilizce terim | Tanım |
+|---|---|---|
+| attach | attach | Bir istemcinin terminalini bir Session'ın terminaline bağlamak: istemci Session'ın ekranını gösterir ve tuşlarını ona gönderir. Bu bağlantının kendisine de attach denir. Aynı Session'a birden fazla istemci attach olabilir. CLI komutu `nomux attach`'tir. |
+| detach | detach | Bir attach'i bitirmek. Session yaşamaya devam eder. CLI komutu `nomux detach`'tir. |
+| extension | extension | nomux'a bir özellik ekleyen paket. Bir manifest'i (`extension.toml`) ve bir ya da daha fazla parçası vardır. |
+| daemon parçası | daemon part | Extension'ın Host'ta ayrı bir process olarak çalışan parçası. Onu `nomuxd` başlatır. |
+| arayüz parçası | UI part | Extension'ın istemcide çalışan parçası. |
+
 ## Kavramlar birbirine nasıl bağlanır
 
 ```text
@@ -56,5 +68,5 @@ Böylece desktop istemcisi ile mobil istemci aynı Session'a farklı görünüml
 
 - Terimi olduğu gibi kullanın, yerine eş anlamlısını koymayın: Proje yerine "çalışma alanı", Pane yerine "pencere" demeyin.
 - Türkçe metinde Türkçe terimi, İngilizce metinde İngilizce terimi yazın.
-- Yedi terim iki dilde de aynıdır: Host, Worktree, Session, Pane, Tab, holder ve daemon.
+- On terim iki dilde de aynıdır: Host, Worktree, Session, Pane, Tab, holder, daemon, attach, detach ve extension.
 - Koddaki adlar İngilizce terimden türetilir. Örnek: `sessions`, `agent_runs` ve `child_work` veritabanı tabloları ile `NOMUX_SURFACE_ID` ortam değişkeni.

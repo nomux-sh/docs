@@ -37,6 +37,18 @@ These terms name the processes of a Host and their files. Write them in lowercas
 | runtime directory | runtime dizini | The directory in which the daemon and the holders keep their sockets and their discovery files: `~/.nomux/run`. |
 | session identifier | session kimliği | The name of one Session on a Host. The daemon makes it: 8 characters from `a` to `z` and `2` to `7`. The CLI prints it and accepts it. |
 
+## Attach and extensions
+
+Write these terms in lowercase too.
+
+| English term | Turkish term | Definition |
+|---|---|---|
+| attach | attach | To connect the terminal of a client to the terminal of a Session: the client shows the screen of the Session and sends its keys to it. "An attach" is one such connection. More than one client can be attached to one Session. The CLI command is `nomux attach`. |
+| detach | detach | To end an attach. The Session continues. The CLI command is `nomux detach`. |
+| extension | extension | A package that adds a feature to nomux. An extension has a manifest (`extension.toml`) and one or more parts. |
+| daemon part | daemon parçası | The part of an extension that runs on the Host as a separate process. `nomuxd` starts it. |
+| UI part | arayüz parçası | The part of an extension that runs in a client. |
+
 ## How the concepts relate
 
 ```text
@@ -56,5 +68,5 @@ Thus a desktop client and a mobile client can connect to the same Session with d
 
 - Use the exact term. Do not use a synonym, for example "workspace" for Project or "window" for Pane.
 - In English text, write the English term. In Turkish text, write the Turkish term.
-- Seven terms are the same in the two languages: Host, Worktree, Session, Pane, Tab, holder and daemon.
+- Ten terms are the same in the two languages: Host, Worktree, Session, Pane, Tab, holder, daemon, attach, detach and extension.
 - Names in code follow the English term. Examples are the database tables `sessions`, `agent_runs` and `child_work`, and the environment variable `NOMUX_SURFACE_ID`.
