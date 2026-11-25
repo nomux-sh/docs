@@ -1,0 +1,26 @@
+name: PR checks
+
+# These jobs call the shared workflows of the organization.
+# They are in a separate file from ci.yml: if a called workflow cannot be
+# resolved, GitHub fails the complete workflow file at startup. The build job
+# in ci.yml must not depend on the state of another repository.
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: pr-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dco:
+    name: DCO
+    uses: nomux-sh/.github/.github/workflows/dco.yml@main
+
+  commitlint:
+    name: Commitlint
+    uses: nomux-sh/.github/.github/workflows/commitlint.yml@main
