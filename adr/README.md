@@ -18,6 +18,7 @@ The ADRs use the terms from the [glossary](../src/content/docs/reference/glossar
 | [0006](0006-licensing.md) | Licensing | Accepted |
 | [0007](0007-status-source-order.md) | Status source order | Accepted |
 | [0008](0008-release-early-pre-releases.md) | Release early with pre-releases | Accepted |
+| [0009](0009-resource-budgets-for-disk-and-memory.md) | Resource budgets for disk and memory | Accepted |
 
 ## Status values
 
