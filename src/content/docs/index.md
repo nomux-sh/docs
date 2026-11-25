@@ -6,23 +6,25 @@ hero:
   tagline: A native agentic development environment. Sessions stay alive on the host when the client disconnects.
   actions:
     - text: Read the concepts
-      link: /concepts/overview/
+      link: /docs/concepts/overview/
       icon: right-arrow
     - text: Open the glossary
-      link: /reference/glossary/
+      link: /docs/reference/glossary/
       variant: minimal
 ---
 
 ## Status
 
-nomux is in development. There is no public release.
+nomux is in development. Versions earlier than 1.0.0 are pre-releases: interfaces can change between minor versions.
+The [roadmap](/docs/project/roadmap/) shows what exists now and what comes next.
 This site grows with the product. A page is added only when its content is ready.
 
 ## What you can read now
 
-- [Concepts](/concepts/overview/) tells you what nomux is and how its parts fit together.
-- [Glossary](/reference/glossary/) gives the one name of each concept. Code, the CLI and the UI use the same names.
-- [Architecture decisions](/reference/decisions/) lists the decision records and their status.
+- [Concepts](/docs/concepts/overview/) tells you what nomux is and how its parts fit together.
+- [Glossary](/docs/reference/glossary/) gives the one name of each concept. Code, the CLI and the UI use the same names.
+- [Architecture decisions](/docs/reference/decisions/) tells you where the decision records are and how a decision changes.
+- [Roadmap](/docs/project/roadmap/) shows the stages of the work in order and the state of each one.
 
 ## Languages
 

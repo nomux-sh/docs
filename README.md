@@ -1,28 +1,34 @@
 # docs
 
-The nomux documentation: the documentation site, the glossary, architecture decision records, and research notes.
+The nomux documentation: the documentation site, the glossary, the public roadmap, architecture decision records, and research notes.
 
 This repository is a part of [nomux](https://github.com/nomux-sh), a native and lightweight agentic development environment. Sessions stay alive on the host when the client disconnects.
 
 ## Status
 
-In development. There is no public release.
-This repository contains the M0 skeleton. The content grows until milestone M10.
+In development. Versions earlier than 1.0.0 are pre-releases: interfaces can change between minor versions.
+
+The site has the concepts overview, the glossary, the roadmap and a page about the architecture decisions, in English and in Turkish. This repository also has eight architecture decision records and the index of reference projects. There are no user guides at this time. The [roadmap](https://github.com/nomux-sh/docs/blob/main/src/content/docs/project/roadmap.md) shows the order of the future work.
+
+The site has no version. Each merge to `main` publishes it.
 
 ## Layout
 
 | Path | Content |
 |---|---|
-| `src/content/docs/` | Site pages in English. English is the default locale and is served from `/`. |
-| `src/content/docs/tr/` | Site pages in Turkish, served from `/tr/`. |
-| `src/content/docs/reference/glossary.md` | The glossary. It is the naming authority for code, the CLI and the UI. |
+| `src/content/docs/` | Site pages in English. English is the default locale and has no language prefix in the URL. |
+| `src/content/docs/tr/` | Site pages in Turkish, served below `tr/`. |
+| `src/content/docs/reference/glossary.md` | The glossary. It is the one source of the names in code, the CLI and the UI. |
+| `src/content/docs/project/roadmap.md` | The public roadmap. Other repositories link to this file. |
 | `adr/` | Architecture decision records (ADRs), plain Markdown, English only. |
 | `research/` | Research notes and the index of reference projects. |
 | `public/` | Static files that are copied to the site as they are. |
-| `astro.config.mjs` | Site configuration: URL, locales, sidebar. |
-| `.github/workflows/` | CI. |
+| `astro.config.mjs` | Site configuration: URL, base path, locales, sidebar. |
+| `lychee.toml` | Options of the link check on the built site. |
+| `AGENTS.md` | Rules for coding agents and for people. `CLAUDE.md` and `QWEN.md` refer to it. |
+| `.github/workflows/` | CI, the shared organization checks and the deployment to GitHub Pages. |
 
-The site uses [Astro](https://astro.build) with [Starlight](https://starlight.astro.build). The site URL is `https://nomux.sh`.
+The site uses [Astro](https://astro.build) with [Starlight](https://starlight.astro.build). The site URL is <https://nomux-sh.github.io/docs/>.
 The site has no analytics, no external fonts and no external scripts.
 
 ## Local development
@@ -34,24 +40,37 @@ bun install --frozen-lockfile
 bun run dev
 ```
 
-The development server prints the local URL. Changes to a page show immediately.
+The development server prints the local URL. The site is below the base path `/docs/`. Changes to a page show immediately.
 
 ## Build
 
 ```sh
 bun run check   # type check
-bun run build   # build the site into dist/
-bun run preview # serve dist/ locally
+bun run build   # build the site into dist/docs/
+bun run preview # serve the built site locally
 ```
 
 The build fails if a page has a broken internal link or anchor.
-CI runs the same commands and then checks the links between the built files with [lychee](https://lychee.cli.rs) in offline mode.
+
+To check the links between the built files, install [lychee](https://lychee.cli.rs) 0.24.2 and run it after the build. The options are in `lychee.toml`. lychee makes no network requests.
+
+```sh
+lychee 'dist/**/*.html'
+```
+
+CI runs the type check, the build and the link check on each pull request.
+
+## Deployment
+
+The workflow `.github/workflows/deploy.yml` builds the site and publishes it to GitHub Pages on each push to `main`.
+GitHub Pages serves the site below `/docs/`. Thus `astro.config.mjs` sets `base` to `/docs`, and each internal link in a page starts with `/docs/`.
 
 ## Writing rules
 
 - Use the terms from the glossary. Do not use a synonym for a glossary term.
 - Add a page only when it has real content. Do not add an empty page or a placeholder.
-- Write each site page in English and in Turkish. A Turkish page is a real translation. It is not a word-for-word copy.
+- Write each site page in English and in Turkish. Write the Turkish page as a Turkish developer writes it. Do not translate word for word.
+- Start each internal link in a site page with the base path, for example `/docs/reference/glossary/`.
 - Write English text in Simplified Technical English (ASD-STE100): short sentences, active voice, one word for one concept, the condition before the command.
 - Do not copy text from third-party projects.
 
@@ -67,25 +86,28 @@ CI runs the same commands and then checks the links between the built files with
 1. Find the next free four-digit number in `adr/`.
 2. Copy `adr/template.md` to `adr/NNNN-short-title.md` and fill in all sections. Set the status to `Proposed`.
 3. Add a row to the index in `adr/README.md`.
-4. Add a row to the site index pages: `src/content/docs/reference/decisions.md` and `src/content/docs/tr/reference/decisions.md`.
-5. Open a pull request.
+4. Open a pull request.
 
 The full process and the status values are in [`adr/README.md`](adr/README.md).
 
 ## Contributing
 
-- Use [Conventional Commits](https://www.conventionalcommits.org) for commit messages.
+Read the [contributing guide](https://github.com/nomux-sh/.github/blob/main/CONTRIBUTING.md) of the organization. The rules for this repository are in [`AGENTS.md`](AGENTS.md).
+
+- A commit message is one subject line, `type: description`, and the sign-off.
 - Sign off each commit (`git commit -s`). The project uses the Developer Certificate of Origin and has no CLA.
+- Enable the commit hook one time in each clone: `git config core.hooksPath .githooks`.
+
+To report a vulnerability, obey the [security policy](https://github.com/nomux-sh/.github/blob/main/SECURITY.md).
 
 ## Deferred work
 
-| Item | Owner |
+| Item | When |
 |---|---|
-| Deployment to Cloudflare Pages. There is no deploy workflow. | When the Cloudflare account is set up (M0 accounts task) |
-| Full text of the ADRs in the site. The site shows an index with links. | M10 |
-| User guides, extension guides, theme and language pack guides, protocol specification. | Grow until M10 |
-| Final logo and favicon. The favicon is a temporary mark. | Design work of M0 and M5 |
-| Check of external links. CI checks internal links only. | When the site has a deploy target |
+| The domain of the site. The site is on GitHub Pages at this time. When the domain exists, `site` and `base` in `astro.config.mjs` and the internal links change. | When the domain is registered |
+| User guides, extension guides, theme and language pack guides, protocol specification. | Each guide comes with the stage of the [roadmap](https://github.com/nomux-sh/docs/blob/main/src/content/docs/project/roadmap.md) that makes its subject usable |
+| Final logo and favicon. The favicon is a temporary mark. | With the design work for the desktop client |
+| Check of external links. CI checks internal links only. | A scheduled workflow, after the first deployment |
 
 ## License
 

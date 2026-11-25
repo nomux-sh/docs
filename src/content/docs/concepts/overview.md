@@ -9,7 +9,7 @@ nomux is a native agentic development environment.
 You open a Task. nomux connects a Worktree and an agent Session to the Task. The agent does the work.
 You see each Agent run and each Child work with its status. You examine the changes in a diff, approve them and commit them.
 
-The terms on this page come from the [Glossary](/reference/glossary/).
+The terms on this page come from the [Glossary](/docs/reference/glossary/).
 
 ## Three ideas
 
@@ -68,5 +68,6 @@ The clients run on Linux, macOS and Windows. The mobile clients run on iOS and A
 
 ## Status
 
-nomux is in development. There is no public release.
-The [architecture decisions](/reference/decisions/) record the main design choices.
+nomux is in development. Versions earlier than 1.0.0 are pre-releases: interfaces can change between minor versions.
+The [roadmap](/docs/project/roadmap/) shows which parts exist now.
+The [architecture decisions](/docs/reference/decisions/) record the main design choices.

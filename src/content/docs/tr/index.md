@@ -6,27 +6,29 @@ hero:
   tagline: Native bir agentic geliştirme ortamı. İstemci koptuğunda session'lar host'ta yaşamaya devam eder.
   actions:
     - text: Kavramları oku
-      link: /tr/concepts/overview/
+      link: /docs/tr/concepts/overview/
       icon: right-arrow
     - text: Sözlüğü aç
-      link: /tr/reference/glossary/
+      link: /docs/tr/reference/glossary/
       variant: minimal
 ---
 
 ## Durum
 
-nomux geliştirme aşamasında. Henüz yayınlanmış bir sürümü yok.
-Bu site ürünle birlikte büyür. Bir sayfa ancak içeriği hazır olduğunda eklenir.
+nomux geliştirme aşamasında. 1.0.0 öncesindeki sürümler ön sürümdür: minor sürümler arasında API, CLI ve protokol değişebilir.
+Bugün neyin hazır olduğunu ve sırada ne olduğunu [yol haritasında](/docs/tr/project/roadmap/) görebilirsiniz.
+Bu site ürünle birlikte büyür; bir sayfa ancak içeriği hazır olunca eklenir.
 
 ## Şu an okuyabilecekleriniz
 
-- [Kavramlar](/tr/concepts/overview/) sayfası nomux'un ne olduğunu ve parçalarının nasıl bir araya geldiğini anlatır.
-- [Sözlük](/tr/reference/glossary/) her kavramın tek adını verir. Kod, CLI ve arayüz aynı adları kullanır.
-- [Mimari kararlar](/tr/reference/decisions/) sayfası karar kayıtlarını ve durumlarını listeler.
+- [Kavramlar](/docs/tr/concepts/overview/) sayfası nomux'un ne olduğunu ve parçalarının nasıl bir araya geldiğini anlatır.
+- [Sözlük](/docs/tr/reference/glossary/) her kavramın tek adını verir. Kod, CLI ve arayüz aynı adları kullanır.
+- [Mimari kararlar](/docs/tr/reference/decisions/) sayfası karar kayıtlarının nerede durduğunu ve bir kararın nasıl değiştiğini anlatır.
+- [Yol haritası](/docs/tr/project/roadmap/) işlerin sırasını ve her aşamanın durumunu gösterir.
 
 ## Diller
 
-Site İngilizce ve Türkçe yayınlanır. Dili değiştirmek için dil menüsünü kullanın.
+Site İngilizce ve Türkçe yayınlanır. Dil menüsünden istediğinize geçebilirsiniz.
 
 ## Lisans
 

@@ -34,7 +34,7 @@ The notes record what we learned from other projects and from specifications, an
 
 ## Index of reference projects
 
-This index is a stub. A project gets a "Note" link when its note is written. No notes are written at this time.
+A project gets a "Note" link when its note is written. No notes are written at this time.
 The license column gives the license as recorded in the review of 2026-11-25. Examine the license file of the project again before you use its code.
 
 | Project | Class | License | URL |
