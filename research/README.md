@@ -51,7 +51,7 @@ The license column gives the license as recorded in the review of 2026-11-25. Ex
 | Orca | Code reusable | MIT | <https://github.com/stablyai/orca> |
 | OpenChamber | Code reusable | MIT | <https://github.com/openchamber/openchamber> |
 | tmux-ide | Code reusable | MIT | <https://github.com/wavyrai/tmux-ide> |
-| sheprd (earlier name: herdr-gpui) | Code reusable | Apache-2.0 | <https://github.com/penso/sheprd> |
+| sheprd (earlier name: herdr-gpui) | Code reusable | Apache-2.0 | <https://github.com/sheprd-labs/sheprd> |
 | tmux-claude-status | Code reusable | Apache-2.0 (with its NOTICE) | <https://github.com/farnots/tmux-claude-status> |
 | tmux-mem-cpu-load | Code reusable | Apache-2.0 | Not recorded |
 | tmux-sidebar | Code reusable | MIT | Not recorded |
