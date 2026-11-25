@@ -31,7 +31,11 @@ export default defineConfig({
         {
           label: 'Concepts',
           translations: { tr: 'Kavramlar' },
-          items: [{ slug: 'concepts/overview' }, { slug: 'concepts/how-it-works' }],
+          items: [
+            { slug: 'concepts/overview' },
+            { slug: 'concepts/how-it-works' },
+            { slug: 'concepts/extensions' },
+          ],
         },
         {
           label: 'Reference',

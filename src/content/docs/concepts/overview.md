@@ -21,6 +21,7 @@ A client is a window that connects and disconnects. The clients are the desktop 
 **The core is almost empty. Each feature is an extension.**
 Git, files, agent adapters, the browser, notification channels, programming language support, themes and UI languages are extensions.
 You can install and remove each one. An extension that you do not use is not loaded.
+The [extensions page](/docs/concepts/extensions/) says which parts of this exist now.
 
 **Each status has a known source.**
 nomux reads the status of an agent from adapter events, from the OSC 7501 terminal sequence, from a self-report, or from a fallback.
