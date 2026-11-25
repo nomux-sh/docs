@@ -25,6 +25,18 @@ Yeni bir kavrama ihtiyaç duyarsanız önce onu İngilizcesi ve Türkçesiyle bu
 | Tab | Tab | Pane'de açık duran içeriklerden biri. Tab'ın türü, içerik türü registry'sinden gelir. |
 | Yüzey kimliği | Surface ID | Tab'ın kimliği. Tab kapanana kadar değişmez. Session bu kimliği bir ortam değişkeninden okur. |
 
+## Process'ler ve dosyalar
+
+Bu terimler bir Host'ta çalışan process'leri ve onların dosyalarını adlandırır. Küçük harfle yazılırlar.
+
+| Türkçe terim | İngilizce terim | Tanım |
+|---|---|---|
+| holder | holder | Tek bir Session'ın PTY'sini tutan process. Her Session için bir holder çalışır. Binary'si `nomux-holder`'dır. |
+| daemon | daemon | Holder'ları başlatan, yeniden başladığında onları tekrar bulan ve istemcilere cevap veren process. Bir Host'ta her kullanıcı için bir daemon çalışır. Binary'si `nomuxd`'dir. |
+| istemci | client | Session'ları göstermek ya da değiştirmek için daemon'a bağlanan program. CLI (`nomux`), desktop uygulaması ve mobil uygulamalar birer istemcidir. |
+| runtime dizini | runtime directory | Daemon'un ve holder'ların socket'lerini ve keşif dosyalarını tuttuğu dizin: `~/.nomux/run`. |
+| session kimliği | session identifier | Bir Session'ın o Host'taki adı. Daemon üretir: `a`-`z` ve `2`-`7` karakterlerinden oluşan 8 karakter. CLI bu kimliği yazdırır ve komutlarda bu kimliği bekler. |
+
 ## Kavramlar birbirine nasıl bağlanır
 
 ```text
@@ -44,5 +56,5 @@ Böylece desktop istemcisi ile mobil istemci aynı Session'a farklı görünüml
 
 - Terimi olduğu gibi kullanın, yerine eş anlamlısını koymayın: Proje yerine "çalışma alanı", Pane yerine "pencere" demeyin.
 - Türkçe metinde Türkçe terimi, İngilizce metinde İngilizce terimi yazın.
-- Beş terim iki dilde de aynıdır: Host, Worktree, Session, Pane ve Tab.
+- Yedi terim iki dilde de aynıdır: Host, Worktree, Session, Pane, Tab, holder ve daemon.
 - Koddaki adlar İngilizce terimden türetilir. Örnek: `sessions`, `agent_runs` ve `child_work` veritabanı tabloları ile `NOMUX_SURFACE_ID` ortam değişkeni.
