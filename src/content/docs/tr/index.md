@@ -17,8 +17,9 @@ hero:
 
 nomux geliştirme aşamasında. 1.0.0 öncesindeki sürümler ön sürümdür: minor sürümler arasında API, CLI ve protokol değişebilir.
 
-Bugün CLI ile Session açabilir, listeleyebilir ve sonlandırabilirsiniz; daemon dursa da Session çalışmaya devam eder. Bir Session'ın terminaline bağlanmak (attach) henüz mümkün değil.
-Yayınlanmış bir sürüm de henüz yok. İlk sürüm hazırlanıyor; o zamana kadar [binary'leri kaynaktan derleyebilirsiniz](/docs/tr/guides/install/#kaynaktan-derleme).
+Güncel sürüm [nomux 0.1.0](https://github.com/nomux-sh/nomux/releases/tag/v0.1.0): attach'li local Session'lar.
+CLI ile Session açabilir, listeleyebilir ve sonlandırabilir, terminalinizle bir Session'a attach ve detach olabilirsiniz. Siz detach olsanız da daemon dursa da Session çalışmaya devam eder.
+Kurulum script'i ve binary'leri edinmenin diğer yolları [kurulum sayfasında](/docs/tr/guides/install/).
 
 Sırada ne olduğunu yalnızca [yol haritası](/docs/tr/project/roadmap/) söyler.
 Bu site ürünle birlikte büyür; bir sayfa ancak içeriği hazır olunca eklenir.
@@ -26,13 +27,14 @@ Bu site ürünle birlikte büyür; bir sayfa ancak içeriği hazır olunca eklen
 ## nomux'u kullanmak
 
 - [Kurulum](/docs/tr/guides/install/) sayfası binary'leri nasıl edineceğinizi, nereye kurulduklarını ve nasıl kaldırılacaklarını anlatır.
-- [Hızlı başlangıç](/docs/tr/guides/quick-start/) bir Session açar, daemon'u durdurur ve Session'ın yaşamaya devam ettiğini gösterir.
+- [Hızlı başlangıç](/docs/tr/guides/quick-start/) bir Session açar, ona attach ve detach olur, daemon'u durdurur ve Session'ın yaşamaya devam ettiğini gösterir.
 - [CLI başvurusu](/docs/tr/reference/cli/) her komutu, JSON çıktısını ve çıkış kodlarını verir.
 
 ## nomux'u anlamak
 
 - [Kavramlar](/docs/tr/concepts/overview/) sayfası nomux'un ne olduğunu ve parçalarının nasıl bir araya geldiğini anlatır.
-- [Nasıl çalışır](/docs/tr/concepts/how-it-works/) sayfası üç process'i ve daemon durduğunda Session'ın neden yaşadığını anlatır.
+- [Nasıl çalışır](/docs/tr/concepts/how-it-works/) sayfası üç process'i, attach sırasında olanları ve daemon durduğunda Session'ın neden yaşadığını anlatır.
+- [Extension'lar](/docs/tr/concepts/extensions/) sayfası extension'ın ne olduğunu ve extension SDK'sında bugün neler bulunduğunu anlatır.
 - [Performans hedefleri](/docs/tr/reference/performance/) hedefleri ve bugüne kadar ölçülen değerleri listeler.
 - [Sözlük](/docs/tr/reference/glossary/) her kavramın tek adını verir. Kod, CLI ve arayüz aynı adları kullanır.
 - [Mimari kararlar](/docs/tr/reference/decisions/) sayfası karar kayıtlarının nerede durduğunu ve bir kararın nasıl değiştiğini anlatır.
