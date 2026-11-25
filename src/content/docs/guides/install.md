@@ -8,12 +8,17 @@ nomux has three binaries: `nomux` (the CLI), `nomuxd` (the daemon) and `nomux-ho
 
 ## Release status
 
-**No release exists yet. The first release is in preparation.**
-Until it is published, [build from source](#build-from-source) is the path that works.
-
-The install script and the manual download need a published release.
-These two sections describe what they do from the first release.
+The current release is [nomux 0.1.0](https://github.com/nomux-sh/nomux/releases/tag/v0.1.0).
+It is a pre-release, as each version earlier than `1.0.0` is: interfaces can change between minor versions.
 The [roadmap](/docs/project/roadmap/) shows the state of the work.
+
+There are three paths to the binaries. Use the first one that applies:
+
+1. The [install script](#install-script).
+2. A [manual download](#manual-download) with a checksum that you verify yourself.
+3. A [build from source](#build-from-source).
+
+The output on this page is the real output of version 0.1.0 on Linux x86_64. The home directory of that run is the temporary directory `/tmp/nomux-demo`.
 
 ## Supported machines
 
@@ -27,34 +32,6 @@ The [roadmap](/docs/project/roadmap/) shows the state of the work.
 The Linux binaries of a release are static. They do not use the C library of the machine.
 There is no build for Windows.
 
-## Build from source
-
-You need `git` and [rustup](https://rustup.rs). The repository pins the Rust version, and rustup installs it automatically.
-
-1. Get the source and build the binaries:
-
-   ```sh
-   git clone https://github.com/nomux-sh/nomux.git
-   cd nomux
-   cargo build --release
-   ```
-
-2. Copy the three binaries to a directory that is in `PATH`. Keep them in the same directory:
-
-   ```sh
-   mkdir -p ~/.local/bin
-   cp target/release/nomux target/release/nomuxd target/release/nomux-holder ~/.local/bin/
-   ```
-
-3. Make sure that the shell finds the CLI:
-
-   ```console
-   $ nomux --version
-   nomux 0.0.0
-   ```
-
-A build from `main` prints `0.0.0` until the first version has its tag.
-
 ## Install script
 
 The script does these steps:
@@ -66,9 +43,15 @@ The script does these steps:
 
 The script does not use `sudo`. It needs `curl`, `tar`, and `sha256sum` or `shasum`.
 
-```sh
-curl -fsSL https://raw.githubusercontent.com/nomux-sh/nomux/main/install.sh | sh
+```console
+$ curl -fsSL https://raw.githubusercontent.com/nomux-sh/nomux/main/install.sh | sh
+Downloading nomux-0.1.0-x86_64-unknown-linux-musl.tar.gz
+The SHA-256 checksum is correct.
+Installed nomux 0.1.0 in /tmp/nomux-demo/.local/bin: nomux nomuxd nomux-holder
+/tmp/nomux-demo/.local/bin is not in PATH. Add it to PATH to run nomux by name.
 ```
+
+The last line shows only if the directory is not in `PATH`. [Where the files are](#where-the-files-are) has the line for the startup file of your shell.
 
 | Option | Default | Function |
 |---|---|---|
@@ -77,14 +60,19 @@ curl -fsSL https://raw.githubusercontent.com/nomux-sh/nomux/main/install.sh | sh
 
 To give an option, add `-s --` after `sh`:
 
-```sh
-curl -fsSL https://raw.githubusercontent.com/nomux-sh/nomux/main/install.sh | sh -s -- --version 0.1.0 --dir ~/bin
+```console
+$ curl -fsSL https://raw.githubusercontent.com/nomux-sh/nomux/main/install.sh | sh -s -- --version 0.1.0 --dir ~/bin
+Downloading nomux-0.1.0-x86_64-unknown-linux-musl.tar.gz
+The SHA-256 checksum is correct.
+Installed nomux 0.1.0 in /tmp/nomux-demo/bin: nomux nomuxd nomux-holder
+/tmp/nomux-demo/bin is not in PATH. Add it to PATH to run nomux by name.
 ```
 
-Today the script stops with this message, because there is no release:
+Make sure that the shell finds the CLI:
 
-```text
-install.sh: error: Found no release at https://api.github.com/repos/nomux-sh/nomux/releases?per_page=100
+```console
+$ nomux --version
+nomux 0.1.0
 ```
 
 ## Manual download
@@ -108,8 +96,9 @@ An archive contains the three binaries, the README and the two license files.
 
 3. Verify the checksum. The command must print the name of the archive and `OK`. If it does not, do not continue:
 
-   ```sh
-   grep "nomux-$version-$target.tar.gz" SHA256SUMS | sha256sum --check
+   ```console
+   $ grep "nomux-$version-$target.tar.gz" SHA256SUMS | sha256sum --check
+   nomux-0.1.0-x86_64-unknown-linux-musl.tar.gz: OK
    ```
 
    On macOS, replace `sha256sum --check` with `shasum -a 256 --check`.
@@ -122,7 +111,31 @@ An archive contains the three binaries, the README and the two license files.
    cp "nomux-$version-$target/nomux" "nomux-$version-$target/nomuxd" "nomux-$version-$target/nomux-holder" ~/.local/bin/
    ```
 
-The binaries are not signed and not notarized.
+The checksum shows that the download is complete and is the file of the release. It does not show who made the release.
+The binaries are not signed and not notarized. The [README of `nomux`](https://github.com/nomux-sh/nomux#install) says that code signing and notarization start with the first stable release.
+
+## Build from source
+
+You need `git` and [rustup](https://rustup.rs). The repository pins the Rust version, and rustup installs it automatically.
+
+1. Get the source of the release and build the binaries:
+
+   ```sh
+   git clone --branch v0.1.0 https://github.com/nomux-sh/nomux.git
+   cd nomux
+   cargo build --release
+   ```
+
+   Without `--branch v0.1.0`, you build the `main` branch, which can be newer than the release.
+
+2. Copy the three binaries to a directory that is in `PATH`. Keep them in the same directory:
+
+   ```sh
+   mkdir -p ~/.local/bin
+   cp target/release/nomux target/release/nomuxd target/release/nomux-holder ~/.local/bin/
+   ```
+
+A build on Linux uses the C library of the machine. It is not the static binary of the release archive.
 
 ## Where the files are
 

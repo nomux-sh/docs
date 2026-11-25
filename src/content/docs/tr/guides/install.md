@@ -8,12 +8,17 @@ Hangisinin ne iş yaptığını [Nasıl çalışır](/docs/tr/concepts/how-it-wo
 
 ## Sürüm durumu
 
-**Henüz yayınlanmış bir sürüm yok. İlk sürüm hazırlanıyor.**
-O yayınlanana kadar çalışan tek yol [kaynaktan derlemek](#kaynaktan-derleme).
-
-Kurulum script'i de elle indirme de yayınlanmış bir sürüme ihtiyaç duyar.
-Aşağıdaki iki bölüm, ilk sürümle birlikte nasıl çalışacaklarını anlatır.
+Güncel sürüm [nomux 0.1.0](https://github.com/nomux-sh/nomux/releases/tag/v0.1.0).
+`1.0.0` öncesindeki her sürüm gibi bu da bir ön sürümdür: minor sürümler arasında API, CLI ve protokol değişebilir.
 İşin ne durumda olduğunu [yol haritasından](/docs/tr/project/roadmap/) takip edebilirsiniz.
+
+Binary'leri edinmenin üç yolu var. Size uyan ilkini kullanın:
+
+1. [Kurulum script'i](#kurulum-scripti).
+2. Checksum'ı kendiniz doğruladığınız [elle indirme](#elle-indirme).
+3. [Kaynaktan derleme](#kaynaktan-derleme).
+
+Bu sayfadaki çıktılar, 0.1.0 sürümünün Linux x86_64 üzerindeki gerçek çıktısıdır. O çalıştırmada home dizini geçici bir dizindi: `/tmp/nomux-demo`.
 
 ## Desteklenen makineler
 
@@ -27,34 +32,6 @@ Aşağıdaki iki bölüm, ilk sürümle birlikte nasıl çalışacaklarını anl
 Sürümlerdeki Linux binary'leri statiktir; makinedeki C kütüphanesini kullanmazlar.
 Windows için build yoktur.
 
-## Kaynaktan derleme
-
-`git` ve [rustup](https://rustup.rs) yeterli. Repo Rust sürümünü sabitler; rustup doğru sürümü kendisi kurar.
-
-1. Kaynağı alın ve binary'leri derleyin:
-
-   ```sh
-   git clone https://github.com/nomux-sh/nomux.git
-   cd nomux
-   cargo build --release
-   ```
-
-2. Üç binary'yi `PATH`'inizdeki bir dizine kopyalayın. Üçü de aynı dizinde dursun:
-
-   ```sh
-   mkdir -p ~/.local/bin
-   cp target/release/nomux target/release/nomuxd target/release/nomux-holder ~/.local/bin/
-   ```
-
-3. Shell'in CLI'ı bulduğunu doğrulayın:
-
-   ```console
-   $ nomux --version
-   nomux 0.0.0
-   ```
-
-İlk sürüm etiketlenene kadar `main`'den alınan build `0.0.0` yazdırır.
-
 ## Kurulum script'i
 
 Script sırasıyla şunları yapar:
@@ -66,9 +43,15 @@ Script sırasıyla şunları yapar:
 
 Script `sudo` kullanmaz. `curl`, `tar` ve `sha256sum` ya da `shasum` komutlarına ihtiyaç duyar.
 
-```sh
-curl -fsSL https://raw.githubusercontent.com/nomux-sh/nomux/main/install.sh | sh
+```console
+$ curl -fsSL https://raw.githubusercontent.com/nomux-sh/nomux/main/install.sh | sh
+Downloading nomux-0.1.0-x86_64-unknown-linux-musl.tar.gz
+The SHA-256 checksum is correct.
+Installed nomux 0.1.0 in /tmp/nomux-demo/.local/bin: nomux nomuxd nomux-holder
+/tmp/nomux-demo/.local/bin is not in PATH. Add it to PATH to run nomux by name.
 ```
+
+Son satır yalnızca dizin `PATH`'te değilse çıkar. Shell'inizin başlangıç dosyasına eklemeniz gereken satır [Dosyalar nerede durur](#dosyalar-nerede-durur) bölümünde.
 
 | Seçenek | Varsayılan | Ne yapar |
 |---|---|---|
@@ -77,14 +60,19 @@ curl -fsSL https://raw.githubusercontent.com/nomux-sh/nomux/main/install.sh | sh
 
 Seçenek vermek için `sh`'den sonra `-s --` ekleyin:
 
-```sh
-curl -fsSL https://raw.githubusercontent.com/nomux-sh/nomux/main/install.sh | sh -s -- --version 0.1.0 --dir ~/bin
+```console
+$ curl -fsSL https://raw.githubusercontent.com/nomux-sh/nomux/main/install.sh | sh -s -- --version 0.1.0 --dir ~/bin
+Downloading nomux-0.1.0-x86_64-unknown-linux-musl.tar.gz
+The SHA-256 checksum is correct.
+Installed nomux 0.1.0 in /tmp/nomux-demo/bin: nomux nomuxd nomux-holder
+/tmp/nomux-demo/bin is not in PATH. Add it to PATH to run nomux by name.
 ```
 
-Henüz sürüm olmadığı için script bugün şu mesajla durur:
+Shell'in CLI'ı bulduğunu doğrulayın:
 
-```text
-install.sh: error: Found no release at https://api.github.com/repos/nomux-sh/nomux/releases?per_page=100
+```console
+$ nomux --version
+nomux 0.1.0
 ```
 
 ## Elle indirme
@@ -108,8 +96,9 @@ Arşivin içinde üç binary, README ve iki lisans dosyası vardır.
 
 3. Checksum'ı doğrulayın. Komut arşivin adını ve `OK` yazdırmalı; yazdırmıyorsa devam etmeyin:
 
-   ```sh
-   grep "nomux-$version-$target.tar.gz" SHA256SUMS | sha256sum --check
+   ```console
+   $ grep "nomux-$version-$target.tar.gz" SHA256SUMS | sha256sum --check
+   nomux-0.1.0-x86_64-unknown-linux-musl.tar.gz: OK
    ```
 
    macOS'te `sha256sum --check` yerine `shasum -a 256 --check` kullanın.
@@ -122,7 +111,31 @@ Arşivin içinde üç binary, README ve iki lisans dosyası vardır.
    cp "nomux-$version-$target/nomux" "nomux-$version-$target/nomuxd" "nomux-$version-$target/nomux-holder" ~/.local/bin/
    ```
 
-Binary'ler imzalı değildir, notarize da edilmemiştir.
+Checksum, indirdiğiniz dosyanın eksiksiz olduğunu ve release'teki dosyayla aynı olduğunu gösterir; release'i kimin hazırladığını göstermez.
+Binary'ler imzalı değildir, notarize da edilmemiştir. [`nomux` README'sine](https://github.com/nomux-sh/nomux#install) göre kod imzalama ve notarization ilk kararlı sürümle başlayacak.
+
+## Kaynaktan derleme
+
+`git` ve [rustup](https://rustup.rs) yeterli. Repo Rust sürümünü sabitler; rustup doğru sürümü kendisi kurar.
+
+1. Sürümün kaynağını alın ve binary'leri derleyin:
+
+   ```sh
+   git clone --branch v0.1.0 https://github.com/nomux-sh/nomux.git
+   cd nomux
+   cargo build --release
+   ```
+
+   `--branch v0.1.0` vermezseniz `main` branch'ini derlersiniz; o da sürümden daha yeni olabilir.
+
+2. Üç binary'yi `PATH`'inizdeki bir dizine kopyalayın. Üçü de aynı dizinde dursun:
+
+   ```sh
+   mkdir -p ~/.local/bin
+   cp target/release/nomux target/release/nomuxd target/release/nomux-holder ~/.local/bin/
+   ```
+
+Linux'ta kendi derlediğiniz binary makinenin C kütüphanesini kullanır; sürüm arşivindeki statik binary ile aynı değildir.
 
 ## Dosyalar nerede durur
 
