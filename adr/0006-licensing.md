@@ -81,6 +81,8 @@ We did not select it. The project uses the DCO only. No other reason is recorded
 
 ## Open questions
 
+The stage identifiers (M1 to M10) come from the [roadmap](../src/content/docs/project/roadmap.md).
+
 - The license of gmux is MIT according to its README only. Examine the license file before code reuse. Owner: the person who wants to use the code.
-- The text of the trademark policy is not written. Owner: milestone M10.
+- The text of the trademark policy is not written. Owner: stage M10.
 - The license of each tmux plugin in the "other tmux plugins" group must be examined one by one before code reuse. Owner: the person who wants to use the code.

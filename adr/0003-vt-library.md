@@ -3,7 +3,7 @@
 - Status: Proposed
 - Date: 2026-11-25
 
-The decision is pending. The benchmark in milestone M1 gives the numbers for the decision.
+The decision is pending. The benchmark in stage M1 of the [roadmap](../src/content/docs/project/roadmap.md) gives the numbers for the decision.
 This record lists the candidates and the criteria. It does not select a candidate.
 
 ## Context
@@ -41,12 +41,12 @@ The benchmark compares the candidates on three criteria:
 | Memory | Memory of the terminal state for each Session, against the holder target of less than 3 MB. |
 | Correctness | Results of terminal conformance tests and of scenarios with real TUI programs. |
 
-The numbers decide. The benchmark is the first work item of milestone M1 (week 1).
+The numbers decide. The benchmark is the first work item of stage M1.
 When the benchmark is complete, this record gets the results, the selected candidate and the status `Accepted`.
 
 ## Consequences
 
-- Work on the holder that depends on the screen state cannot go past week 1 of milestone M1 without this decision.
+- Work on the holder that depends on the screen state cannot continue in stage M1 without this decision.
 - The VT parser gets fuzz tests and golden snapshot tests, whichever candidate we select.
 - If the selected candidate does not support a required feature, nomux must add the feature or send it upstream.
 
@@ -57,8 +57,8 @@ No other alternative is recorded.
 
 ## Open questions
 
-- Which candidate does nomux use? Owner: milestone M1, week 1.
-- Which tools and inputs does the benchmark use for each criterion? The planned measurement tools include `vtebench` for speed, `heaptrack` or `dhat` for memory, and `vttest` and `esctest` for correctness. The final list is not set. Owner: milestone M1.
-- Is the license of each candidate, in the version that we measure, on the permitted list? Owner: the benchmark work in milestone M1.
-- Does each candidate support kitty graphics and sixel, or must nomux add them? Owner: the benchmark work in milestone M1.
-- Does the mobile client core use the same library for its VT state? Owner: milestone M9.
+- Which candidate does nomux use? Owner: stage M1, first work item.
+- Which tools and inputs does the benchmark use for each criterion? The planned measurement tools include `vtebench` for speed, `heaptrack` or `dhat` for memory, and `vttest` and `esctest` for correctness. The final list is not set. Owner: stage M1.
+- Is the license of each candidate, in the version that we measure, on the permitted list? Owner: the benchmark work in stage M1.
+- Does each candidate support kitty graphics and sixel, or must nomux add them? Owner: the benchmark work in stage M1.
+- Does the mobile client core use the same library for its VT state? Owner: stage M9.

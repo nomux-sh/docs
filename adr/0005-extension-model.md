@@ -79,8 +79,10 @@ We did not select it. With declarative snapshots, the core controls the drawing 
 
 ## Open questions
 
-- The UI extension API is not frozen. It is frozen only after the official extensions have tested it. Owner: milestone M7.
-- The content of the WIT interface and of the protobuf interface for daemon parts is not set. Owner: the `extension-api` repository, milestone M3 (first version) and milestone M7 (final version).
+The stage identifiers (M1 to M10) come from the [roadmap](../src/content/docs/project/roadmap.md).
+
+- The UI extension API is not frozen. It is frozen only after the official extensions have tested it. Owner: stage M7.
+- The content of the WIT interface and of the protobuf interface for daemon parts is not set. Owner: the `extension-api` repository, stage M3 (first version) and stage M7 (final version).
 - The full list of permission names is not set. Only file system paths, process, network and `sessions:read` are named. Owner: the `extension-api` repository.
-- The sandbox for daemon parts on macOS is not set. Only Landlock on Linux is named. Owner: milestone M10 security audit.
-- The review process for extensions that are not official is not set. Owner: the `registry` repository, milestone M7.
+- The sandbox for daemon parts on macOS is not set. Only Landlock on Linux is named. Owner: stage M10 security audit.
+- The review process for extensions that are not official is not set. Owner: the `registry` repository, stage M7.

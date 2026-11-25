@@ -55,5 +55,7 @@ We did not select it because the desktop client must run on Linux, macOS and Win
 
 ## Open questions
 
-- Does the terminal element start from `sheprd` (`penso/sheprd`, Apache-2.0)? `sheprd` is a native terminal, Worktree and agent client in Rust and GPUI. The evaluation is not complete. Owner: milestone M5.
-- When and how often do we move the pinned `gpui` version? There is no policy. Owner: milestone M5.
+The stage identifiers (M1 to M10) come from the [roadmap](../src/content/docs/project/roadmap.md).
+
+- Does the terminal element start from `sheprd` (`penso/sheprd`, Apache-2.0)? `sheprd` is a native terminal, Worktree and agent client in Rust and GPUI. The evaluation is not complete. Owner: stage M5.
+- When and how often do we move the pinned `gpui` version? There is no policy. Owner: stage M5.

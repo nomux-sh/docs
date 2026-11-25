@@ -28,5 +28,6 @@ For each alternative: what it is, and why we did not select it.
 
 ## Open questions
 
-Questions that this record does not decide. Give the milestone or the person that owns each question.
+Questions that this record does not decide. Give the roadmap stage or the person that owns each question.
+If you name a stage, link to the roadmap (../src/content/docs/project/roadmap.md).
 Remove this section if there are no open questions.
