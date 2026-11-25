@@ -29,7 +29,7 @@ The control services are `Handshake`, `Host`, `Project`, `Worktree`, `Session`, 
 
 **Terminal data uses binary frames with a fixed header.**
 The frames are not protobuf. The header contains the Session, the epoch, the sequence number, the type and the length.
-The format is specific to nomux and is read without a copy (`zerocopy`).
+The format is specific to nomux. The header has a fixed layout, thus a reader gets the fields without a copy of the payload. The [frame specification](https://github.com/nomux-sh/proto/blob/main/spec/frame.md) gives the layout.
 The frame types are `Output`, `ScreenSnapshot`, `ScreenDiff`, `Ack`, `Credit` and `Input`.
 The daemon pushes output without a request. After a client connects again, the daemon sends only the missing part.
 
