@@ -19,5 +19,6 @@ The index is the one source of this list. This site does not copy it.
 - A new record has the status `Proposed`. The discussion occurs in its pull request.
 - When the maintainers agree, the status becomes `Accepted` or `Rejected`.
 - The decision of an accepted record does not change. If the decision changes, a new record replaces the old one, and the old record names the new one.
+- An accepted record is not rewritten. If new facts change how a decision is applied and the decision stays, the record gets a dated amendment section.
 
 The full process and the meaning of each status are in the [ADR index](https://github.com/nomux-sh/docs/blob/main/adr/README.md#process).

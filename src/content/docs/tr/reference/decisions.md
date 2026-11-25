@@ -19,5 +19,6 @@ Bu listenin tek kaynağı o dizindir; site ayrıca bir kopyasını tutmaz.
 - Yeni kayıt `Proposed` (önerildi) durumuyla açılır. Tartışma, kaydın pull request'inde yürür.
 - Maintainer'lar anlaşınca durum `Accepted` (kabul edildi) ya da `Rejected` (reddedildi) olur.
 - Kabul edilmiş bir kaydın kararı sonradan değiştirilmez. Karar değişecekse eskisinin yerine yeni bir kayıt yazılır ve eski kayıt yenisine işaret eder.
+- Kabul edilmiş bir kayıt baştan yazılmaz. Karar aynı kalıyor ama yeni bilgiler uygulanışını değiştiriyorsa kayda tarihli bir ek (amendment) bölümü eklenir.
 
 Sürecin tamamı ve durum değerlerinin anlamı [ADR dizininde](https://github.com/nomux-sh/docs/blob/main/adr/README.md#process) yazar.

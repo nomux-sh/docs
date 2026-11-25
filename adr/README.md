@@ -44,10 +44,21 @@ The ADRs use the terms from the [glossary](../src/content/docs/reference/glossar
 - One ADR records one decision.
 - Do not change the decision of an accepted ADR. If the decision changes, write a new ADR and set the status of the old ADR to `Superseded by ADR-NNNN`.
 - You can correct errors and add links in an accepted ADR.
+- Do not rewrite an accepted ADR. If new facts change how a decision is applied and the decision stays, add an amendment to the ADR.
 - If a question is not decided, write it in the "Open questions" section. Do not write a guess as a decision.
 - When an open question gets an answer, move the answer into the related section and remove the question. If the answer changes the decision, write a new ADR.
 - Keep the status in the ADR file and in the index in this file the same.
 - If an ADR names a roadmap stage (M1 to M10), link to the [roadmap](../src/content/docs/project/roadmap.md) in the same file.
+
+## Amendments
+
+An amendment is a dated section in an accepted ADR. It records a change that does not change the decision.
+
+- The title of the section is `## Amendment YYYY-MM-DD: subject`. Put it after "Alternatives considered".
+- Say which part of the decision stays, what changes and why.
+- Do not edit the text above the amendment. Where the amendment and the older text do not agree, the amendment applies.
+- Add the line `- Amended: YYYY-MM-DD` below the date line of the ADR, with the title of the section.
+- Update the "Open questions" section: remove the questions that the amendment answers and add the new ones.
 
 ## Site
 
