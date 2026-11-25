@@ -18,9 +18,36 @@ The [release guide](https://github.com/nomux-sh/.github/blob/main/RELEASING.md) 
 
 ## State today
 
-The repository skeletons are done: [`.github`](https://github.com/nomux-sh/.github), [`nomux`](https://github.com/nomux-sh/nomux), [`proto`](https://github.com/nomux-sh/proto) and [`docs`](https://github.com/nomux-sh/docs) exist, with CI and the first architecture decisions.
-The first protocol crate is published: [`nomux-proto` 0.1.0](https://crates.io/crates/nomux-proto).
-Stage M1 is in progress. The work items are the issues of the [0.1.0](https://github.com/nomux-sh/nomux/milestone/1) and [0.2.0](https://github.com/nomux-sh/nomux/milestone/2) milestones of the `nomux` repository. All other stages are planned.
+Five repositories exist, each with CI: [`.github`](https://github.com/nomux-sh/.github), [`nomux`](https://github.com/nomux-sh/nomux), [`proto`](https://github.com/nomux-sh/proto), [`extension-api`](https://github.com/nomux-sh/extension-api) and [`docs`](https://github.com/nomux-sh/docs).
+
+### Released
+
+| Component | Version | Content |
+|---|---|---|
+| [`nomux`](https://github.com/nomux-sh/nomux/releases/tag/v0.1.0) | 0.1.0 | Local Sessions with attach. The CLI starts, lists and ends Sessions, attaches a terminal to a Session and detaches it. A Session continues when the client detaches and when the daemon stops. The [install page](/docs/guides/install/) has the steps. |
+| [`nomux-proto`](https://crates.io/crates/nomux-proto) | 0.3.0 | The protocol crate of the `proto` repository. |
+| [`nomux-extension`](https://crates.io/crates/nomux-extension) | 0.1.0 | The first version of the extension SDK, from the `extension-api` repository. The [extensions page](/docs/concepts/extensions/) says what it has. |
+
+### Stage M1: what remains
+
+Stage M1 is in progress. Version 0.1.0 does not have the full stage: a Session does not continue after a restart of the Host, and an attach shows no scrollback.
+The work that remains is the open issues of the [0.2.0 milestone](https://github.com/nomux-sh/nomux/milestone/2) of the `nomux` repository:
+
+- The journal, the checkpoint and the compressed scrollback of the holder ([#9](https://github.com/nomux-sh/nomux/issues/9)).
+- The warm holder pool ([#11](https://github.com/nomux-sh/nomux/issues/11)).
+- The restore of Sessions after a restart of the Host, on demand ([#12](https://github.com/nomux-sh/nomux/issues/12)).
+- Terminal correctness: fuzz tests, golden tests and vttest ([#13](https://github.com/nomux-sh/nomux/issues/13)).
+- Performance budgets in CI ([#14](https://github.com/nomux-sh/nomux/issues/14)).
+- Six defects that are known in version 0.1.0: four in the screen state and the redraw sequence ([#24](https://github.com/nomux-sh/nomux/issues/24), [#25](https://github.com/nomux-sh/nomux/issues/25), [#27](https://github.com/nomux-sh/nomux/issues/27), [#29](https://github.com/nomux-sh/nomux/issues/29)), one in the reader of the ring buffer ([#26](https://github.com/nomux-sh/nomux/issues/26)) and one test of the attach that fails on macOS in some runs ([#33](https://github.com/nomux-sh/nomux/issues/33)).
+
+The milestone page has the current list.
+
+### Stages M2 and M3: work has started
+
+- **M2.** The work on remote Hosts has started. Its work items are the issues of the [0.3.0 milestone](https://github.com/nomux-sh/nomux/milestone/3) of the `nomux` repository. No version has a remote Host yet.
+- **M3.** The work on the extension SDK has started: `nomux-extension` 0.1.0 is published. The daemon does not start extensions yet.
+
+All other stages are planned.
 
 ## Stages
 
@@ -37,8 +64,8 @@ A state is one of these values:
 | Stage | Goal | Done when | Repositories | State |
 |---|---|---|---|---|
 | **M1** Persistent terminal core | A terminal Session continues on the Host when the client disconnects, when the daemon stops and after a restart of the Host. The CLI creates Sessions and attaches to them. | You start a Session on an SSH Host, close the laptop, open it and attach: the screen is the same. You stop `nomuxd` with `kill -9`: the Session continues. After a restart of the Host, the first screen shows in 1 second. | `nomux`, `proto` | `in progress` |
-| **M2** Remote Hosts | One command adds a remote Host through SSH and installs the binaries on it. Typing stays fast on a slow connection. | You add a new server with `nomux host add`: nomux installs the binaries and opens a Session. With 100 ms of latency and 2% packet loss, typing feels the same as on a local Host. | `nomux`, `proto` | `planned` |
-| **M3** Extension host with git and files | The daemon runs extensions as separate processes. The first official extensions supply git status and file access. The data model of Projects and Worktrees is in place. | Not defined. | `nomux`, `extension-api`, `extensions` | `planned` |
+| **M2** Remote Hosts | One command adds a remote Host through SSH and installs the binaries on it. Typing stays fast on a slow connection. | You add a new server with `nomux host add`: nomux installs the binaries and opens a Session. With 100 ms of latency and 2% packet loss, typing feels the same as on a local Host. | `nomux`, `proto` | `in progress` |
+| **M3** Extension host with git and files | The daemon runs extensions as separate processes. The first official extensions supply git status and file access. The data model of Projects and Worktrees is in place. | You install an extension from a directory. The daemon starts its daemon part at the first use and stops it when it is idle. A crash of the extension does not stop the daemon and ends no Session. The git extension reports the new status of a Worktree after a file changes, without polling. | `nomux`, `extension-api`, `extensions` | `in progress` |
 | **M4** Agent status engine and Teams | nomux shows the status of each Agent run and each Child work together with the source of the status. Agents of different tools work together in a Team. | Not defined. | `nomux`, `proto`, `extensions` | `planned` |
 | **M5** Desktop client | A native desktop client shows the Pane tree, the Tabs and the terminal. It has a theme engine and a UI language engine. | Not defined. | `desktop`, `themes`, `locales` | `planned` |
 | **M6** Agent and extension UI | The desktop client shows agents, Teams and approval requests. The official extensions get their UI: git with diff, files with an editor, processes and a browser. | Not defined. | `desktop`, `extensions` | `planned` |

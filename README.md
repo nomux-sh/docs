@@ -8,9 +8,18 @@ This repository is a part of [nomux](https://github.com/nomux-sh), a native and 
 
 In development. Versions earlier than 1.0.0 are pre-releases: interfaces can change between minor versions.
 
-The site has the user guides (install, quick start), the concepts pages, the CLI reference, the performance targets, the glossary, the roadmap, the contribution page and a page about the architecture decisions, in English and in Turkish. This repository also has eight architecture decision records and the index of reference projects. The [roadmap](https://github.com/nomux-sh/docs/blob/main/src/content/docs/project/roadmap.md) shows the order of the future work.
+The site has the user guides (install, quick start), the concepts pages (overview, how it works, extensions), the CLI reference, the performance targets, the glossary, the roadmap, the contribution page and a page about the architecture decisions, in English and in Turkish. This repository also has eight architecture decision records and the index of reference projects. The [roadmap](https://github.com/nomux-sh/docs/blob/main/src/content/docs/project/roadmap.md) shows the order of the future work.
 
 The site has no version. Each merge to `main` publishes it.
+
+## Other repositories of nomux
+
+| Repository | Content |
+|---|---|
+| [`nomux`](https://github.com/nomux-sh/nomux) | The core: the holder, the daemon, the client library and the CLI. |
+| [`proto`](https://github.com/nomux-sh/proto) | The protocol between a client and the daemon, and the `nomux-proto` crate. |
+| [`extension-api`](https://github.com/nomux-sh/extension-api) | The extension SDK: the extension protocol, the `nomux-extension` crate and the format of `extension.toml`. |
+| [`.github`](https://github.com/nomux-sh/.github) | The guides of the organization and the CI workflows that the repositories share. |
 
 ## Layout
 
