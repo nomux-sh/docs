@@ -7,6 +7,8 @@ name: PR checks
 
 on:
   pull_request:
+    # `edited` runs commitlint again when the title of the pull request changes.
+    types: [opened, edited, synchronize, reopened]
 
 permissions:
   contents: read
@@ -18,9 +20,16 @@ concurrency:
 
 jobs:
   dco:
-    name: DCO
+    name: dco
     uses: nomux-sh/.github/.github/workflows/dco.yml@main
 
   commitlint:
-    name: Commitlint
+    name: commitlint
     uses: nomux-sh/.github/.github/workflows/commitlint.yml@main
+
+  repo-lint:
+    name: repo-lint
+    uses: nomux-sh/.github/.github/workflows/repo-lint.yml@main
+    with:
+      license: docs
+      require-changelog: false

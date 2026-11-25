@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -17,7 +17,7 @@ env:
 
 jobs:
   build:
-    name: Build and link check
+    name: build
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -26,32 +26,21 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
-        with:
-          bun-version: "1.3.14"
-
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        uses: ./.github/actions/install-dependencies
 
       - name: Type check
         run: bun run check
 
-      # The build also validates internal links and anchors (starlight-links-validator).
       - name: Build the site
         run: bun run build
 
-      # Offline mode: lychee checks only the links between the built files.
-      # It makes no network requests, so the job does not fail on external outages.
+      # The options are in lychee.toml. lychee makes no network requests,
+      # so the job does not fail on an external outage.
       - name: Check links in the built site
         uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
         with:
           lycheeVersion: v0.24.2
-          args: >-
-            --offline
-            --no-progress
-            --root-dir ${{ github.workspace }}/dist
-            --index-files index.html
-            'dist/**/*.html'
+          args: "'dist/**/*.html'"
           fail: true
           failIfEmpty: true
