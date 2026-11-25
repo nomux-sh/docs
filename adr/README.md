@@ -1,0 +1,54 @@
+# Architecture decision records
+
+An architecture decision record (ADR) records one design decision of nomux: the context, the decision, the consequences and the alternatives.
+A change to the architecture of nomux starts with an ADR.
+
+The ADRs are plain Markdown and are written in English only.
+The ADRs use the terms from the [glossary](../src/content/docs/reference/glossary.md). Do not use a synonym for a glossary term.
+
+## Index
+
+| ADR | Title | Status |
+|---|---|---|
+| [0001](0001-session-holder-model.md) | Session holder model | Accepted |
+| [0002](0002-protocol-protobuf-and-binary-frames.md) | Protocol: protobuf and binary frames | Accepted |
+| [0003](0003-vt-library.md) | VT library | Proposed |
+| [0004](0004-gpui-desktop.md) | GPUI for the desktop client | Accepted |
+| [0005](0005-extension-model.md) | Extension model | Accepted |
+| [0006](0006-licensing.md) | Licensing | Accepted |
+| [0007](0007-status-source-order.md) | Status source order | Accepted |
+
+## Status values
+
+| Status | Meaning |
+|---|---|
+| Proposed | The record is open for discussion. The decision is not made. |
+| Accepted | The decision is made and is in effect. |
+| Rejected | The proposal was discussed and not accepted. The record stays in the repository. |
+| Deprecated | The decision is no longer in effect and no record replaces it. |
+| Superseded | A newer record replaces this record. Write `Superseded by ADR-NNNN` in the status line. |
+
+## Process
+
+1. Find the next free number. Numbers have four digits and are not used again.
+2. Copy [`template.md`](template.md) to `adr/NNNN-short-title.md`. Use lowercase words and hyphens in the file name.
+3. Fill in all sections. Set the status to `Proposed`.
+4. Add a row to the index in this file.
+5. Add a row to the two site index pages: `src/content/docs/reference/decisions.md` and `src/content/docs/tr/reference/decisions.md`.
+6. Open a pull request. The discussion occurs in the pull request.
+7. When the maintainers agree, set the status to `Accepted` or `Rejected` and merge the pull request.
+
+## Rules
+
+- One ADR records one decision.
+- Do not change the decision of an accepted ADR. If the decision changes, write a new ADR and set the status of the old ADR to `Superseded by ADR-NNNN`.
+- You can correct errors and add links in an accepted ADR.
+- If a question is not decided, write it in the "Open questions" section. Do not write a guess as a decision.
+- When an open question gets an answer, move the answer into the related section and remove the question. If the answer changes the decision, write a new ADR.
+- Keep the status in the ADR file, in the index in this file and in the two site index pages the same.
+
+## Site integration
+
+The site shows an index of the ADRs with links to the files in this directory.
+The site does not show the full text of the ADRs.
+Full site integration is deferred. It is owned by milestone M10, when the documentation site gets its full content.
