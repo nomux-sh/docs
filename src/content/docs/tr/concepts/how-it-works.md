@@ -1,10 +1,10 @@
 ---
 title: Nasıl çalışır
-description: Üç nomux process'i, attach sırasında olanlar, daemon durduğunda Session'ın neden yaşadığı, nomux'un bir agent'ın durumunu nasıl bildiği, yeni bir Session'ın nasıl hızlı açıldığı, Session'ın ne aldığı ve ne kullandığı, Host yeniden başladıktan sonra neyin kaldığı ve neyin nerede tutulduğu.
+description: Üç nomux process'i, attach sırasında olanlar, daemon durduğunda Session'ın neden yaşadığı, nomux'un bir agent'ın durumunu nasıl bildiği, yeni bir Session'ın nasıl hızlı açıldığı, Session'ın ne aldığı ve ne kullandığı, daemon'un bir agent'ı ne zaman hazırda beklettiği, Host yeniden başladıktan sonra neyin kaldığı ve neyin nerede tutulduğu.
 ---
 
 nomux bir Host'ta üç tür process çalıştırır: istemci, daemon ve holder.
-Bu sayfa nomux 0.4.0'da var olanı anlatır. Tasarımın tamamı için [kavramlara genel bakış](/docs/tr/concepts/overview/) sayfasına bakın.
+Bu sayfa nomux 0.5.0'da var olanı anlatır. Tasarımın tamamı için [kavramlara genel bakış](/docs/tr/concepts/overview/) sayfasına bakın.
 
 ## Üç process
 
@@ -71,12 +71,12 @@ Holder tek thread'li küçük bir process'tir. Komut bir şey yazmadığı süre
 
 ## Attach sırasında ne olur
 
-`nomux attach` ve `nomux new --attach`, terminalinizi bir Session'ın terminaline bağlar. [Hızlı başlangıç](/docs/tr/guides/quick-start/#yeniden-attach-olmak) bunu gerçek komutlarla gösterir.
+`nomux attach` ve `nomux new --attach`, terminalinizi bir Session'ın terminaline bağlar. Session'ı bir [hedefle](/docs/tr/guides/sessions/) belirtirsiniz: kimliği, adı ya da ikisinden birinin başı. [Hızlı başlangıç](/docs/tr/guides/quick-start/#yeniden-attach-olmak) bunu gerçek komutlarla gösterir.
 
 1. **Pencere boyutu.** CLI terminalinizin boyutunu gönderir, Session o boyutu alır.
 2. **Ekran.** Daemon holder'dan o anki ekranı ister. Holder, bu ekranı boş bir terminale çizen bir byte dizisi verir. CLI bu diziyi terminalinize yazar. Böylece Session'ı şu anki hâliyle görürsünüz; programlar ekranı saatler önce çizmiş olsa bile.
 3. **Çıktı akışı.** Ekrandan sonra istemci, komutun yazdığı her byte'ı sırasıyla alır. Ekran ile akış birbirine tam oturur: arada eksik byte da olmaz, iki kez gelen byte da.
-4. **Tuşlar.** Bastığınız her tuş CLI'dan daemon'a, oradan holder'a ve PTY'ye gider.
+4. **Tuşlar.** Bastığınız her tuş CLI'dan daemon'a, oradan holder'a ve PTY'ye gider. Yalnızca bir [prefix tuşundan](/docs/tr/guides/sessions/) (varsayılan `Ctrl-a` ya da `Ctrl-\`) sonraki tuşlar nomux'a aittir: `d` detach eder.
 
 Holder istemcileri tanımaz ve hiçbirini beklemez. Çıktının son 256 KiB'ını bellekte tutar; daemon da her istemci için 64 KiB'lık tek bir buffer kullanır.
 **Yavaş kalan istemci taze bir ekran alır.** İstemci çıktıyı komutun yazdığından yavaş alıyorsa ve sıradaki çıktı artık holder'ın belleğinde değilse, daemon o anki ekranı yeniden gönderir ve oradan devam eder. O istemci aradaki byte'ları değil, en güncel ekranı görür.
@@ -136,8 +136,8 @@ Daemon altı kaynağa sabit bir sırayla bakar. Bir öğeyi bildiren ilk kaynak,
 | 5 | Prompt işaretleri | Shell'in prompt işaretleri: bir komut çalışıyor ya da giriş satırı bekliyor. Bu bir tahmindir |
 | 6 | Ön plandaki program | Session'ın komutu olmayan bir program terminali tutuyor. Bu bir tahmindir |
 
-- `nomux status` her Session için bir satır yazdırır; tahminin yanında `(guess)` yazar. `nomux status --tree` Alt işleri de ekler. `nomux agent explain <id>` her kaynağı bu sırayla, ne söylediğiyle birlikte yazdırır. `nomux events --follow` her değişikliği olduğu anda yazdırır.
-- Session'ın durumunu en acil durum belirler: önce `needs you`, sonra görmediğiniz bir `error` ya da `done`, sonra `working`. Attach, Session'ın sonuçlarını görüldü olarak işaretler.
+- `nomux status` her Session için bir satır yazdırır; tahminin yanında `(guess)` yazar. `nomux status --tree` Alt işleri ve altındaki en acil durumla birlikte [Grupları ve Projeleri](/docs/tr/guides/projects-and-groups/) de ekler. `nomux agent explain <hedef>` her kaynağı bu sırayla, ne söylediğiyle birlikte yazdırır. `nomux events -f` her değişikliği olduğu anda yazdırır.
+- Session'ın, bir Grubun ve bir Projenin durumunu en acil durum belirler: önce `needs you`, sonra görmediğiniz bir `error` ya da `done`, sonra `working`. Attach, Session'ın sonuçlarını görüldü olarak işaretler.
 - Process'i olmayan Session'da iş çalışmaz. Session uykuya geçince `working` ve `needs you` durumları, "session restore" kaynağıyla `done` olur. Biten bir Session'ın son Agent çalışması, yani **saklanan çalışma**, daemon Session'ı silene kadar kalır. Daemon en fazla 64 saklanan çalışma tutar.
 - Daemon durumu diske yazmaz. Daemon yeniden başladığında program raporlarını holder'lardan yeniden okur. Öz bildirimler, adapter'ların raporları, durumda geçen süre ve görüldü bilgisi ile olaylar gider.
 
@@ -156,8 +156,8 @@ Yeni bir Session 10 ms'den kısa sürede açılmalıdır; başlangıç dosyalar�
 - Havuz, bir istemcinin ilk isteğinde başlar. İstek almayan bir daemon havuzda holder çalıştırmaz.
 - Yeni Session açılmadan 10 dakika geçerse havuz boşalır. Havuzu `config.toml` içindeki `pool.size` (0 ile 8 arası) ve `pool.idle_time` değiştirir. 0 olursa havuz kapalıdır.
 - Havuzdaki holder bir Session değildir. `nomux ls` onu göstermez; state dizini ve journal'ı yoktur. Standart girdisi daemon'dan gelen bir pipe'tır: daemon `kill -9` ile bile sonlansa havuzdaki holder ve shell'i sonlanır. Yeni bir daemon, önceki daemon'un havuzdaki holder'ını almaz.
-- Session'ın çalışma dizini home dizini değilse daemon shell'e ` cd '<dizin>'` yazar. Bu satır ekranda ve journal'da görünür.
-- Komutlu bir Session her zaman yeni bir holder alır. Kullanıcının shell'i `sh`, `bash`, `zsh`, `dash`, `ksh`, `mksh` ya da `fish` değilse havuz kapalıdır.
+- Session'ın çalışma dizini home dizini değilse shell, ilk prompt'tan önce o dizine geçer; terminale hiçbir şey yazılmaz. Bu `bash`, `zsh` ve `fish` için geçerlidir: daemon onları, dizini holder'ın named pipe'ından okuyan bir nomux başlangıç dosyasıyla başlatır. Başka bir shell'de ve home dışındaki bir dizinde açılan Session yeni bir holder alır.
+- Komutlu bir Session her zaman yeni bir holder alır. Kullanıcının shell'i `sh`, `bash`, `zsh`, `dash`, `ksh`, `mksh` ya da `fish` değilse ve `sessions.memory_limit` ayarlıyken havuz kapalıdır.
 - Havuzdaki holder ve shell'i beklerken bellek kullanır: holder musl build'inde yaklaşık 1 MB, shell de kendi belleğini.
 
 [Holder havuzu](/docs/tr/guides/holder-pool/) rehberi havuzu gerçek komutlarla gösterir.
@@ -188,9 +188,19 @@ Ayrıntılar [Session ortamı](/docs/tr/guides/session-environment/) rehberinde.
 - Daemon yalnızca bir istemci isteyince ölçer. Zamanlayıcısı yoktur ve iki istek arasında değer tutmaz; boştaki daemon hiç CPU süresi kullanmaz.
 - Process'i olmayan Session'ın değeri yoktur.
 - Holder'ın process ağacından çıkmış bir process, örneğin kendini daemon yapan bir program, sayılmaz.
-- nomux bu sürümde belleği gösterir, bellek için sınır koymaz.
+- `sessions.memory_limit` bir Session'ın belleğini sınırlar. systemd kullanıcı yöneticisi ve sürüm 2 control group'ları olan bir Linux'ta limiti çekirdek uygular. Başka host'larda limit yalnızca hazırda bekletmenin eşiğidir.
 
 İki ölçüyü [Session belleği](/docs/tr/guides/session-memory/) rehberi açıklar.
+
+## Hazırda bekletme
+
+Boşta duran bir agent Session'ı boşuna bellek tutar. Daemon agent'ı durdurup Session'ı saklayabilir: çıktısını, son Agent çalışmasını ve adapter'ının bildirdiği devam komutunu. Session o zaman hazırda bekler ve `nomux ls` onu `hibernated` olarak gösterir. `nomux attach` ya da `nomux wake` devam komutunu yeniden başlatır.
+
+- Bir Session ancak şu koşullarda hazırda bekler: adapter'ı bir devam komutu vermiştir, hiçbir şey çalışmıyordur ve hiçbir şey sizi beklemiyordur, hiçbir istemci onu göstermiyordur ve onu sabitlememişsinizdir. Çalışan ya da bir izin, bir soru veya bir oturum açma bekleyen Session hiçbir zaman hazırda beklemez.
+- Tetikleyiciler canlı agent Session'larının sayısı (varsayılan 12), bir bellek eşiği ve Linux'ta Host'un bellek baskısıdır.
+- Tetikleyicileri daemon'un tek bir görevi uygular. Yoklama yapmaz: boştaki daemon hiç CPU süresi kullanmaz.
+
+[Hazırda bekletme ve bellek limiti](/docs/tr/guides/hibernation/) rehberinde komutlar, ayarlar ve platform farkları var.
 
 ## Uzun home dizini
 
@@ -229,29 +239,30 @@ Holder `SIGKILL` ile öldürüldüğünde ya da çöktüğünde de aynısı olur
 | `pid`, `sock`, `ready` | `~/.nomux/run/<session kimliği>/` | Tek bir holder'ın dosyaları. Holder sonlanınca bunları siler |
 | `pid`, `sock`, `ready` | `~/.nomux/run/<session kimliği>.pool/` | Havuzdaki bir holder'ın dosyaları. Bir Session holder'ı alınca dizinin adı düz session kimliği olur |
 | Soket bağlantısı | `/tmp/nomux-<hash>` | Yalnızca uzun bir home dizininde. Kaybolursa nomux yeniden oluşturur |
-| `session`, `restore-policy`, `journal/` | Linux'ta `~/.local/state/nomux/sessions/<session kimliği>/`, macOS'te `~/Library/Application Support/nomux/sessions/<session kimliği>/` | Bir Session'ın tanımı, geri yükleme politikası ve journal'ı. Yeniden başlatmadan sonra da kalırlar; uykudaki Session'a `nomux kill` yapılana ya da biten Session'ın saklama süresi dolana kadar |
+| `session`, `restore-policy`, `name`, `hibernation`, `pinned`, `holder-panic`, `journal/` | Linux'ta `~/.local/state/nomux/sessions/<session kimliği>/`, macOS'te `~/Library/Application Support/nomux/sessions/<session kimliği>/` | Bir Session'ın tanımı, geri yükleme politikası, adı, hazırda bekletme kaydı, sabitlemesi ve journal'ı. Yalnızca geçerli olan dosyalar bulunur: adı olmayan Session'da `name` yoktur, `holder-panic` ancak holder bir hatayla düştükten sonra oluşur. Yeniden başlatmadan sonra da kalırlar; uykudaki Session'a `nomux kill` yapılana ya da biten Session'ın saklama süresi dolana kadar |
+| `workspace.json` | Linux'ta `~/.local/state/nomux/`, macOS'te `~/Library/Application Support/nomux/` | Host'taki Gruplar ve Projeler: [Projeler ve Gruplar](/docs/tr/guides/projects-and-groups/). Daemon onu başlarken okur |
 | Kurulu extension'lar | Linux'ta `~/.local/share/nomux/extensions/`, macOS'te `~/Library/Application Support/nomux/extensions/` | `nomux ext rm`'e kadar |
 | Bir aracın kurulu hook'larının kaydı | Linux'ta `~/.local/share/nomux/hooks/<araç>/`, macOS'te `~/Library/Application Support/nomux/hooks/<araç>/` | Kaydı `nomux hooks install <araç> --apply` yazar. Yeniden başlatmadan sonra da kalır; `nomux hooks uninstall <araç>` onu okur |
-| Uzak Host'lar, yeni Session'ların geri yükleme politikası, saklama süresi, holder havuzunun anahtarları | Linux'ta `~/.config/nomux/config.toml`, macOS'te `~/Library/Application Support/nomux/config.toml` | Dosyayı siz değiştirene kadar. Dosyayı `nomux host add` yazar |
+| Uzak Host'lar, yeni Session'ların geri yükleme politikası, saklama süresi, holder havuzunun anahtarları, bellek limitleri, hazırda bekletme ayarları ve bir attach'in prefix tuşları | Linux'ta `~/.config/nomux/config.toml`, macOS'te `~/Library/Application Support/nomux/config.toml` | Dosyayı siz değiştirene kadar. Dosyayı `nomux host add` yazar. Daemon onu başlarken okur |
 
-Aşağıda, geri yüklenmiş bir Session'ın state dizini var. Çalıştırmada önce bütün nomux process'leri, yeniden başlatmanın yaptığı gibi `kill -9` ile durduruldu, ardından `nomux start pieithls` çalıştırıldı:
+Aşağıda, geri yüklenmiş bir Session'ın state dizini var. Çalıştırmada önce bütün nomux process'leri, yeniden başlatmanın yaptığı gibi `kill -9` ile durduruldu, ardından `nomux start mvbu4p5p` çalıştırıldı:
 
 ```console
-$ ls -A .local/state/nomux/sessions/pieithls
+$ ls -A .local/state/nomux/sessions/mvbu4p5p
 journal
 session
-$ ls -A .local/state/nomux/sessions/pieithls/journal
+$ ls -A .local/state/nomux/sessions/mvbu4p5p/journal
 00000001-0000000000000000.journal
 00000002-0000000000000000.journal
-$ cat .local/state/nomux/sessions/pieithls/session
+$ cat .local/state/nomux/sessions/mvbu4p5p/session
 nomux-session 1
 epoch 2
-started 1795690824
+started 1795705715
 rows 24
 columns 80
 restore on-focus
 profile
-directory /tmp/nomux-demo/project
+directory /home/user/project
 command sh
 argument -c
 argument echo first run; exec sleep 600
@@ -267,7 +278,6 @@ Dizinlerin modu 0700, dosyaların ve socket'lerin modu 0600'dür. Daemon ve hold
 
 - Attach, Session'ın o anki ekranını ve o andan sonraki çıktıyı gösterir; ekrandan çıkmış satırları göstermez. Onları `nomux capture` escape sequence'leriyle birlikte yazdırır.
 - Uykudaki bir Session'ı yeniden başlatan attach, eski çıktının en fazla 1 MiB'ını gösterir.
-- Detach tuşları değiştirilemez.
 - Session'ın komutu daemon'un ortam değişkenlerini, yani daemon'u başlatan shell'inkileri alır; [Ortam değişkenleri](#ortam-değişkenleri) bölümündeki değişikliklerle birlikte. Geri yükleme de komuta daemon'un o anki ortamını verir. Bir istemci attach olana kadar terminal 24 satır, 80 sütundur.
 - Claude Code adapter'ının release'i 0.1.0. OSC 7501 göndermeyen bir aracın kaynakları yalnızca öz bildirim ve iki tahmindir.
 - Journal'ın boyut sınırı her Session için sabit 32 MiB'tır.

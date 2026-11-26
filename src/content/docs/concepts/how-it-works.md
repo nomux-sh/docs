@@ -1,10 +1,10 @@
 ---
 title: How it works
-description: The three nomux processes, what an attach does, why a Session continues when the daemon stops, how nomux knows the status of an agent, how a new Session opens fast, what a Session gets and uses, what stays after a restart of the Host, and what is kept where.
+description: The three nomux processes, what an attach does, why a Session continues when the daemon stops, how nomux knows the status of an agent, how a new Session opens fast, what a Session gets and uses, when the daemon hibernates an agent, what stays after a restart of the Host, and what is kept where.
 ---
 
 nomux runs three types of process on a Host: the client, the daemon and the holder.
-This page describes what exists in nomux 0.4.0. The [concepts overview](/docs/concepts/overview/) describes the full design.
+This page describes what exists in nomux 0.5.0. The [concepts overview](/docs/concepts/overview/) describes the full design.
 
 ## The three processes
 
@@ -71,12 +71,12 @@ A client talks only to the daemon. Only the daemon talks to a holder.
 
 ## What an attach does
 
-`nomux attach` and `nomux new --attach` connect your terminal to the terminal of a Session. The [quick start](/docs/guides/quick-start/#attach-again) shows it with real commands.
+`nomux attach` and `nomux new --attach` connect your terminal to the terminal of a Session. You name the Session with a [target](/docs/guides/sessions/): its identifier, its name, or the start of one of the two. The [quick start](/docs/guides/quick-start/#attach-again) shows it with real commands.
 
 1. **The window size.** The CLI sends the size of your terminal, and the Session gets that size.
 2. **The screen.** The daemon asks the holder for the current screen. The holder gives a byte sequence that draws that screen in an empty terminal. The CLI writes the sequence to your terminal. Thus you see the Session as it is now, also if its programs drew the screen hours before.
 3. **The output stream.** After the screen, the client gets each byte that the command writes, in sequence. The screen and the stream fit together: no byte is absent and no byte comes two times.
-4. **The keys.** Each key goes from the CLI to the daemon, to the holder and into the PTY.
+4. **The keys.** Each key goes from the CLI to the daemon, to the holder and into the PTY. Only the keys after a [prefix key](/docs/guides/sessions/) (`Ctrl-a` or `Ctrl-\` by default) are for nomux: `d` detaches.
 
 The holder does not know the clients and never waits for one. It keeps the most recent 256 KiB of output in memory, and the daemon has one buffer of 64 KiB for each client.
 **A slow client gets a fresh screen.** If a client takes its output more slowly than the command writes it, and the output that it needs next is no longer in the memory of the holder, the daemon sends the current screen again and continues from there. That client gets the latest screen and not the bytes between.
@@ -136,8 +136,8 @@ The daemon asks six sources in a fixed order. The first source that reports an i
 | 5 | Prompt marks | The prompt marks of the shell: a command runs, or the input line waits. This is a guess |
 | 6 | Foreground program | A program that is not the command of the Session has the terminal. This is a guess |
 
-- `nomux status` prints one row for each Session, and `(guess)` marks a guess. `nomux status --tree` adds the Child work. `nomux agent explain <id>` prints each source in this order with what it says. `nomux events --follow` prints each change when it happens.
-- The most urgent status decides the status of the Session: `needs you` first, then an `error` or a `done` that you did not see, then `working`. An attach marks the results of the Session as seen.
+- `nomux status` prints one row for each Session, and `(guess)` marks a guess. `nomux status --tree` adds the Child work and the [Groups and Projects](/docs/guides/projects-and-groups/) with the most urgent status below them. `nomux agent explain <target>` prints each source in this order with what it says. `nomux events -f` prints each change when it happens.
+- The most urgent status decides the status of the Session, and of a Group or a Project: `needs you` first, then an `error` or a `done` that you did not see, then `working`. An attach marks the results of the Session as seen.
 - A Session without a process runs no work. When a Session becomes dormant, its `working` and `needs you` become `done` with the source "session restore". An ended Session keeps its last Agent run, the **kept run**, until the daemon removes the Session. The daemon keeps 64 kept runs at most.
 - The daemon keeps no status on disk. After the daemon starts again, it reads the program reports from the holders. The self-reports, the reports of the adapters, the times in the state and the events are gone.
 
@@ -156,8 +156,8 @@ A new Session must open in less than 10 ms, and a shell with its start files can
 - The pool starts at the first request of a client. A daemon that gets no request runs no pooled holder.
 - After 10 minutes without a new Session, the pool empties. `pool.size` (0 to 8) and `pool.idle_time` in `config.toml` change the pool. With 0, the pool is off.
 - A pooled holder is not a Session. `nomux ls` does not show it, and it has no state directory and no journal. Its standard input is a pipe from the daemon: when the daemon ends, also after `kill -9`, the pooled holder and its shell end. A new daemon takes no pooled holder of an earlier daemon.
-- If the Session has a working directory that is not the home directory, the daemon types ` cd '<directory>'` into the shell. The line is visible on the screen and in the journal.
-- A Session with a command always gets a new holder. The pool is off if the shell of the user is not `sh`, `bash`, `zsh`, `dash`, `ksh`, `mksh` or `fish`.
+- If the Session has a working directory that is not the home directory, the shell changes to it before its first prompt, and nothing is typed into the terminal. This works for `bash`, `zsh` and `fish`: the daemon starts them with a start file of nomux, which reads the directory from a named pipe of the holder. A Session in a different directory with another shell gets a new holder.
+- A Session with a command always gets a new holder. The pool is off if the shell of the user is not `sh`, `bash`, `zsh`, `dash`, `ksh`, `mksh` or `fish`, and while `sessions.memory_limit` is set.
 - A pooled holder and its shell use memory while they wait: approximately 1 MB for the holder with the musl build, and the memory of the shell.
 
 The guide [Holder pool](/docs/guides/holder-pool/) shows the pool with real commands.
@@ -188,9 +188,19 @@ The guide [Environment of a Session](/docs/guides/session-environment/) has the 
 - The daemon measures only when a client asks. It has no timer and keeps no value between two requests, thus an idle daemon uses no CPU time.
 - A Session without a process has no values.
 - A process that left the process tree of the holder, as a program that makes itself a daemon does, is not counted.
-- nomux shows the memory and sets no limit for it in this version.
+- `sessions.memory_limit` limits the memory of a Session. On Linux with a systemd user manager and control groups of version 2, the kernel applies the limit. On other hosts, the limit is only a threshold of the hibernation.
 
 The guide [Memory of Sessions](/docs/guides/session-memory/) explains the two measures.
+
+## Hibernation
+
+An idle agent Session uses memory for nothing. The daemon can stop its agent and keep the Session: its output, its last Agent run and the resume command that its adapter reported. The Session is then hibernated, and `nomux ls` shows it as `hibernated`. `nomux attach` or `nomux wake` starts the resume command again.
+
+- A Session hibernates only if its adapter gave a resume command, nothing runs and nothing waits for you, no client shows it, and you did not pin it. A Session that works, or that waits for a permission, a question or a login, never hibernates.
+- The triggers are the number of live agent Sessions (12 by default), a memory threshold and, on Linux, the memory pressure of the Host.
+- One task of the daemon applies the triggers. It does not poll: an idle daemon uses no CPU time.
+
+The guide [Hibernation and the memory limit](/docs/guides/hibernation/) has the commands, the settings and the platform differences.
 
 ## A long home directory
 
@@ -229,29 +239,30 @@ The same thing happens when a holder is killed with `SIGKILL`, or when it fails:
 | `pid`, `sock`, `ready` | `~/.nomux/run/<session identifier>/` | The files of one holder. The holder removes them when it ends |
 | `pid`, `sock`, `ready` | `~/.nomux/run/<session identifier>.pool/` | The files of a pooled holder. The directory has the plain session identifier when a Session takes the holder |
 | The socket link | `/tmp/nomux-<hash>` | Only for a long home directory. nomux makes it again if it is gone |
-| `session`, `restore-policy`, `journal/` | `~/.local/state/nomux/sessions/<session identifier>/` on Linux, `~/Library/Application Support/nomux/sessions/<session identifier>/` on macOS | The description, the restore policy and the journal of one Session. They stay after a restart, until `nomux kill` of a dormant Session or the end of the retention time of an ended Session |
+| `session`, `restore-policy`, `name`, `hibernation`, `pinned`, `holder-panic`, `journal/` | `~/.local/state/nomux/sessions/<session identifier>/` on Linux, `~/Library/Application Support/nomux/sessions/<session identifier>/` on macOS | The description, the restore policy, the name, the hibernation, the pin and the journal of one Session. Only the files that apply exist: a Session without a name has no `name`, and `holder-panic` exists only after a failure of the holder. They stay after a restart, until `nomux kill` of a dormant Session or the end of the retention time of an ended Session |
+| `workspace.json` | `~/.local/state/nomux/` on Linux, `~/Library/Application Support/nomux/` on macOS | The Groups and the Projects of the Host: [Projects and Groups](/docs/guides/projects-and-groups/). The daemon reads it when it starts |
 | The installed extensions | `~/.local/share/nomux/extensions/` on Linux, `~/Library/Application Support/nomux/extensions/` on macOS | Until `nomux ext rm` |
 | The record of the installed hooks of a tool | `~/.local/share/nomux/hooks/<tool>/` on Linux, `~/Library/Application Support/nomux/hooks/<tool>/` on macOS | `nomux hooks install <tool> --apply` writes it. It stays after a restart, and `nomux hooks uninstall <tool>` reads it |
-| The remote Hosts, the restore policy for new Sessions, the retention time, the keys of the holder pool | `~/.config/nomux/config.toml` on Linux, `~/Library/Application Support/nomux/config.toml` on macOS | Until you change the file. `nomux host add` writes it |
+| The remote Hosts, the restore policy for new Sessions, the retention time, the keys of the holder pool, the memory limits, the hibernation settings and the prefix keys of an attach | `~/.config/nomux/config.toml` on Linux, `~/Library/Application Support/nomux/config.toml` on macOS | Until you change the file. `nomux host add` writes it. The daemon reads it when it starts |
 
-This is the state directory of one Session after a restore. The run stopped each nomux process with `kill -9`, as a restart does, and then ran `nomux start pieithls`:
+This is the state directory of one Session after a restore. The run stopped each nomux process with `kill -9`, as a restart does, and then ran `nomux start mvbu4p5p`:
 
 ```console
-$ ls -A .local/state/nomux/sessions/pieithls
+$ ls -A .local/state/nomux/sessions/mvbu4p5p
 journal
 session
-$ ls -A .local/state/nomux/sessions/pieithls/journal
+$ ls -A .local/state/nomux/sessions/mvbu4p5p/journal
 00000001-0000000000000000.journal
 00000002-0000000000000000.journal
-$ cat .local/state/nomux/sessions/pieithls/session
+$ cat .local/state/nomux/sessions/mvbu4p5p/session
 nomux-session 1
 epoch 2
-started 1795690824
+started 1795705715
 rows 24
 columns 80
 restore on-focus
 profile
-directory /tmp/nomux-demo/project
+directory /home/user/project
 command sh
 argument -c
 argument echo first run; exec sleep 600
@@ -267,7 +278,6 @@ The directories have the mode 0700, and the files and each socket have the mode 
 
 - An attach shows the current screen of a Session and the output from that moment. It does not show the lines that left the screen. `nomux capture` prints them with their escape sequences.
 - An attach that starts a dormant Session again shows 1 MiB of the old output at most.
-- You cannot change the detach keys.
 - The command of a Session gets the environment of the daemon, thus of the shell that started the daemon, with the changes of [the environment of a Session](#the-environment-of-a-session). A restore gives the command the environment of the daemon at that time. Its terminal has 24 rows and 80 columns until a client attaches.
 - The Claude Code adapter has release 0.1.0. A tool that sends no OSC 7501 has only the self-report and the two guesses as sources.
 - The size limit of the journal is fixed at 32 MiB for each Session.

@@ -9,7 +9,7 @@ nomux native bir agentic geliştirme ortamıdır.
 Siz bir Görev açarsınız; nomux o Göreve bir Worktree ile bir agent Session'ı bağlar, işi de agent yapar.
 Her Agent çalışmasını ve her Alt işi durumuyla birlikte görürsünüz. Değişiklikleri diff'te inceler, onaylar ve commit'lersiniz.
 
-Bu sayfa tasarımı anlatır. Hangi parçaların nomux 0.4.0'da var olduğunu sayfanın sonundaki [Durum](#durum) bölümü söyler. Bu sayfadaki terimler [Sözlük](/docs/tr/reference/glossary/) sayfasından gelir.
+Bu sayfa tasarımı anlatır. Hangi parçaların nomux 0.5.0'da var olduğunu sayfanın sonundaki [Durum](#durum) bölümü söyler. Bu sayfadaki terimler [Sözlük](/docs/tr/reference/glossary/) sayfasından gelir.
 
 ## Üç temel fikir
 
@@ -40,7 +40,7 @@ Adapter'lar bir agent aracının hook olaylarını okur. Claude Code adapter'ı 
 - Extension host'ları, tema motoru ve arayüz dili motoru.
 - İstemciler: CLI, desktop uygulaması ve mobil uygulamalar.
 
-nomux 0.4.0'da Host'lar (local ve SSH ile), holder ve daemon'lu Session'lar, yeniden başlatmadan sonra geri yükleme, agent durum motoru ve extension'ların daemon parçası var. Tek istemci CLI'dır. Proje, Worktree, Görev, Takım, Pane ağacı, desktop uygulaması, mobil uygulamalar, tema motoru, arayüz dili motoru ile doğrudan ve QUIC bağlantıları henüz yok.
+nomux 0.5.0'da Host'lar (local ve SSH ile), holder ve daemon'lu Session'lar, yeniden başlatmadan sonra geri yükleme, boşta duran agent Session'larının hazırda bekletilmesi, agent durum motoru, Gruplardaki Projeler ve extension'ların daemon parçası var. Proje, adı olan bir dizindir: henüz varsayılan agent'ı ve rengi yoktur. Tek istemci CLI'dır. Worktree, Görev, Takım, Pane ağacı, desktop uygulaması (geliştiriliyor, release yok), mobil uygulamalar, tema motoru, arayüz dili motoru ile doğrudan ve QUIC bağlantıları henüz yok.
 
 ## Parçalar nasıl bağlanır
 
@@ -68,7 +68,7 @@ Host, Linux ya da macOS üzerinde çalışır. Windows'ta Host, WSL içinde çal
 
 - Çekirdek hiçbir programlama dilini tanımaz. Dil desteğini dil extension'ları getirir.
 - nomux'ta hesap, cloud servisi ve telemetri yoktur.
-- nomux tmux'a bağımlı değildir, tmux komutlarını da taklit etmez.
+- nomux tmux'a bağımlı değildir ve komutları kendisine aittir. tmux ya da screen bilen biri için birkaç alias ve [tmux ve screen'den geçiş](/docs/tr/guides/coming-from-tmux-and-screen/) sayfası vardır.
 - nomux hiçbir agent'ı izin istemlerini atlayan flag'lerle başlatmaz.
 
 ## Durum
