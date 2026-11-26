@@ -24,38 +24,55 @@ Dokuz repo var. Sekizinde CI çalışıyor: [`.github`](https://github.com/nomux
 
 | Bileşen | Sürüm | İçerik |
 |---|---|---|
-| [`nomux`](https://github.com/nomux-sh/nomux/releases/tag/v0.4.0) | 0.4.0 | Attach'li local Session'lar; her Session'ın journal'ı ve `nomux capture`; Host yeniden başladıktan sonra uykudaki Session'lar ve geri yüklemeleri; daemon'u oturum açılışında başlatan servis dosyası; SSH ile uzak Host'lar; extension host ve `ext` komutları. 0.4.0 ile gelenler: her Session'ın kaynağıyla birlikte agent durumu (`nomux status`, `nomux agent explain`, `nomux events`), adapter extension'lar ve hook'lar (`nomux hook`, `nomux hooks`), her Session'ın belleği (`nomux ls --memory`), holder havuzu, Session'ın ortamı ve uzun bir home dizini için kısa soket yolları. Adımlar [kurulum sayfasında](/docs/tr/guides/install/). |
-| [Homebrew formula'sı](https://github.com/nomux-sh/homebrew-tap) | 0.4.0 | `brew install nomux-sh/tap/nomux`, `nomux` sürümünün binary'lerini macOS'e ve Linux'a kurar. |
-| [`nomux-proto`](https://crates.io/crates/nomux-proto) | 0.12.0 | `proto` reposunun protokol crate'i. nomux 0.4.0, 0.8.0 sürümünü kullanır. |
-| Extension SDK'ları | 0.1.3 | Rust için [`nomux-extension`](https://crates.io/crates/nomux-extension) crate'i, TypeScript için [`@nomux-sh/extension`](https://www.npmjs.com/package/@nomux-sh/extension) paketi ve Go için `github.com/nomux-sh/extension-api/sdk/go` modülü; `extension-api` reposundan. Üçünü birlikte denetleyen bir conformance suite'i de var. Nasıl kullanılacağı [Extension yazmak](/docs/tr/guides/write-an-extension/) sayfasında. nomux 0.4.0, `nomux-extension` 0.1.1 sürümünü kullanır. |
+| [`nomux`](https://github.com/nomux-sh/nomux/releases/tag/v0.5.0) | 0.5.0 | Attach'li local Session'lar; her Session'ın journal'ı ve `nomux capture`; Host yeniden başladıktan sonra uykudaki Session'lar ve geri yüklemeleri; daemon'u oturum açılışında başlatan servis dosyası; SSH ile uzak Host'lar; extension host ve `ext` komutları; her Session'ın kaynağıyla birlikte agent durumu (`nomux status`, `nomux agent explain`, `nomux events`); adapter extension'lar ve hook'lar (`nomux hook`, `nomux hooks`); her Session'ın belleği (`nomux ls --memory`); holder havuzu; Session'ın ortamı ve uzun bir home dizini için kısa soket yolları. 0.5.0 ile gelenler: [Proje grupları](/docs/tr/guides/projects-and-groups/) (`nomux project`, `nomux group`), hedef kuralı ve "attach ya da oluştur" ile [Session adları](/docs/tr/guides/sessions/), değiştirilebilen prefix tuşları, [`nomux send`, `nomux capture -f` ve `nomux kill --all`](/docs/tr/guides/scripting-sessions/), [tmux ve screen'den geçiş](/docs/tr/guides/coming-from-tmux-and-screen/) sayfası ve bellek limitiyle birlikte [boştaki agent Session'larının hazırda bekletilmesi](/docs/tr/guides/hibernation/). Adımlar [kurulum sayfasında](/docs/tr/guides/install/). |
+| [Homebrew formula'sı](https://github.com/nomux-sh/homebrew-tap) | 0.5.0 | `brew install nomux-sh/tap/nomux`, `nomux` sürümünün binary'lerini bir bottle'dan macOS'e ve Linux'a kurar. |
+| [`nomux-proto`](https://crates.io/crates/nomux-proto) | 0.13.0 | `proto` reposunun protokol crate'i. nomux 0.5.0, 0.12.0 sürümünü kullanır. |
+| Extension SDK'ları | 0.1.3 | Rust için [`nomux-extension`](https://crates.io/crates/nomux-extension) crate'i, TypeScript için [`@nomux-sh/extension`](https://www.npmjs.com/package/@nomux-sh/extension) paketi ve Go için `github.com/nomux-sh/extension-api/sdk/go` modülü; `extension-api` reposundan. Üçünü birlikte denetleyen bir conformance suite'i de var. Nasıl kullanılacağı [Extension yazmak](/docs/tr/guides/write-an-extension/) sayfasında. nomux 0.5.0, `nomux-extension` 0.1.3 sürümünü kullanır. |
 | [`nomux-theme`](https://crates.io/crates/nomux-theme) | 0.3.1 | Temayı yükleyip denetleyen crate; `themes` reposundan. Her temayı [önizleme sayfası](https://nomux-sh.github.io/themes/) gösterir. |
 
 Resmi extension'ların ikisi de 0.1.0 sürümüyle yayında: Git extension'ı (`nomux.git`) ve Claude Code adapter'ı (`nomux.agent-claude`). İkisinde de arayüz parçası yok. Arşivi indirip [Yayınlanmış bir extension'ı kurma](https://github.com/nomux-sh/extensions#install-a-released-extension) bölümündeki adımlarla kurabilirsiniz.
 
+### main branch'inde, henüz yayınlanmadı
+
+Şu değişiklikler 0.5.0'dan sonra `nomux`'un `main` branch'ine merge edildi. Hiçbir release'te yok:
+
+- Holder, bir programın sorgularına cevap verir; örneğin imleç konumu ve renkler.
+- `nomux ext install` yalnızca bir dizini değil, bir release arşivini ya da onun kısa biçimini de alır.
+
+`extensions` reposunun `main` branch'inde ayrıca, Claude Code adapter'ının boştaki prompt'u "prompt'ta bekliyor" olarak bildirmesini sağlayan bir değişiklik var. Adapter'ın 0.1.0 sürümünde bu yok: adapter'ın yeni bir sürümü çıkana kadar, beklemede duran bir Claude Code Session'ı hazırda beklemez.
+
+### Geliştirilenler
+
+- Session için sandbox: dosyalara ve ağa sınır koyarak çalışan bir agent ([#109](https://github.com/nomux-sh/nomux/issues/109)).
+- Worktree'lerin yaşam döngüsü: biten Worktree'leri silmek ve build çıktısını paylaşmak ([#37](https://github.com/nomux-sh/nomux/issues/37)).
+- Desktop istemcisi. İlk dilim [`desktop`](https://github.com/nomux-sh/desktop) reposuna merge edildi: tek pencere, Proje ve Grupların rail'i, bir Projenin Session'larının sidebar'ı ve tek bir terminal tab'ı. Henüz release'i yok.
+
+Bir sonraki sürümün açık issue'ları `nomux` reposunun [0.6.0 milestone'unda](https://github.com/nomux-sh/nomux/milestone/7) listelenir.
+
 ### Süren işler
 
-M1'den M5'e kadar olan aşamalar sürüyor. Hiçbir aşama bitmedi: her aşamanın ya karşılanmayan bir kabul testi ya da tamamlanmamış işi var. Aşağıdaki bölümler 0.4.0'da nelerin olduğunu ve nelerin eksik kaldığını anlatır.
+M1'den M5'e kadar olan aşamalar sürüyor. Hiçbir aşama bitmedi: her aşamanın ya karşılanmayan bir kabul testi ya da tamamlanmamış işi var. Aşağıdaki bölümler 0.5.0'da nelerin olduğunu ve nelerin eksik kaldığını anlatır.
 
 #### M1 aşaması: sürüyor, kabul testi henüz sağlanmıyor
 
-nomux 0.4.0'da M1'in çekirdeği var: istemci kopsa da daemon dursa da Session yaşar; Host yeniden başladığında Session uykuya geçer ve istendiğinde önceki çıktısıyla birlikte yeniden başlar. 0.4.0 ile yeni Session'lar için hazır holder'lar tutan [holder havuzu](/docs/tr/guides/holder-pool/) geldi.
+nomux 0.5.0'da M1'in çekirdeği var: istemci kopsa da daemon dursa da Session yaşar; Host yeniden başladığında Session uykuya geçer ve istendiğinde önceki çıktısıyla birlikte yeniden başlar. 0.5.0'da terminal doğruluğu issue'ları kapandı ([#13](https://github.com/nomux-sh/nomux/issues/13) ve [#29](https://github.com/nomux-sh/nomux/issues/29)), [holder havuzu](/docs/tr/guides/holder-pool/) artık dizin değişikliğini terminale yazmıyor ([#74](https://github.com/nomux-sh/nomux/issues/74)); ayrıca Session adları, Gruplar, hazırda bekletme ve bellek limiti geldi.
 "Host yeniden başladıktan sonra ilk ekran 1 saniyede gelir" testi ölçülmedi. Ölçülen değerler [performans sayfasında](/docs/tr/reference/performance/).
 
-Kalan işler, `nomux` reposunun [0.5.0 milestone'undaki](https://github.com/nomux-sh/nomux/milestone/6) açık issue'lardır:
+Kalan işler, `nomux` reposunun [0.6.0 milestone'undaki](https://github.com/nomux-sh/nomux/milestone/7) açık issue'lardır:
 
-- Terminal doğruluğu: fuzz testleri, golden testler ve vttest ([#13](https://github.com/nomux-sh/nomux/issues/13)); bir de ekran state'indeki bir hata ([#29](https://github.com/nomux-sh/nomux/issues/29)).
 - CI'da performans bütçeleri ([#14](https://github.com/nomux-sh/nomux/issues/14)).
-- Holder havuzu, yeni bir Session'ın terminalinde dizin değişikliğini gösteriyor ([#74](https://github.com/nomux-sh/nomux/issues/74)).
 - Session, kendisini isteyen istemcinin ortam değişkenlerini almıyor ([#75](https://github.com/nomux-sh/nomux/issues/75)).
-- Session'ın bellek limiti ([#38](https://github.com/nomux-sh/nomux/issues/38)): 0.4.0 belleği gösterir, limit yalnızca bir tasarımdır. Boşta duran agent'ların hazırda bekletilmesi ([#36](https://github.com/nomux-sh/nomux/issues/36)) ve Worktree'lerin yaşam döngüsü ([#37](https://github.com/nomux-sh/nomux/issues/37)) henüz yapılmadı.
-- SSH istemcisiyle büyüyen `nomux` binary'si ([#47](https://github.com/nomux-sh/nomux/issues/47)) ve macOS'te bazı çalıştırmalarda başarısız olan bir uzak Host testi ([#69](https://github.com/nomux-sh/nomux/issues/69)).
+- SSH istemcisiyle büyüyen `nomux` binary'si ([#47](https://github.com/nomux-sh/nomux/issues/47)).
+- Düzeltilmemiş iki hata: `nomux status set` bir Session'ın ilk anlarında başarısız olabiliyor ([#83](https://github.com/nomux-sh/nomux/issues/83)); uzun bir home yoluyla ilk `nomux new`'de bir holder bir kez `SIGABRT` ile sona erdi ([#85](https://github.com/nomux-sh/nomux/issues/85)).
+- macOS'te bellek baskısında hazırda bekletme ([#100](https://github.com/nomux-sh/nomux/issues/100)). Sayı ve bellek eşikleri macOS'te çalışır. Bir Session'ın belleği için çekirdek limiti yalnızca systemd kullanıcı yöneticisi olan Linux'ta çalışır.
+- Bir Session'ı bekleyen, yapıştırma gönderen ve ekranı metin olarak alan bir komut ([#104](https://github.com/nomux-sh/nomux/issues/104)).
 
 Güncel liste milestone sayfasındadır.
 
 #### M2 aşaması: sürüyor, kabul testi henüz sağlanmıyor
 
-Uzak Host'lar nomux 0.4.0'da var: `nomux host add` SSH ile bağlanır, binary'leri kurar ve Host'u kaydeder; `--host` o Host'un daemon'unu kullanır; bağlantı koparsa attach çıktı kaybetmeden yeniden bağlanır. Ayrıntılar [Uzak Host'lar](/docs/tr/guides/remote-hosts/) sayfasında.
-Şunlar yapılmadı. Kaynak, nomux 0.4.0'ın [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/remote.md#open-points-for-the-next-versions) belgesi:
+Uzak Host'lar nomux 0.5.0'da var: `nomux host add` SSH ile bağlanır, binary'leri kurar ve Host'u kaydeder; `--host` o Host'un daemon'unu kullanır; bağlantı koparsa attach çıktı kaybetmeden yeniden bağlanır. 0.5.0 ayrıca yerini alan daemon'u bekleme hatasını ve macOS'te bazı çalıştırmalarda başarısız olan uzak Host testini ([#69](https://github.com/nomux-sh/nomux/issues/69)) düzeltti. Ayrıntılar [Uzak Host'lar](/docs/tr/guides/remote-hosts/) sayfasında.
+Şunlar yapılmadı. Kaynak, nomux 0.5.0'ın [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/remote.md#open-points-for-the-next-versions) belgesi:
 
 - Streamlocal forwarding'e izin vermeyen sunucular için ikinci yol olarak köprü komutu.
 - İstemcinin desteklemediği yapılandırmalar için `ControlMaster` ile `ssh` programına geri düşme.
@@ -70,32 +87,30 @@ Aynı belgeye göre gerçek paket kaybıyla bir ölçüm yapılmadı: ölçümle
 
 #### M3 aşaması: sürüyor
 
-- `nomuxd` 0.4.0'da extension host var. Bir extension'ı, kullanıcının onayladığı izinlerle bir dizinden kurar; daemon parçasını ilk çağrıda başlatır, boşta kalınca durdurur. Extension istemcilere olay gönderebilir, adapter extension ise bir durum bildirebilir. Komutlar [Extension'lar](/docs/tr/guides/extensions/) rehberinde.
+- `nomuxd` 0.5.0'da extension host var. Bir extension'ı, kullanıcının onayladığı izinlerle bir dizinden kurar; daemon parçasını ilk çağrıda başlatır, boşta kalınca durdurur. Extension istemcilere olay gönderebilir, adapter extension ise bir durum bildirebilir. Komutlar [Extension'lar](/docs/tr/guides/extensions/) rehberinde.
 - Extension SDK'ları Rust, TypeScript ve Go için var. Python SDK'sı planlanıyor.
 - Git extension'ı ile Claude Code adapter'ının sürümü 0.1.0. İkisi `extensions` reposunda yayında.
-- Yapılmayanlar: dosya erişimi için bir extension, bir extension'ın dosyalarının, programlarının ve ağ erişiminin kısıtlanması, extension'ın arayüz parçası, Proje ve Worktree veri modeli.
+- Projelerin veri modeli 0.5.0'da var: Proje, adı olan bir dizindir ve Gruplar Projeleri içerir. Worktree veri modeli yok.
+- Yapılmayanlar: dosya erişimi için bir extension, bir extension'ın dosyalarının, programlarının ve ağ erişiminin kısıtlanması (sandbox geliştiriliyor) ve extension'ın arayüz parçası.
 
 #### M4 aşaması: sürüyor
 
-nomux 0.4.0'da agent durum motoru var: her Session'ın kaynağıyla birlikte bir durumu vardır, bir Agent çalışmasının Alt iş ağacı vardır ve kaynakların sırası sabittir. Ayrıntılar [Agent durumu](/docs/tr/guides/agent-status/) sayfasında. Claude Code adapter'ı ([rehber](/docs/tr/guides/claude-code/)) ilk adapter'dır ve 0.1.0 sürümü yayında.
+nomux 0.5.0'da agent durum motoru var: her Session'ın kaynağıyla birlikte bir durumu vardır, bir Agent çalışmasının Alt iş ağacı vardır ve kaynakların sırası sabittir. Ayrıntılar [Agent durumu](/docs/tr/guides/agent-status/) sayfasında. Claude Code adapter'ı ([rehber](/docs/tr/guides/claude-code/)) ilk adapter'dır ve 0.1.0 sürümü yayında. Bir Grubun durumu, altındaki Session'ların en acil durumudur.
 Yapılmayanlar: Takımlar, diğer agent araçları için adapter'lar ve hook'un araca verdiği cevap; onay kartları buna ihtiyaç duyar. M4'ün henüz bir kabul testi yok.
 
 #### M5 aşaması: sürüyor, desktop istemcisi geliştiriliyor
 
-`themes` reposunda token seti, temel temalar ve `nomux-theme` crate'i var. Desktop istemcisi [`desktop`](https://github.com/nomux-sh/desktop) reposunda geliştiriliyor; henüz bir sürümü yok. nomux 0.4.0'da desktop istemcisi yok: tek istemci CLI.
-
-#### Proje grupları: main branch'inde, 0.5.0 ile gelecek
-
-Bir grup, Projeleri ve başka grupları istenen derinlikte içerir; kapalı bir grup içindekilerin toplu durumunu gösterir. Bu, kapanmış olan [#71](https://github.com/nomux-sh/nomux/issues/71) issue'sudur. `nomux project` ve `nomux group` komutları, `nomux` reposunun main branch'ine [PR #80](https://github.com/nomux-sh/nomux/pull/80) ile merge edildi. 0.5.0 ile gelecekler; 0.5.0 henüz yayınlanmadı. nomux 0.4.0'da grup komutu, protokolde grup ve veri modelinde grup yok. `themes` reposunda sidebar'ın grup satırının şartnamesi var. [Sözlük](/docs/tr/reference/glossary/) bu terimi planlanıyor olarak listeler.
+`themes` reposunda token seti, temel temalar ve `nomux-theme` crate'i var. Desktop istemcisi [`desktop`](https://github.com/nomux-sh/desktop) reposunda geliştiriliyor ve ilk dilimi merge edildi: tek pencere, Proje ve Grupların rail'i, bir Projenin Session'larının sidebar'ı ve tek bir terminal tab'ı. Henüz bir sürümü yok. Worktree satırları, ikinci bir tab, bölme, ayarlar ve uzak Host'lar yok. nomux 0.5.0'da desktop istemcisi yok: tek istemci CLI.
 
 ### Yapılmayanlar
 
-Şunlar nomux 0.4.0'da yok:
+Şunlar nomux 0.5.0'da yok:
 
 - Desktop istemcisi (geliştiriliyor, sürümü yok) ve mobil istemciler.
-- Proje grupları, Pane ağacı ve Tab'lar, Takımlar ve Görevler.
-- Session adları ve tmux ile screen tarzı CLI komutları: geliştiriliyor, bkz. [#88](https://github.com/nomux-sh/nomux/issues/88).
-- Session için bellek limiti, boşta duran agent'ların hazırda bekletilmesi ve Worktree'lerin yaşam döngüsü.
+- Pane ağacı ve Tab'lar, Takımlar ve Görevler.
+- Worktree veri modeli ve yaşam döngüsü ([#37](https://github.com/nomux-sh/nomux/issues/37), geliştiriliyor).
+- Session için sandbox ([#109](https://github.com/nomux-sh/nomux/issues/109), geliştiriliyor).
+- macOS'te bellek baskısında hazırda bekletme; macOS'te ve systemd kullanıcı yöneticisi olmayan Linux'ta bir Session'ın belleği için çekirdek limiti.
 - SSH olmadan doğrudan bağlantı ve port yönlendirme.
 - Bir registry.
 
