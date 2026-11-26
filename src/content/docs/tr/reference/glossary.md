@@ -14,8 +14,8 @@ Yeni bir kavrama ihtiyaç duyarsanız önce onu İngilizcesi ve Türkçesiyle bu
 | Türkçe terim | İngilizce terim | Tanım |
 |---|---|---|
 | Host | Host | Üzerinde `nomuxd` çalışan makine. Host ya local'dir ya da ona SSH ile veya doğrudan bağlanılır. |
-| Proje | Project | Bir Host'taki bir repo. Projenin bir klasörü, varsayılan bir agent'ı ve bir rengi vardır. |
-| Grup | Group | Planlanıyor, nomux 0.4.0'da yok: Projeleri ve başka grupları, istenen derinlikte içeren adlandırılmış öğe. |
+| Proje | Project | Bir Host'ta adı olan bir dizin. Proje, çalışma dizini kendi dizini olan ya da onun altında kalan Session'ları içerir. Varsayılan agent ve renk planlanıyor; nomux 0.5.0'da yok. |
+| Grup | Group | Projeleri ve başka Grupları, istenen derinlikte içeren adlandırılmış öğe. Grupları `nomux group` oluşturur ve değiştirir. |
 | Worktree | Worktree | Projenin bir git worktree'si. Bir Görev genelde kendi Worktree'sinde çalışır. |
 | Session | Session | Tek bir holder process'inin tuttuğu tek bir PTY. Shell de, agent da, dev server da birer Session'dır. |
 | Agent çalışması | Agent run | Bir Session'da çalışan bir agent. Aracı, modeli, durumu ve sağlayıcının verdiği session kimliği vardır. Agent bu kimlik sayesinde kaldığı yerden devam eder. |
@@ -36,8 +36,12 @@ Bu terimler bir Host'ta çalışan process'leri ve onların dosyalarını adland
 | daemon | daemon | Holder'ları başlatan, yeniden başladığında onları tekrar bulan ve istemcilere cevap veren process. Bir Host'ta her kullanıcı için bir daemon çalışır. Binary'si `nomuxd`'dir. |
 | istemci | client | Session'ları göstermek ya da değiştirmek için daemon'a bağlanan program. CLI (`nomux`), desktop uygulaması ve mobil uygulamalar birer istemcidir. |
 | runtime dizini | runtime directory | Daemon'un ve holder'ların socket'lerini ve keşif dosyalarını tuttuğu dizin: `~/.nomux/run`. |
-| session kimliği | session identifier | Bir Session'ın o Host'taki adı. Daemon üretir: `a`-`z` ve `2`-`7` karakterlerinden oluşan 8 karakter. CLI bu kimliği yazdırır ve komutlarda bu kimliği bekler. |
+| session kimliği | session identifier | Bir Session'ın o Host'taki kimliği. Daemon üretir: `a`-`z` ve `2`-`7` karakterlerinden oluşan 8 karakter. Hiç değişmez. CLI bu kimliği yazdırır ve komutlarda bu kimliği bekler. |
+| session adı | session name | Kullanıcının bir Session'a verdiği ad, örneğin `api`. 1 ile 64 karakter uzunluğundadır, Host'ta bitmemiş Session'lar arasında benzersizdir ve `nomux rename` ile değişir. |
+| hedef | target | Bir komutun Session'ı bulmak için aldığı değer: session kimliği, session adı ya da ikisinden birinin başı. |
 | state dizini | state directory | Her Session'ın tanımını ve journal'ını tuttuğu dizin: Linux'ta `~/.local/state/nomux`, macOS'ta `~/Library/Application Support/nomux`. Host yeniden başlasa da silinmez. |
+| workspace ağacı | workspace tree | Bir Host'taki Grupların ve Projelerin, kullanıcının seçtiği sırayla dizilmiş hali. Daemon onu state dizinindeki `workspace.json` dosyasında tutar. `nomux group ls --tree` ağacı listeler, `nomux status --tree` durumunu gösterir. Bir Grubun ya da Projenin durumunu istemci, altındaki Session'lardan hesaplar. |
+| düğüm | node | Workspace ağacının bir Grubu ya da bir Projesi. `nomux project` ve `nomux group` komutları bir düğümü kimliğiyle ya da yoluyla alır; yol, en üst düzeyden düğüme kadar olan adlardır ve aralarında `/` bulunur. |
 | journal | journal | Bir Session'ın diskteki çıktısı; state dizininde durur. Onu holder yazar. Bir Session için en fazla 32 MiB dosya tutar. `nomux capture` buradan okur. |
 | checkpoint | checkpoint | Session ekranının, journal'daki belirli bir konumdaki kopyası. Holder başlangıçta, her 1 MiB çıktıdan sonra ve pencere boyutu değiştiğinde bir checkpoint yazar. |
 | epoch | epoch | Session komutunun kaçıncı kez çalıştığını gösteren sayı: yeni bir Session'da 1'dir, her geri yüklemede bir artar. |
@@ -45,7 +49,7 @@ Bu terimler bir Host'ta çalışan process'leri ve onların dosyalarını adland
 
 ## Session durumları ve geri yükleme
 
-Bu terimler de, Session dışında, küçük harfle yazılır. CLI durumları `running`, `unreachable`, `dormant`, `ended` ve `damaged` olarak gösterir.
+Bu terimler de, Session dışında, küçük harfle yazılır. CLI durumları `running`, `unreachable`, `dormant`, `hibernated`, `ended` ve `damaged` olarak gösterir.
 
 | Türkçe terim | İngilizce terim | Tanım |
 |---|---|---|
@@ -55,7 +59,13 @@ Bu terimler de, Session dışında, küçük harfle yazılır. CLI durumları `r
 | geri yükleme | restore | Uykudaki bir Session'ın komutunu aynı komut, çalışma dizini ve pencere boyutuyla yeniden başlatmak. Önceki process'ler geri gelmez; önceki çıktı journal'da kalır. |
 | geri yükleme politikası | restore policy | Daemon'un uykudaki bir Session'ı ne zaman geri yükleyeceği: `auto` (daemon başlarken), `on-focus` (ilk attach'te ya da `nomux start` ile; varsayılan budur) veya `manual` (yalnızca `nomux start` ile). CLI komutu `nomux restore-policy`'dir. |
 | saklama süresi | retention time | Daemon'un biten bir Session'ı ne kadar tuttuğu. Varsayılanı 24 saattir. |
-| hazırda bekletme | hibernation | Planlanıyor, nomux 0.4.0'da yok: daemon boşta duran bir agent'ın komutunu durdurur, Session'ını açtığınızda resume komutuyla yeniden başlatır. Uykudaki Session ile karıştırmayın; o, holder'ın sona ermesiyle oluşur. |
+| hazırda bekletme | hibernation | Daemon, boşta duran bir agent Session'ının agent'ını durdurur ve Session'ı çıktısıyla ve devam komutuyla birlikte saklar. Session'ın durumu o zaman `hibernated` olur. Uykudaki Session ile aynı şey değildir; o, holder'ın sona ermesiyle oluşur. Hazırda bekleyen Session, daemon'un bilerek uykuya aldığı bir uykudaki Session'dır. |
+| hazırda bekleyen Session | hibernated Session | Agent'ını daemon'un hazırda bekletmeyle durdurduğu Session. `nomux ls` onu `hibernated` olarak gösterir. |
+| uyandırma | wake | Hazırda bekleyen bir Session'ın devam komutunu başlatmak. Bunu `nomux wake` ve `nomux attach` yapar. |
+| sabitleme | pin | Bir Session'ı otomatik hazırda bekletmenin dışında tutmak. `nomux pin` sabitler, `nomux unpin` geri alır. |
+| devam komutu | resume command | Bir agent'ı önceki konuşmasıyla yeniden başlatan komut. Aracın adapter'ı bildirir. Uyandırma onu çalıştırır. |
+| agent Session | agent Session | Komutu çalışan ve adapter'ı Agent çalışmasının ayrıntılarını vermiş Session. Yalnızca agent Session hazırda bekleyebilir. |
+| bellek limiti | memory limit | Bir Session'ın process'lerinin kullanabileceği en fazla bellek: `sessions.memory_limit`. İşletim sistemi limiti uygulayabiliyorsa process'leri limitte sonlandırır; uygulayamıyorsa limit, hazırda bekletmenin eşiğidir. |
 
 ## Agent durumu
 
@@ -64,7 +74,7 @@ Bu terimler, bir Session'daki işle ilgili nomux'un bildiklerini adlandırır. K
 | Türkçe terim | İngilizce terim | Tanım |
 |---|---|---|
 | agent durumu | agent status | nomux'un bir Agent çalışması ve Alt işleri hakkında bildikleri: bir durum, durumun kaynağı ve isteğe bağlı olarak mesaj, başlık, ilerleme ve araç. `nomux status` bunu gösterir. |
-| durum | state | Agent durumunun değeri: `idle`, `working`, `done`, `needs you` veya `error`. `needs you` durumunun bir türü olabilir: `permission`, `question` veya `auth`. |
+| durum | state | Agent durumunun değeri: `idle`, `working`, `done`, `needs you` veya `error`. `needs you` durumunun bir türü olabilir: `permission`, `question`, `auth` veya `prompt`. |
 | kaynak | source | Agent durumunun nereden geldiği. Daemon kaynaklara sabit bir sırayla bakar: adapter, program durumu, öz bildirim, session geri yükleme, prompt işaretleri ve ön plandaki program. Son ikisi tahmindir. |
 | tahmin | guess | Daemon'un çıkarım yaptığı ve hiçbir programın bildirmediği durum. CLI bunu `(guess)` ile işaretler. |
 | adapter | adapter | Bir agent aracının agent durumunu, o aracın hook olaylarından bildiren extension. Adapter extension da denir. |
@@ -83,6 +93,8 @@ Bu terimler küçük harfle yazılır.
 |---|---|---|
 | holder havuzu | holder pool | Daemon'un yeni Session'lar için hazır tuttuğu holder'lar; her birinde kullanıcının shell'i önceden başlatılmıştır. Kaç tane olacağını `pool.size` ayarı belirler. |
 | havuzdaki holder | pooled holder | Holder havuzundaki bir holder. Henüz Session'ı yoktur. Shell ile açılan yeni bir Session onu alır. |
+| havuz başlangıç dosyası | pool start file | Havuzdaki `bash`, `zsh` ya da `fish`'in sizin başlangıç dosyalarınızdan sonra okuduğu nomux dosyası. İlk prompt'tan önce Session'ın dizinine geçer. `pool.shell_start_files` onu açar ve kapatır. |
+| bellek baskısı | memory pressure | Kernel'in process'lerin bellek beklediğini bildirdiği durum (yalnızca Linux). `agents.hibernate_on_pressure` ile hazırda bekletmenin bir tetikleyicisidir. |
 | bellek ölçüsü | memory measure | nomux'un bir Session'ın belleğini nasıl saydığı: `pss` (orantılı set boyutu, Linux'ta) veya `rss` (resident set boyutu). `nomux ls --memory` bunu `MEASURE` sütununda gösterir. |
 | soket bağlantısı | socket link | Runtime dizinine giden `/tmp/nomux-<hash>` sembolik bağlantısı. Uzun bir home dizini soket yolunu çok uzun yaptığında nomux bunu kullanır. |
 
@@ -99,6 +111,7 @@ Bu terimler de küçük harfle yazılır.
 
 | Türkçe terim | İngilizce terim | Tanım |
 |---|---|---|
+| prefix tuşu | prefix key | Bir attach'te nomux'un her tuşundan önce gelen tuş. Varsayılan tuşlar `Ctrl-a` ve `Ctrl-\`'dir. Prefix tuşu ve ardından `d` ile detach edilir. |
 | attach | attach | Bir istemcinin terminalini bir Session'ın terminaline bağlamak: istemci Session'ın ekranını gösterir ve tuşlarını ona gönderir. Bu bağlantının kendisine de attach denir. Aynı Session'a birden fazla istemci attach olabilir. CLI komutu `nomux attach`'tir. |
 | detach | detach | Bir attach'i bitirmek. Session yaşamaya devam eder. CLI komutu `nomux detach`'tir. |
 | extension | extension | nomux'a bir özellik ekleyen paket. Bir manifest'i (`extension.toml`) ve bir ya da daha fazla parçası vardır. Bir Host'a `nomux ext install` ile kurulur. |
@@ -126,6 +139,6 @@ Böylece desktop istemcisi ile mobil istemci aynı Session'a farklı görünüml
 
 - Terimi olduğu gibi kullanın, yerine eş anlamlısını koymayın: Proje yerine "çalışma alanı", Pane yerine "pencere" demeyin.
 - Türkçe metinde Türkçe terimi, İngilizce metinde İngilizce terimi yazın.
-- Şu terimler iki dilde de aynıdır: Host, Worktree, Session, Pane, Tab, holder, daemon, journal, checkpoint, epoch, bootstrap, attach, detach, extension, extension host, adapter, hook ve session token.
-- CLI'ın yazdırdığı ya da beklediği değerler çevrilmez: durumlar (`running`, `dormant`, `ended`) ve geri yükleme politikaları (`auto`, `on-focus`, `manual`).
+- Şu terimler iki dilde de aynıdır: Host, Worktree, Session, Pane, Tab, holder, daemon, journal, checkpoint, epoch, bootstrap, attach, detach, extension, extension host, adapter, hook, session token ve agent Session.
+- CLI'ın yazdırdığı ya da beklediği değerler çevrilmez: durumlar (`running`, `dormant`, `hibernated`, `ended`) ve geri yükleme politikaları (`auto`, `on-focus`, `manual`).
 - Koddaki adlar İngilizce terimden türetilir. Örnek: `sessions`, `agent_runs` ve `child_work` veritabanı tabloları ile `NOMUX_SURFACE_ID` ortam değişkeni.
