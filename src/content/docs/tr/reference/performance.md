@@ -10,7 +10,7 @@ Bu sayfa hedefleri ve bugün ölçülmüş değerleri listeler. Her değerin kay
 
 ## Hedefler
 
-Bu tablonun kaynağı [`bench/README.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/bench/README.md#targets) dosyasıdır.
+Bu tablonun kaynağı [`bench/README.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/bench/README.md#targets) dosyasıdır.
 "Sahibi" sütunu, hedefi projenin hangi parçasının ölçtüğünü gösterir.
 
 | Ölçüm | Hedef | Sahibi | Ölçüldü mü |
@@ -34,19 +34,20 @@ Bu tablonun kaynağı [`bench/README.md`](https://github.com/nomux-sh/nomux/blob
 "Hayır", hedefin ilgilendirdiği parçanın henüz var olmadığı ya da kayıtlı bir ölçümün bulunmadığı anlamına gelir.
 İşlerin sırasını [yol haritası](/docs/tr/project/roadmap/) gösterir.
 
-[`tests/session_lifecycle.rs`](https://github.com/nomux-sh/nomux/blob/v0.4.0/tests/session_lifecycle.rs) dosyasındaki uçtan uca testler daemon'u ve process group'unu `SIGKILL` ile öldürür ve Session'ın yaşamaya devam ettiğini doğrular.
-[`tests/attach.rs`](https://github.com/nomux-sh/nomux/blob/v0.4.0/tests/attach.rs) ise daemon'u attach sırasında öldürür ve yeni attach'in aynı ekranı gösterdiğini doğrular.
+[`tests/session_lifecycle.rs`](https://github.com/nomux-sh/nomux/blob/v0.5.0/tests/session_lifecycle.rs) dosyasındaki uçtan uca testler daemon'u ve process group'unu `SIGKILL` ile öldürür ve Session'ın yaşamaya devam ettiğini doğrular.
+[`tests/attach.rs`](https://github.com/nomux-sh/nomux/blob/v0.5.0/tests/attach.rs) ise daemon'u attach sırasında öldürür ve yeni attach'in aynı ekranı gösterdiğini doğrular.
 
 ## Ölçülen değerler
 
-Değerler, kaynak dokümanların [`v0.4.0`](https://github.com/nomux-sh/nomux/tree/v0.4.0) etiketindeki değerleridir.
+Değerler, kaynak dokümanların [`v0.5.0`](https://github.com/nomux-sh/nomux/tree/v0.5.0) etiketindeki değerleridir.
 Hepsi Linux x86-64 üzerinde, release profiliyle ölçülmüştür; yalnızca "debug build" yazan satır hariç. macOS'te ve aarch64'te yapılmış bir ölçüm yoktur.
-"Attach", "Uzak Host'lar" ve "Geri yükleme" bölümlerinin değerleri 0.3.0'dakilerle aynıdır: 0.4.0 dokümanları bu parçaları yeniden ölçmedi. "Yeni Session", "Session belleği" ve "Hook'lar" bölümleri yenidir; "Holder" ve "Daemon" bölümlerinde yeni satırlar var.
+"Attach", "Uzak Host'lar", "Geri yükleme", "Holder", "Hook'lar" ve "CLI" bölümlerinin değerleri 0.4.0'dakilerle aynıdır: 0.5.0 dokümanları bu parçaları yeniden ölçmedi. "Yeni Session" bölümünde holder havuzunun satırları, farklı bir shell ve home dizini olmayan bir dizinle yeniden ölçüldü; "Daemon" bölümünde havuzun bellek satırlarından üçü değişti. "Hazırda bekletme" ve "Workspace ağacı" bölümleri yenidir, "Session belleği" bölümünde bir yeni satır var.
+Kaynak dokümanlar binary boyutlarını yeniden ölçmedi: "0.5.0 arşivindeki binary'ler" bölümünde sürüm arşivinin boyutları var.
 "glibc", makinenin C kütüphanesine dinamik bağlanan build'dir. "musl" ise sürüm arşivlerine giren statik build'dir.
 
 ### Attach
 
-Kaynak: [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/daemon.md#measurements) dosyasının "Measurements" bölümü.
+Kaynak: [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/daemon.md#measurements) dosyasının "Measurements" bölümü.
 
 "Tuştan ekoya" süresi, tek bir tuşun `nomux attach` terminaline yazılmasından o tuşun ekosunun aynı terminale gelmesine kadar geçen süredir. Session `cat` çalıştırır; tuşun ekosunu Session'ın terminali verir.
 Bu yolda CLI, daemon, holder ve Session'ın terminali vardır; her biri iki kez. Ağ ve desktop istemcisi yoktur; yani bu ölçüm "local tuş basımından ekrana" hedefinin çekirdek kısmıdır.
@@ -57,9 +58,9 @@ Bu yolda CLI, daemon, holder ve Session'ın terminali vardır; her biri iki kez.
 | Tuştan ekoya, attach olunmuş ikinci bir Session'da 10 MB/s çıktı seli varken | 0,2 ms – 0,5 ms | 1,4 ms – 4,7 ms | Kayda değer değişim yok |
 | Tuştan ekoya, attach olunmuş ikinci bir Session'da sınırsız çıktı seli varken (istemcisine 19 MB/s – 36 MB/s) | 0,2 ms – 0,8 ms | 3,1 ms – 5,3 ms | Kayda değer değişim yok |
 
-[`tests/measurements/attach.rs`](https://github.com/nomux-sh/nomux/blob/v0.4.0/tests/measurements/attach.rs) programı aralarında 2 ms bırakarak 2000 tuş yazar. Her aralık 3 çalıştırmanın sonucudur.
+[`tests/measurements/attach.rs`](https://github.com/nomux-sh/nomux/blob/v0.5.0/tests/measurements/attach.rs) programı aralarında 2 ms bırakarak 2000 tuş yazar. Her aralık 3 çalıştırmanın sonucudur.
 Bir çalıştırmadaki en büyük değer 3 ms ile 58 ms arasındadır: başka iş de yapan bir bilgisayarda birkaç tuş scheduler'ı bekler. Yani en büyük değer bazı çalıştırmalarda hedefin üstündedir.
-Programın nasıl çalıştırılacağı [`tests/README.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/tests/README.md#measurements) dosyasında yazar.
+Programın nasıl çalıştırılacağı [`tests/README.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/tests/README.md#measurements) dosyasında yazar.
 
 | Ölçüm | Sonuç | Hedef |
 |---|---|---|
@@ -67,7 +68,7 @@ Programın nasıl çalıştırılacağı [`tests/README.md`](https://github.com/
 
 ### Uzak Host'lar
 
-Kaynak: [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/remote.md#measurements) dosyasının "Measurements" bölümü.
+Kaynak: [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/remote.md#measurements) dosyasının "Measurements" bölümü.
 SSH sunucusu aynı bilgisayardaki OpenSSH 10.2 `sshd`'sidir. İstemci ona, gecikme ekleyebilen bir relay programı üzerinden bağlanır. Her aralık 2 çalıştırmanın sonucudur.
 
 | Ölçüm | Medyan | 99. yüzdelik | Hedef |
@@ -93,7 +94,7 @@ SSH sunucusu aynı bilgisayardaki OpenSSH 10.2 `sshd`'sidir. İstemci ona, gecik
 
 ### Geri yükleme
 
-Kaynak: [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/daemon.md#measurements) dosyasının "Measurements" bölümü.
+Kaynak: [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/daemon.md#measurements) dosyasının "Measurements" bölümü.
 
 | Ölçüm | Medyan | 11 çalıştırmanın en yavaşı | Hedef |
 |---|---|---|---|
@@ -109,12 +110,13 @@ Kaynak: [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/da
 
 ### Yeni Session
 
-Kaynak: [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/daemon.md#measurements) dosyasının "Measurements" bölümü. Daemon, her birinde kullanıcının shell'i önceden başlatılmış birkaç holder'ı hazır tutar: holder havuzunu [Nasıl çalışır](/docs/tr/concepts/how-it-works/#holder-havuzu) sayfası anlatır.
+Kaynak: [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/daemon.md#measurements) dosyasının "Measurements" bölümü. Daemon, her birinde kullanıcının shell'i önceden başlatılmış birkaç holder'ı hazır tutar: holder havuzunu [Nasıl çalışır](/docs/tr/concepts/how-it-works/#holder-havuzu) sayfası anlatır.
 
 | Ölçüm | Havuz olmadan | Havuzdan | Hedef |
 |---|---|---|---|
-| İsteğin shell'in ilk komutuna kadar geçen süresi, başlangıç dosyaları 200 ms süren `bash`: 50 çalıştırmanın medyanı | 205,8 ms | 2,8 ms | < 10 ms |
-| `nomux new`, başlangıç dosyasız `sh`: 50 çalıştırmanın medyanı | 3,2 ms | 3,1 ms | < 10 ms |
+| İsteğin shell'in ilk komutuna kadar geçen süresi, home dizini olmayan bir dizinde, başlangıç dosyaları 200 ms süren `bash`: 50 çalıştırmanın medyanı | 205,9 ms | 1,1 ms | < 10 ms |
+| Aynısı, boş bir başlangıç dosyalı `bash` | 2,7 ms | 1,1 ms | < 10 ms |
+| `nomux new`, boş bir başlangıç dosyalı `bash`: 50 çalıştırmanın medyanı | 3,2 ms | 2,0 ms | < 10 ms |
 
 | Ölçüm | Sonuç | Hedef |
 |---|---|---|
@@ -122,17 +124,19 @@ Kaynak: [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/da
 | Havuz olmadan `Session.Create`, bağlı istemci: medyan, 50 çalıştırmanın en yavaşı | 2,31 ms, 2,43 ms | Hedef yok |
 | Aynısı, daemon'daki kısım: holder process'inin başlaması, `ready` beklemesi, lease, cevap | 0,12 ms – 0,19 ms, 2,2 ms, 0,08 ms, 0,03 ms | Hedef yok |
 
-- **Hedef havuzdan açılışta tutuyor; yavaş bir shell için havuz olmadan tutmuyor.** Başlangıç dosyaları 200 ms süren bir `bash`, havuz olmadan 205,8 ms alır; bu hedefin yaklaşık 20 katıdır. Havuzdan aynı Session 2,8 ms alır.
-- **Başlangıç dosyası olmayan bir shell için havuz gerekmez.** `sh` ile `nomux new`, havuzla da havuzsuz da aynı sürede biter: CLI'ın başlaması ve bağlantısı sürenin büyük kısmıdır, shell ise kısa sürede başlar.
+- **Hedef havuzdan açılışta tutuyor; yavaş bir shell için havuz olmadan tutmuyor.** Başlangıç dosyaları 200 ms süren bir `bash`, havuz olmadan 205,9 ms alır; bu hedefin yaklaşık 20 katıdır. Havuzdan aynı Session 1,1 ms alır: shell başlangıç dosyalarını istekten önce çalıştırmıştır, bu yüzden süre onlara bağlı değildir.
+- **Boş başlangıç dosyalı bir shell havuzdan daha az kazanır.** `nomux new` havuz olmadan 3,2 ms, havuzdan 2,0 ms alır: CLI'ın başlaması ve bağlantısı sürenin büyük kısmıdır.
+- **Satırlarda Session'ın dizini var.** 0.5.0'dan beri havuzdaki `bash`, `zsh` ya da `fish`, ilk prompt'tan önce Session'ın dizinine geçer; terminale hiçbir şey yazılmaz. İlk satırlar home dizini olmayan bir dizin içindir. Başlangıç dosyaları yine home dizininde, bir Session holder'ı almadan önce çalışır.
+- **Havuz, başka bir dizini yalnızca `bash`, `zsh` ve `fish` için verir.** Başka bir shell için ve `pool.shell_start_files = false` iken havuz yalnızca home dizinindeki bir Session'ı alır; başka dizindeki Session yeni bir holder alır. Dokümanlarda bu durum için ölçüm yoktur.
 - **Havuzda holder hazır olduğunda var olur; shell'inin başlangıç dosyaları bittiğinde değil.** Holder'ı o sırada alan Session'ın prompt'u daha geç görünür.
-- **Komutlu bir Session her zaman yeni bir holder alır.** Havuz yalnızca kullanıcının shell'ini verir ve daemon'un tanımadığı bir shell için kapalıdır.
-- Satırlar, [`tests/measurements/new_session.rs`](https://github.com/nomux-sh/nomux/blob/v0.4.0/tests/measurements/new_session.rs) programından alındı: release build, başlangıç dosyası olmayan bir home dizini ve `SHELL=/bin/sh` ile; bir satır başka bir şey söylemiyorsa. Daemon'daki kısım, kodda bulunmayan log satırlarıyla ölçüldü. "debug build" satırı `a_session_from_the_pool_opens_in_less_than_10_ms` testidir.
+- **Komutlu bir Session her zaman yeni bir holder alır.** Havuz yalnızca kullanıcının shell'ini verir. `sessions.memory_limit` ayarlıyken havuz da kapalıdır.
+- Satırlar, [`tests/measurements/new_session.rs`](https://github.com/nomux-sh/nomux/blob/v0.5.0/tests/measurements/new_session.rs) programından alındı: release build ve `SHELL=/bin/bash`, boş bir `.bashrc` ile; bir satır başka bir şey söylemiyorsa. 0.4.0 dokümanı başlangıç dosyasız satırlar için `SHELL=/bin/sh` kullanmıştı ve 0.4.0'ın havuzu bir `cd` satırı yazıyordu; bu yüzden bu satırlar 0.4.0'dakilerle tam olarak karşılaştırılamaz. Daemon'daki kısım, kodda bulunmayan log satırlarıyla ölçüldü. "debug build" satırı `a_session_from_the_pool_opens_in_less_than_10_ms` testidir.
 - Karşılaştırma için aynı doküman, gerçek bir kullanıcının başlangıç dosyalarıyla `bash -i`'nin aynı bilgisayarda ilk prompt'a 232 ms'de ulaştığını söyler.
 - Havuz beklerken bellek kullanır: "Holder" ve "Daemon" bölümlerindeki havuz satırlarına bakın.
 
 ### Holder
 
-Kaynak: [`docs/holder.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/holder.md#measurements) dosyasının "Measurements" bölümü. Bu değerlerdeki holder journal'ı yazar.
+Kaynak: [`docs/holder.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/holder.md#measurements) dosyasının "Measurements" bölümü. Bu değerlerdeki holder journal'ı yazar.
 
 | Ölçüm | Sonuç | Hedef |
 |---|---|---|
@@ -162,7 +166,7 @@ Ring buffer, holder'ın bir Session'ın en son çıktısını tuttuğu bellektir
 
 ### Daemon
 
-Kaynak: [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/daemon.md#measurements) dosyasının "Measurements" bölümü. Ölçüm komutları da aynı bölümdedir.
+Kaynak: [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/daemon.md#measurements) dosyasının "Measurements" bölümü. Ölçüm komutları da aynı bölümdedir.
 
 | Ölçüm | Sonuç | Hedef |
 |---|---|---|
@@ -180,18 +184,18 @@ Kaynak: [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/da
 | Resident bellek, durum motoruyla, her biri bir durum task'ına sahip 20 Session'lı boştaki daemon (glibc) | 7,1 MB – 7,2 MB | < 10 MB |
 | Her biri bir durum task'ına sahip 20 Session'lı boştaki daemon'un 60 saniyedeki CPU süresi ve context switch sayısı | 0 ve 0 | 0 |
 | Aynısı; Session'lardan 10'u 60 saniyeden önce bir Alt işli durum bildirdi | 0 ve 0 | 0 |
-| 2 holder'lık dolu havuzlu boştaki daemon'un resident belleği (glibc) | 4,4 MB | < 10 MB |
-| Havuzdaki 2 holder'ın resident belleği (glibc) | 5,5 MB; yani holder başına 2,75 MB | Holder başına < 3 MB |
-| Havuzdaki 2 shell'in resident belleği (başlangıç dosyasız `bash` 5.3) | 8,9 MB | Hedef yok |
+| 2 holder'lık dolu havuzlu boştaki daemon'un resident belleği (glibc) | 4,6 MB | < 10 MB |
+| Havuzdaki 2 holder'ın resident belleği (glibc) | 5,6 MB; yani holder başına 2,8 MB | Holder başına < 3 MB |
+| Havuzdaki 2 shell'in resident belleği (boş başlangıç dosyalı `bash` 5.3) | 8,7 MB | Hedef yok |
 | Dolu havuzlu, havuzdaki holder'ları ve shell'leriyle boştaki daemon'un 30 saniyedeki CPU süresi | 0 | 0 |
 
 Aynı dokümanda extension host'tan ve durum motorundan önceki build'lere ait eski satırlar da vardır. "Extension host ile" ya da "durum motoruyla" yazmayan satırlar daha eski bir ölçümden ve daha eski bir build'den gelir.
 20 Session'lı daemon 7,1 MB – 7,2 MB kullanır; Session'sız daemon 4,4 MB. Fark Session başına yaklaşık 0,14 MB eder. Bu, iki satırdan yapılan bir hesaptır; ayrı bir ölçüm değildir.
-Havuz, daemon satırlarının saymadığı bellek ekler. Havuzdaki 2 holder 5,5 MB, 2 shell'i 8,9 MB kullanır; ikisi de kendi process'lerindedir. `pool.size = 0` ayarı havuzu kapatır.
+Havuz, daemon satırlarının saymadığı bellek ekler. Havuzdaki 2 holder 5,6 MB, 2 shell'i 8,7 MB kullanır; ikisi de kendi process'lerindedir. Bu üç satır 0.4.0'da 4,4 MB, 5,5 MB ve 8,9 MB idi. `pool.size = 0` ayarı havuzu kapatır.
 
 ### Session belleği
 
-Kaynak: [`docs/memory.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/memory.md#measurements) dosyasının "Measurements" bölümü. Daemon her Session'ın process'lerinin belleğini yalnızca bir istemci isteyince ölçer (`nomux ls --memory`).
+Kaynak: [`docs/memory.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/memory.md#measurements) dosyasının "Measurements" bölümü. Daemon her Session'ın process'lerinin belleğini yalnızca bir istemci isteyince ölçer (`nomux ls --memory`); 0.5.0'dan beri bir [hazırda bekletme](#hazırda-bekletme) tetikleyicisi değerlere ihtiyaç duyduğunda da ölçer.
 
 | Ölçüm | Sonuç |
 |---|---|
@@ -205,18 +209,51 @@ Kaynak: [`docs/memory.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/me
 | Aynı 42 saniyede daemon'un context switch sayısı | 0 |
 | Daemon'un thread sayısı: istekten önce, isteğin hemen sonrasında, istekten 12 saniye sonra | 1, 2, 1 |
 | Bellek isteğiyle `nomuxd` boyutu (glibc) | 1771 KiB (1813264 bayt) |
+| Kernel'in uyguladığı bellek limitli bir Session'ın başlaması: her başlangıçta geçici scope'un maliyeti | Yaklaşık 4,6 ms |
 
 Bu isteğin süresi için bir hedef yoktur. CPU süresi, context switch ve thread satırları, daemon'un iki istek arasında bellek için hiçbir şey yapmadığını gösterir. Bu kuralı [ADR-0009](https://github.com/nomux-sh/docs/blob/main/adr/0009-resource-budgets-for-disk-and-memory.md) kaydeder.
 
 - Sürenin iki parçası vardır: Host'taki process tablosunun okunması (Host'taki process sayısıyla artar) ve her process'in belleğinin okunması (Session'ların process sayısıyla ve belleğiyle artar).
 - Aynı 50 Session için `nomux ls --memory --json`, `nomux ls --json`'dan yaklaşık 10 kat yavaştır (10,9 ms ve 1,1 ms). `--memory` olmadan hiçbir şey ölçülmez.
 - Daemon istek sürerken diğer istemcilere cevap verir: iş onun thread'inde değildir.
-- İlk satırları [`tests/measurements/memory.rs`](https://github.com/nomux-sh/nomux/blob/v0.4.0/tests/measurements/memory.rs) programı ölçer. CPU süresi, context switch ve thread sayıları, daemon process'ine verilen komutlardan alındı.
+- İlk satırları [`tests/measurements/memory.rs`](https://github.com/nomux-sh/nomux/blob/v0.5.0/tests/measurements/memory.rs) programı ölçer. CPU süresi, context switch ve thread sayıları, daemon process'ine verilen komutlardan alındı.
 - Bellek isteğinin macOS kodu yalnızca CI'ın macOS runner'ında derlendi ve test edildi. Gerçek Session'larla bir Mac'te incelenmedi.
+- **Bellek limiti.** 4,6 ms satırı bir ölçüm programından gelmez. [`docs/memory.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/memory.md#memory-limit) dokümanı bunu "tasarımın ölçümü" olarak anar: limitli bir Session'ın her başlangıcında `systemd-run --user --scope` ile açılan geçici scope'un maliyeti. Limitsiz bir Session'da bu maliyet yoktur. `sessions.memory_limit` ayarlıyken havuz kapalıdır; bu yüzden havuzun hedefi böyle bir Session için geçerli değildir ve dokümanlarda başlangıcı için başka bir ölçüm yoktur.
+
+### Hazırda bekletme
+
+Kaynak: [`docs/memory.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/memory.md#measurements) dosyasının "Measurements" bölümündeki "Hibernation" alt bölümü. Nasıl kullanılacağını [Hazırda bekletme](/docs/tr/guides/hibernation/) rehberi anlatır. [`tests/measurements/hibernation.rs`](https://github.com/nomux-sh/nomux/blob/v0.5.0/tests/measurements/hibernation.rs) programı, agent'ları 200 MiB tutan test adapter'ının 3 agent Session'ını başlatır, onları hazırda bekletir ve ölçer. Program kendi scope'unda çalışır (`systemd-run --user --scope`). Bilgisayar aynı anda başka iş de yaptı (8 işlemcide load average 5 ile 30 arasında); bu yüzden sürelerde gürültü vardır.
+
+| Ölçüm | Sonuç |
+|---|---|
+| 3 Session'ın komutlarının hazırda bekletmeden önceki belleği (`ls --memory`, `pss`) | 600,7 MiB |
+| Hazırda bekletmelerin geri verdiği bellek (`ls --memory`, `FREED`) | 600,9 MiB |
+| Ölçümün control group'unun belleği (başlattığı her process: daemon, holder'lar, agent'lar), önce ve sonra | 614,2 MiB, 9,5 MiB |
+| Host'un kullanılabilir belleği (`MemAvailable`), önce ve sonra | 4436,5 MiB, 4636,6 MiB |
+| Hazırda bekleyen bir Session'a attach'ten eski çalıştırmanın ilk ekranına ve devam eden çalıştırmanın ilk çıktısına kadar: 3 uyandırma | 11,7 ms ve 12,2 ms, 4,2 ms ve 4,2 ms, 4,2 ms ve 4,2 ms |
+| Her tetikleyici açıkken (sayı, toplam eşik, baskı) boştaki daemon, 75 s dinlenmeden sonraki 60 s: CPU süresi, her thread'in context switch sayısı, thread sayısı | 0 clock tick, 0, 1 |
+
+- **Bellek geri gelir.** 3 hazırda bekletme 600,9 MiB geri verdi; control group 614,2 MiB'tan 9,5 MiB'a indi. `MemAvailable` burada iyi bir ölçü değildir, çünkü başka programlar onu aynı anda değiştirdi.
+- **Bir uyandırma eski ekrana yaklaşık 4 ms ile 12 ms'de ulaşır.** Bu süre `nomux attach`'in başlamasından (CLI, bağlantı, holder'ın başlaması, yeniden çizim) ekrana kadar geçen zamandır. Testin agent'ı satırını başlarken yazar; bu yüzden devam eden çalıştırma eski ekrandan 0 ms ile 0,5 ms sonra oradadır. Gerçek bir agent bundan sonra kendi başlangıç süresine ihtiyaç duyar ve bunu kimse ölçmedi.
+- **Tetikleyiciler daemon'u uyandırmaz.** 60 saniyede 0 context switch, her dakikada 0 uyanma demektir. Bellek baskısı tetikleyicisi reactor'ın bir descriptor'ıdır, bir thread değildir. Ölçümden önceki 75 s dinlenme, hazırda bekletmeden bağımsız var olan iki zamanlayıcı içindir: adapter extension'ı son olayından 60 s sonra durur, bellek ölçümünün thread'i ondan 10 s sonra biter.
+- **Baskı tetikleyicisi Linux'ta bir kez denendi.** `MemoryHigh=32M` ve `MemorySwapMax=0` ile bir scope'ta bir program 400 MiB'a yazdı: boştaki bir agent Session'ı `memory-pressure` nedeniyle hazırda bekletildi ve olay, 2000 ms'lik bir pencerede 200 ms'lik bekleme bildirdi. macOS'te baskı tetikleyicisi yoktur: [#100](https://github.com/nomux-sh/nomux/issues/100) numaralı issue açıktır.
+- Ölçüm, test adapter'ını ve testin yazdığı bir agent'ı kullandı; gerçek bir agent aracını değil.
+
+### Workspace ağacı
+
+Kaynak: [`docs/workspace.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/workspace.md#measurements) dosyasının "Measurements" bölümü. [Workspace ağacı](/docs/tr/reference/glossary/) bir Host'un Gruplarını ve Projelerini içerir; nasıl kullanılacağını [Projeler ve Gruplar](/docs/tr/guides/projects-and-groups/) rehberi anlatır. Session'ın başlaması ağacı okumaz; daemon ağacın dosyasını yalnızca başlarken okur. Linux'ta (8 çekirdek) release build ile ölçüldü. 800 düğümlü ağaç, limitlerin izin verdiği en büyük ağaçtır: 128 baytlık adlar ve her Proje için 1001 baytlık bir dizin.
+
+| Ağaç | Boştaki daemon'un resident belleği | Daemon'un 30 saniyedeki CPU süresi, boşta | `nomux new`, warm pool: 30 çalıştırmanın medyanı | `group ls --tree`: 10 çalıştırmanın medyanı |
+|---|---|---|---|---|
+| 0 düğüm | 4,6 MB | 0 clock tick | 2,4 ms – 2,7 ms | 1,5 ms |
+| 800 düğüm | 7,4 MB – 8,2 MB | 0 clock tick | 2,0 ms – 4,0 ms | 7,1 ms – 7,8 ms |
+
+- **Hedefler en büyük ağaçla da tutuyor.** Boştaki daemon < 10 MB hedefine karşı 7,4 MB – 8,2 MB kullanır; havuzdan yeni bir Session < 10 ms hedefine karşı 2,0 ms – 4,0 ms alır. Ağaç daemon'a yaklaşık 2,8 MB – 3,6 MB ekler: bu, iki satırdan yapılan bir hesaptır; ayrı bir ölçüm değildir.
+- `group ls --tree` için hedef yoktur.
 
 ### Hook'lar
 
-Kaynak: [`docs/adapters.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/adapters.md#measurements) dosyasının "Measurements" bölümü. [`tests/measurements/hooks.rs`](https://github.com/nomux-sh/nomux/blob/v0.4.0/tests/measurements/hooks.rs) programı, `nomux hook` komutunun süresini process'in başlamasından bitişine kadar, bir agent aracının çalıştırdığı gibi ölçer. Release build, her biri 100 çalıştırma, test adapter'ı kurulu.
+Kaynak: [`docs/adapters.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/adapters.md#measurements) dosyasının "Measurements" bölümü. [`tests/measurements/hooks.rs`](https://github.com/nomux-sh/nomux/blob/v0.5.0/tests/measurements/hooks.rs) programı, `nomux hook` komutunun süresini process'in başlamasından bitişine kadar, bir agent aracının çalıştırdığı gibi ölçer. Release build, her biri 100 çalıştırma, test adapter'ı kurulu.
 
 | `nomux hook` | Medyan | En hızlı | En yavaş |
 |---|---|---|---|
@@ -229,7 +266,7 @@ Kaynak: [`docs/adapters.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/
 
 ### CLI
 
-CLI için bir hedef yoktur. SSH istemcisi onu büyüttü. Kaynak: [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/remote.md#measurements) dosyasının "Measurements" bölümü:
+CLI için bir hedef yoktur. SSH istemcisi onu büyüttü. Kaynak: [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/remote.md#measurements) dosyasının "Measurements" bölümü:
 
 | `nomux` build'i (glibc) | Boyut |
 |---|---|
@@ -238,29 +275,29 @@ CLI için bir hedef yoktur. SSH istemcisi onu büyüttü. Kaynak: [`docs/remote.
 
 `nomux` reposundaki [#47](https://github.com/nomux-sh/nomux/issues/47) numaralı issue bu boyutla ilgilidir.
 
-### 0.4.0 arşivindeki binary'ler
+### 0.5.0 arşivindeki binary'ler
 
-Bu boyutlar bir dokümandan alınmadı. [0.4.0 sürümünün](https://github.com/nomux-sh/nomux/releases/tag/v0.4.0) `nomux-0.4.0-x86_64-unknown-linux-musl.tar.gz` arşivindeki üç dosyanın boyutlarıdır; bu sayfa için `tar -tvzf` ile okundu. Son sütun 0.3.0 arşivindeki boyuttur.
+Bu boyutlar bir dokümandan alınmadı. [0.5.0 sürümünün](https://github.com/nomux-sh/nomux/releases/tag/v0.5.0) `nomux-0.5.0-x86_64-unknown-linux-musl.tar.gz` arşivindeki üç dosyanın boyutlarıdır; bu sayfa için `tar -tvzf` ile okundu. Arşivin SHA-256 değeri, sürümdeki `SHA256SUMS` dosyasındaki değerdir. Son sütun 0.4.0 arşivindeki boyuttur.
 
-| Binary | Boyut | Hedef | 0.3.0 |
+| Binary | Boyut | Hedef | 0.4.0 |
 |---|---|---|---|
-| `nomux-holder` | 746224 bayt (729 KiB) | < 1 MB | 725680 bayt (709 KiB) |
-| `nomuxd` | 2222280 bayt (2170 KiB) | < 10 MB | 1890216 bayt (1846 KiB) |
-| `nomux` | 5253320 bayt (5130 KiB) | Hedef yok | 4389032 bayt (4286 KiB) |
+| `nomux-holder` | 758512 bayt (741 KiB) | < 1 MB | 746224 bayt (729 KiB) |
+| `nomuxd` | 2566792 bayt (2507 KiB) | < 10 MB | 2222280 bayt (2170 KiB) |
+| `nomux` | 5646536 bayt (5514 KiB) | Hedef yok | 5253320 bayt (5130 KiB) |
 
-Her binary hedefini tutturuyor. Üç binary da 0.3.0'dan büyüdü: `nomux-holder` 20544 bayt (% 2,8), `nomuxd` 332064 bayt (% 17,6) ve `nomux` 864288 bayt (% 19,7). Bu tablodaki `nomux-holder` boyutu, "Holder" tablosundaki 737968 baytlık değerden 8256 bayt farklıdır: ikisi farklı build'lerdir.
+Her binary hedefini tutturuyor. Üç binary da 0.4.0'dan büyüdü: `nomux-holder` 12288 bayt (% 1,6), `nomuxd` 344512 bayt (% 15,5) ve `nomux` 393216 bayt (% 7,5). Bu tablodaki `nomux-holder` boyutu, "Holder" tablosundaki 737968 baytlık değerden 20544 bayt farklıdır: ikisi farklı build'lerdir.
 
 ### Hedefi tutturmayan değerler
 
 - **glibc build'li holder.** Ring buffer doluyken resident bellek 3,1 MB, program raporları da doluyken 3,3 MB; hedef < 3 MB. Sürüm arşivindeki musl build'i hedefi tutturuyor.
-- **Havuzsuz yeni Session.** Başlangıç dosyaları 200 ms süren bir `bash` 205,8 ms alır; hedef < 10 ms. Havuz, kullanıcının shell'iyle açılan Session için hedefi tutturur; komutlu Session için tutturmaz.
+- **Havuzsuz yeni Session.** Başlangıç dosyaları 200 ms süren bir `bash` 205,9 ms alır; hedef < 10 ms. Havuz, kullanıcının shell'iyle home dizininde açılan Session için, ayrıca `bash`, `zsh` ve `fish` ile başka bir dizinde açılan Session için hedefi tutturur. Komutlu Session için, başka bir dizindeki başka bir shell için ve bellek limitli bir Session için tutturmaz; çünkü bu durumlarda havuz kapalıdır.
 - **Uzak tuş basımı.** Predictive echo olmadığı için tuş bir round trip bekler. Uzak bir Host için "< 10 ms'de görünür" hedefi tutmuyor.
 - **Tuştan ekoya en büyük değer.** Bir çalıştırmadaki en büyük değer 3 ms ile 58 ms arasındadır; bazı çalıştırmalarda 10 ms'nin üstündedir. 99. yüzdelik hedefi tutturuyor.
-- **Ölçülmeyenler.** Yeniden bağlanma süresi, daemon güncellemesi, yeniden başlatmadan sonraki ilk ekran, ağ değişimi ve desktop istemcisinin bütün hedefleri.
+- **Ölçülmeyenler.** Yeniden bağlanma süresi, daemon güncellemesi, yeniden başlatmadan sonraki ilk ekran, ağ değişimi ve desktop istemcisinin bütün hedefleri. 0.5.0 için ayrıca: gerçek bir agent aracının uyandırılması (yalnızca test agent'ı ölçüldü), `zsh` ve `fish` için havuz (satırlar `bash` kullanır), bellek limitli bir Session'ın bitmiş kodla başlaması, macOS'te bellek baskısı tetikleyicisi ve glibc build'lerinin 0.5.0 boyutları.
 
 ## Bu değerlerin sınırları
 
-- Bu değerleri bir kişi tek bir makinede ölçtü. Onları ölçen bir CI job'ı yoktur; hedefin gerisine düşen bir build'i durduran bir CI job'ı da yoktur. [`bench/README.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/bench/README.md), bu job'ın holder ve daemon benchmark'larıyla birlikte geleceğini söyler. [#14](https://github.com/nomux-sh/nomux/issues/14) numaralı issue bu job'la ilgilidir ve nomux 0.4.0'da açıktır.
+- Bu değerleri bir kişi tek bir makinede ölçtü. Onları ölçen bir CI job'ı yoktur; hedefin gerisine düşen bir build'i durduran bir CI job'ı da yoktur. [`bench/README.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/bench/README.md), bu job'ın holder ve daemon benchmark'larıyla birlikte geleceğini söyler. [#14](https://github.com/nomux-sh/nomux/issues/14) numaralı issue bu job'la ilgilidir ve nomux 0.5.0'da açıktır.
 - "Tuştan ekoya" süresi, "local tuş basımından ekrana" hedefinin tamamı değildir. Bir terminal emülatörünün ya da desktop istemcisinin tuşu çizmesi için geçen süreyi içermez.
 - Değerler kodla birlikte değişir. Güncel değerler kaynak dokümanların `main` branch'indeki hâlindedir.
 
