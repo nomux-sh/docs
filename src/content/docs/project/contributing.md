@@ -20,9 +20,12 @@ Each repository also has an `AGENTS.md` file with the rules of that repository. 
 
 ## Repository map
 
-- [`nomux`](https://github.com/nomux-sh/nomux): the core in Rust. It has the holder, the daemon, the client library and the CLI.
+- [`nomux`](https://github.com/nomux-sh/nomux): the core in Rust. It has the holder, the daemon, the extension host, the SSH transport, the client library and the CLI.
 - [`proto`](https://github.com/nomux-sh/proto): the protocol between a client and the daemon. It has the schemas, the specifications and the `nomux-proto` crate.
 - [`extension-api`](https://github.com/nomux-sh/extension-api): the extension SDK. It has the protocol between the daemon and the daemon part of an extension, the `nomux-extension` crate and the format of `extension.toml`.
+- [`extensions`](https://github.com/nomux-sh/extensions): the official extensions. It has the git extension now.
+- [`themes`](https://github.com/nomux-sh/themes): the design tokens, the themes and the `nomux-theme` crate. Its [preview page](https://nomux-sh.github.io/themes/) shows each theme.
+- [`homebrew-tap`](https://github.com/nomux-sh/homebrew-tap): the Homebrew formula of nomux.
 - [`docs`](https://github.com/nomux-sh/docs): this site, the glossary, the roadmap, the architecture decision records and the research notes.
 - [`.github`](https://github.com/nomux-sh/.github): the guides of the table above, the organization profile and the CI workflows that the repositories share.
 - A repository that does not exist yet is created when the work needs it. The [roadmap](/docs/project/roadmap/) names these repositories.
