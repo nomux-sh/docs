@@ -26,9 +26,9 @@ Eight repositories exist, each with CI: [`.github`](https://github.com/nomux-sh/
 |---|---|---|
 | [`nomux`](https://github.com/nomux-sh/nomux/releases/tag/v0.4.0) | 0.4.0 | Local Sessions with attach, the journal of each Session and `nomux capture`, dormant Sessions and their restore after a restart of the Host, the service file for the daemon at login, remote Hosts through SSH, and the extension host with the `ext` commands. New in 0.4.0: the agent status of each Session with its source (`nomux status`, `nomux agent explain`, `nomux events`), the adapter extensions and the hooks (`nomux hook`, `nomux hooks`), the memory of each Session (`nomux ls --memory`), the holder pool, the environment of a Session, and short socket paths for a long home directory. The [install page](/docs/guides/install/) has the steps. |
 | [Homebrew formula](https://github.com/nomux-sh/homebrew-tap) | 0.4.0 | `brew install nomux-sh/tap/nomux` installs the binaries of the `nomux` release on macOS and Linux. |
-| [`nomux-proto`](https://crates.io/crates/nomux-proto) | 0.9.0 | The protocol crate of the `proto` repository. nomux 0.4.0 uses version 0.8.0. |
-| Extension SDKs | 0.1.2 | The crate [`nomux-extension`](https://crates.io/crates/nomux-extension) for Rust, the package [`@nomux-sh/extension`](https://www.npmjs.com/package/@nomux-sh/extension) for TypeScript and the Go module `github.com/nomux-sh/extension-api/sdk/go`, from the `extension-api` repository, with a conformance suite that checks the three. [Write an extension](/docs/guides/write-an-extension/) says how to use them. nomux 0.4.0 uses `nomux-extension` 0.1.1. |
-| [`nomux-theme`](https://crates.io/crates/nomux-theme) | 0.3.0 | The crate that loads and checks a theme, from the `themes` repository. The [preview page](https://nomux-sh.github.io/themes/) shows each theme. |
+| [`nomux-proto`](https://crates.io/crates/nomux-proto) | 0.12.0 | The protocol crate of the `proto` repository. nomux 0.4.0 uses version 0.8.0. |
+| Extension SDKs | 0.1.3 | The crate [`nomux-extension`](https://crates.io/crates/nomux-extension) for Rust, the package [`@nomux-sh/extension`](https://www.npmjs.com/package/@nomux-sh/extension) for TypeScript and the Go module `github.com/nomux-sh/extension-api/sdk/go`, from the `extension-api` repository, with a conformance suite that checks the three. [Write an extension](/docs/guides/write-an-extension/) says how to use them. nomux 0.4.0 uses `nomux-extension` 0.1.1. |
+| [`nomux-theme`](https://crates.io/crates/nomux-theme) | 0.3.1 | The crate that loads and checks a theme, from the `themes` repository. The [preview page](https://nomux-sh.github.io/themes/) shows each theme. |
 
 No official extension has a release. The git extension (`nomux.git`) and the Claude Code adapter (`nomux.agent-claude`) are on the `main` branch of the `extensions` repository, without a UI part. You build them from source: [Claude Code adapter](/docs/guides/claude-code/).
 
@@ -80,20 +80,21 @@ The same document says that a measurement with real packet loss was not made: th
 nomux 0.4.0 has the agent status engine: each Session has a status with its source, an Agent run has a tree of Child work, and the order of the sources is fixed. [Agent status](/docs/guides/agent-status/) shows it. The Claude Code adapter ([guide](/docs/guides/claude-code/)) is the first adapter, and it has no release.
 Not done: Teams, adapters for other agent tools, and the answer of a hook to the tool, which approval cards need. Stage M4 has no acceptance test yet.
 
-#### Stage M5: in progress, the desktop client does not exist
+#### Stage M5: in progress, the desktop client is in development
 
-The `themes` repository has the token set, the base themes and the `nomux-theme` crate. The desktop client does not exist: no code of it is in a repository. The CLI is the only client.
+The `themes` repository has the token set, the base themes and the `nomux-theme` crate. The desktop client is in development in the [`desktop`](https://github.com/nomux-sh/desktop) repository. It has no release. nomux 0.4.0 has no desktop client: the CLI is the only client.
 
-#### Groups of Projects: not built
+#### Groups of Projects: merged in main, comes with 0.5.0
 
-A group holds Projects and other groups to any depth, and a closed group shows the aggregate status of what it holds. This is the open issue [#71](https://github.com/nomux-sh/nomux/issues/71). nomux 0.4.0 has no group command, no group in the protocol and no group in the data model. The `themes` repository has the specification of the group row of the sidebar. The [glossary](/docs/reference/glossary/) lists the term as planned.
+A group holds Projects and other groups to any depth, and a closed group shows the aggregate status of what it holds. This is the issue [#71](https://github.com/nomux-sh/nomux/issues/71), which is closed. The commands `nomux project` and `nomux group` are merged in the main branch of the `nomux` repository, in [pull request #80](https://github.com/nomux-sh/nomux/pull/80). They come with 0.5.0, which is not released. nomux 0.4.0 has no group command, no group in the protocol and no group in the data model. The `themes` repository has the specification of the group row of the sidebar. The [glossary](/docs/reference/glossary/) lists the term as planned.
 
 ### Not built
 
 These parts do not exist in nomux 0.4.0:
 
-- The desktop client and the mobile clients.
+- The desktop client (in development, no release) and the mobile clients.
 - Groups of Projects, the Pane tree and Tabs, Teams and Tasks.
+- Session names and the CLI commands in the style of tmux and screen: in development, see [#88](https://github.com/nomux-sh/nomux/issues/88).
 - A memory limit for a Session, the hibernation of idle agents and the life cycle of Worktrees.
 - A direct connection without SSH, and port forwarding.
 - A release of an official extension, and a registry.
