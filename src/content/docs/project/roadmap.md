@@ -24,37 +24,38 @@ Eight repositories exist, each with CI: [`.github`](https://github.com/nomux-sh/
 
 | Component | Version | Content |
 |---|---|---|
-| [`nomux`](https://github.com/nomux-sh/nomux/releases/tag/v0.3.0) | 0.3.0 | Local Sessions with attach, the journal of each Session and `nomux capture`, dormant Sessions and their restore after a restart of the Host, the service file for the daemon at login, remote Hosts through SSH, and the extension host with the `ext` commands. The [install page](/docs/guides/install/) has the steps. |
-| [Homebrew formula](https://github.com/nomux-sh/homebrew-tap) | 0.3.0 | `brew install nomux-sh/tap/nomux` installs the binaries of the `nomux` release on macOS and Linux. |
-| [`nomux-proto`](https://crates.io/crates/nomux-proto) | 0.7.0 | The protocol crate of the `proto` repository. nomux 0.3.0 uses version 0.5.0. |
-| [`nomux-extension`](https://crates.io/crates/nomux-extension) | 0.1.0 | The extension SDK, from the `extension-api` repository. The [extensions page](/docs/concepts/extensions/) says what it has. |
-| [`nomux-theme`](https://crates.io/crates/nomux-theme) | 0.1.0 | The crate that loads and checks a theme, from the `themes` repository. The [preview page](https://nomux-sh.github.io/themes/) shows each theme. |
+| [`nomux`](https://github.com/nomux-sh/nomux/releases/tag/v0.4.0) | 0.4.0 | Local Sessions with attach, the journal of each Session and `nomux capture`, dormant Sessions and their restore after a restart of the Host, the service file for the daemon at login, remote Hosts through SSH, and the extension host with the `ext` commands. New in 0.4.0: the agent status of each Session with its source (`nomux status`, `nomux agent explain`, `nomux events`), the adapter extensions and the hooks (`nomux hook`, `nomux hooks`), the memory of each Session (`nomux ls --memory`), the holder pool, the environment of a Session, and short socket paths for a long home directory. The [install page](/docs/guides/install/) has the steps. |
+| [Homebrew formula](https://github.com/nomux-sh/homebrew-tap) | 0.4.0 | `brew install nomux-sh/tap/nomux` installs the binaries of the `nomux` release on macOS and Linux. |
+| [`nomux-proto`](https://crates.io/crates/nomux-proto) | 0.9.0 | The protocol crate of the `proto` repository. nomux 0.4.0 uses version 0.8.0. |
+| Extension SDKs | 0.1.2 | The crate [`nomux-extension`](https://crates.io/crates/nomux-extension) for Rust, the package [`@nomux-sh/extension`](https://www.npmjs.com/package/@nomux-sh/extension) for TypeScript and the Go module `github.com/nomux-sh/extension-api/sdk/go`, from the `extension-api` repository, with a conformance suite that checks the three. [Write an extension](/docs/guides/write-an-extension/) says how to use them. nomux 0.4.0 uses `nomux-extension` 0.1.1. |
+| [`nomux-theme`](https://crates.io/crates/nomux-theme) | 0.3.0 | The crate that loads and checks a theme, from the `themes` repository. The [preview page](https://nomux-sh.github.io/themes/) shows each theme. |
 
-No official extension has a release. The git extension (`nomux.git`) is on the `main` branch of the `extensions` repository, without a UI part.
+No official extension has a release. The git extension (`nomux.git`) and the Claude Code adapter (`nomux.agent-claude`) are on the `main` branch of the `extensions` repository, without a UI part. You build them from source: [Claude Code adapter](/docs/guides/claude-code/).
 
-### Stage M1: nearly complete
+### What is in progress
 
-nomux 0.3.0 has most of stage M1: a Session continues when the client disconnects and when the daemon stops, and after a restart of the Host it is dormant and starts again on demand with its output from before.
-The first screen after a restart is not measured: the measured value is the list of 50 dormant Sessions in 25.3 ms (median). The [performance page](/docs/reference/performance/#restore) has the details.
+Stages M1 to M5 are in progress. No stage is done: each stage has an acceptance test or work that is not complete. The sections below say what 0.4.0 has and what is missing.
 
-The work that remains is in the open issues of the [0.4.0 milestone](https://github.com/nomux-sh/nomux/milestone/5) of the `nomux` repository:
+#### Stage M1: in progress, the acceptance test is not met
 
-- The warm holder pool ([#11](https://github.com/nomux-sh/nomux/issues/11)).
+nomux 0.4.0 has the core of stage M1: a Session continues when the client disconnects and when the daemon stops, and after a restart of the Host it is dormant and starts again on demand with its output from before. 0.4.0 added the [holder pool](/docs/guides/holder-pool/), which keeps ready holders for new Sessions.
+The test "after a restart of the Host, the first screen shows in 1 second" is not measured. The [performance page](/docs/reference/performance/) has the values that are measured.
+
+The work that remains is in the open issues of the [0.5.0 milestone](https://github.com/nomux-sh/nomux/milestone/6) of the `nomux` repository:
+
 - Terminal correctness: fuzz tests, golden tests and vttest ([#13](https://github.com/nomux-sh/nomux/issues/13)), and a defect of the screen state ([#29](https://github.com/nomux-sh/nomux/issues/29)).
 - Performance budgets in CI ([#14](https://github.com/nomux-sh/nomux/issues/14)).
-
-The same milestone also has:
-
-- The memory of each Session ([#38](https://github.com/nomux-sh/nomux/issues/38)), the hibernation of idle agents ([#36](https://github.com/nomux-sh/nomux/issues/36)) and the life cycle of Worktrees ([#37](https://github.com/nomux-sh/nomux/issues/37)).
-- The status of each Session ([#60](https://github.com/nomux-sh/nomux/issues/60)), which is work of stage M4.
-- The size of the `nomux` binary with the SSH client ([#47](https://github.com/nomux-sh/nomux/issues/47)), processes that the tests of remote Hosts leave ([#55](https://github.com/nomux-sh/nomux/issues/55)), and a correction of `docs/cli.md` ([#39](https://github.com/nomux-sh/nomux/issues/39)).
+- The holder pool shows the change of the directory in the terminal of a new Session ([#74](https://github.com/nomux-sh/nomux/issues/74)).
+- A Session does not get the environment variables of the client that asks for it ([#75](https://github.com/nomux-sh/nomux/issues/75)).
+- The memory limit of a Session ([#38](https://github.com/nomux-sh/nomux/issues/38)): 0.4.0 shows the memory, and a limit is a design only. The hibernation of idle agents ([#36](https://github.com/nomux-sh/nomux/issues/36)) and the life cycle of Worktrees ([#37](https://github.com/nomux-sh/nomux/issues/37)) are not built.
+- The size of the `nomux` binary with the SSH client ([#47](https://github.com/nomux-sh/nomux/issues/47)) and a test of remote Hosts that fails on macOS in some runs ([#69](https://github.com/nomux-sh/nomux/issues/69)).
 
 The milestone page has the current list.
 
-### Stage M2: in progress, the acceptance test is not met
+#### Stage M2: in progress, the acceptance test is not met
 
-nomux 0.3.0 has remote Hosts: `nomux host add` connects through SSH, installs the binaries and saves the Host, `--host` uses its daemon, and an attach connects again after a cut connection without lost output. [Remote hosts](/docs/guides/remote-hosts/) describes it.
-These items are not done. The source is [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.3.0/docs/remote.md#open-points-for-the-next-versions) of nomux 0.3.0:
+nomux 0.4.0 has remote Hosts: `nomux host add` connects through SSH, installs the binaries and saves the Host, `--host` uses its daemon, and an attach connects again after a cut connection without lost output. [Remote hosts](/docs/guides/remote-hosts/) describes it.
+These items are not done. The source is [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/remote.md#open-points-for-the-next-versions) of nomux 0.4.0:
 
 - Servers without streamlocal forwarding: the bridge command as a second way.
 - Configurations that the client does not support: the fallback to the `ssh` program with `ControlMaster`.
@@ -67,24 +68,35 @@ These items are not done. The source is [`docs/remote.md`](https://github.com/no
 
 The same document says that a measurement with real packet loss was not made: the loss of the measurements is a model in a relay program.
 
-### Stage M3: in progress
+#### Stage M3: in progress
 
-- `nomuxd` 0.3.0 has the extension host. It installs an extension from a directory with the permissions that the user approves, starts its daemon part at the first call and stops it when it is idle. [Extensions](/docs/guides/extensions/) shows the commands.
-- The git extension is on the `main` branch of the `extensions` repository. It has no release.
-- Not done: an extension for file access, the events of an extension for the clients, more host services (the daemon supplies only `sessions.list`), the restriction of the files, programs and network of an extension, and the data model of Projects and Worktrees.
+- `nomuxd` 0.4.0 has the extension host. It installs an extension from a directory with the permissions that the user approves, starts its daemon part at the first call and stops it when it is idle. An extension can send events to the clients, and an adapter extension can report a status. [Extensions](/docs/guides/extensions/) shows the commands.
+- The extension SDKs exist for Rust, TypeScript and Go. A Python SDK is planned.
+- The git extension and the Claude Code adapter are on the `main` branch of the `extensions` repository. They have no release.
+- Not done: an extension for file access, the restriction of the files, programs and network of an extension, the UI part of an extension, and the data model of Projects and Worktrees.
 
-### Other stages
+#### Stage M4: in progress
 
-- **M5.** The `themes` repository has the token set, the base themes and the `nomux-theme` crate. The desktop client does not exist.
+nomux 0.4.0 has the agent status engine: each Session has a status with its source, an Agent run has a tree of Child work, and the order of the sources is fixed. [Agent status](/docs/guides/agent-status/) shows it. The Claude Code adapter ([guide](/docs/guides/claude-code/)) is the first adapter, and it has no release.
+Not done: Teams, adapters for other agent tools, and the answer of a hook to the tool, which approval cards need. Stage M4 has no acceptance test yet.
 
-All other stages are planned.
+#### Stage M5: in progress, the desktop client does not exist
 
-## Stages M2 and M3: work has started
+The `themes` repository has the token set, the base themes and the `nomux-theme` crate. The desktop client does not exist: no code of it is in a repository. The CLI is the only client.
 
-- **M2.** The work on remote Hosts has started. Its work items are the issues of the [0.3.0 milestone](https://github.com/nomux-sh/nomux/milestone/3) of the `nomux` repository. No version has a remote Host yet.
-- **M3.** The work on the extension SDK has started: `nomux-extension` 0.1.0 is published. The daemon does not start extensions yet.
+#### Groups of Projects: not built
 
-All other stages are planned.
+A group holds Projects and other groups to any depth, and a closed group shows the aggregate status of what it holds. This is the open issue [#71](https://github.com/nomux-sh/nomux/issues/71). nomux 0.4.0 has no group command, no group in the protocol and no group in the data model. The `themes` repository has the specification of the group row of the sidebar. The [glossary](/docs/reference/glossary/) lists the term as planned.
+
+### Not built
+
+These parts do not exist in nomux 0.4.0:
+
+- The desktop client and the mobile clients.
+- Groups of Projects, the Pane tree and Tabs, Teams and Tasks.
+- A memory limit for a Session, the hibernation of idle agents and the life cycle of Worktrees.
+- A direct connection without SSH, and port forwarding.
+- A release of an official extension, and a registry.
 
 ## Stages
 
