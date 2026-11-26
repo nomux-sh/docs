@@ -1,0 +1,220 @@
+---
+title: Extension'lar
+description: nomux CLI ile bir extension'ı onayladığınız izinlerle kurun, listeleyin, çağırın, devre dışı bırakın ve kaldırın.
+---
+
+Extension nomux'a bir özellik ekler. Daemon parçası, Host'taki daemon'un ilk çağrıda başlattığı ve boşta kalınca durdurduğu bir programdır.
+Bu sayfa bir extension'ı CLI ile nasıl kullanacağınızı gösterir. Extension yazmak için [extension SDK](https://github.com/nomux-sh/extension-api#write-an-extension)'ya bakın. Modeli [Extension'lar](/docs/tr/concepts/extensions/) kavram sayfası anlatır.
+
+Bu sayfadaki çıktılar, nomux 0.3.0'ın Linux'ta geçici bir home dizininde (`/tmp/nomux-demo`) verdiği gerçek çıktılardır.
+
+## Hangi extension'lar var
+
+Henüz hiçbir extension'ın release'i yok. Registry de, indirilecek paket de yok: `nomux ext install` bir dizinden kurar.
+Bu sayfada iki extension kullanılıyor; ikisi de bu çalıştırma için kaynağından derlendi:
+
+| Extension | Kimlik | Kaynak | Manifest'teki izinler |
+|---|---|---|---|
+| Echo | `nomux.echo` | SDK'nın örneği: [`extension-api/examples/echo`](https://github.com/nomux-sh/extension-api/tree/main/examples/echo) | Yok |
+| Git | `nomux.git` | `extensions` reposunun `main` branch'indeki [`git`](https://github.com/nomux-sh/extensions/tree/main/git) dizini. 0.1.0 sürümü yayımlanmadı | `fs=${worktree}`, `process=git` |
+
+Paket, `extension.toml` manifest'ini ve manifest'in `[daemon]` tablosunda adı geçen programı içeren bir dizindir. Git extension'ının derleme adımları [extension'ın README'sinde](https://github.com/nomux-sh/extensions/tree/main/git#readme):
+
+```sh
+cargo build --release -p nomux-git
+mkdir -p package/bin
+cp git/extension.toml package/
+cp target/release/nomux-git package/bin/
+```
+
+## Paketi kontrol etmek
+
+`nomux ext validate` bu bilgisayardaki bir dizinin manifest'ini kontrol eder. Daemon gerekmez:
+
+```console
+$ nomux ext validate ./nomux-echo
+extension.toml is valid: nomux.echo 0.1.0 (Echo) asks for no permissions
+$ nomux ext validate ./nomux-git
+extension.toml is valid: nomux.git 0.1.0 (Git) asks for the permissions: fs=${worktree} process=git
+```
+
+Geçersiz bir manifest'te her sorun, alanın yoluyla birlikte ayrı bir satırda yazar ve çıkış kodu 1 olur:
+
+```console
+$ nomux ext validate ./broken
+extension.toml is not valid:
+  `extension.id` must have two or more parts with `.` between them, in 64 characters at most. A part starts with a lower-case letter and has only lower-case letters, digits and `-`
+```
+
+`validate` paketin diğer dosyalarına bakmaz. `install` ayrıca paketin daemon parçasının programını içerdiğinden emin olur.
+
+## İzinlerle kurmak
+
+Extension yalnızca sizin onayladığınız izinleri alır. Hiçbir komut soru sormadığından onayı komut satırında verirsiniz.
+Onay yoksa `install` extension'ın ne istediğini yazdırır, hiçbir şey kurmaz ve 4 çıkış koduyla biter:
+
+```console
+$ nomux ext install ./nomux-git
+nomux: the extension nomux.git 0.1.0 asks for these permissions:
+  fs=${worktree}
+  process=git
+Nothing was installed. To install the extension, approve its permissions: add --grant-all, or --grant <permission> for each permission that you approve. For a directory that starts with ${worktree}, give a directory: --grant fs=<directory>
+```
+
+| Komut satırı | Sonuç |
+|---|---|
+| Bir ya da daha fazla `--grant <izin>` | Extension bu izinleri alır, istediği diğer izinleri almaz |
+| `--grant-all` | Extension istediği her izni alır; yalnızca `${worktree}` ile başlayan dizini almaz |
+| `--grant-all --grant fs=<dizin>` | Aynısı, artı `${worktree}` için verilen dizin |
+| Seçenek yok ve manifest hiç izin istemiyor | Extension kurulur |
+
+Bir izin şu biçimlerden birindedir: `fs=<dizin>`, `process=<program>`, `network` ya da `scope=<kapsam>`. `${worktree}` ile başlayan bir öğe için mutlak bir yol verin.
+
+Yalnızca `--grant-all` ile git extension'ı `process=git` alır, dizin almaz. Aynı extension'ı ikinci kez kurmak 1 çıkış koduyla hata verir:
+
+```console
+$ nomux ext install ./nomux-git --grant-all
+extension nomux.git 0.1.0 installed with the permissions: process=git
+$ nomux ext install ./nomux-git --grant-all --grant fs=/tmp/nomux-demo/project
+nomux: the extension `nomux.git` is already installed
+```
+
+İzinleri değiştirmek ya da yeni bir sürüm kurmak için extension'ı kaldırıp yeniden kurun. Manifest'in istemediği bir izin için `--grant` 1 çıkış koduyla hata verir ve hiçbir şey kurulmaz:
+
+```console
+$ nomux ext rm nomux.git
+extension nomux.git removed
+$ nomux ext install ./nomux-git --grant network
+nomux: the manifest does not ask for the permission `network`
+$ nomux ext install ./nomux-git --grant-all --grant fs=/tmp/nomux-demo/project
+extension nomux.git 0.1.0 installed with the permissions: fs=/tmp/nomux-demo/project process=git
+$ nomux ext install ./nomux-echo
+extension nomux.echo 0.1.0 installed with no permissions
+```
+
+Bu sayfadaki örnekler aynı geçici home dizinindeki iki çalıştırmadan geliyor.
+
+Daemon paketi kopyalar; kurulumdan sonra kaynak dizinde yaptığınız bir değişiklik hiçbir şeyi değiştirmez. Pakette yalnızca normal dosyalar ve dizinler olabilir: daemon sembolik link'i reddeder.
+`install` hiçbir process başlatmaz; bunu ilk çağrı yapar.
+
+:::caution
+nomux 0.3.0'da daemon yalnızca host servislerinin kapsamlarını uygular. Onaylanan diğer izinleri (`fs`, `process` ve `network`) extension'a iletir; bunlara uymak extension'ın işidir. Extension'ın process'i daemon'la aynı dosya erişimine sahiptir.
+Git extension'ı izinlerini her istekte kendisi uygular; kuralları [README'sinde](https://github.com/nomux-sh/extensions/tree/main/git#permissions).
+Yalnızca kaynağına güvendiğiniz extension'ları kurun.
+:::
+
+## Listelemek
+
+```console
+$ nomux ext ls
+ID          NAME  VERSION  STATE    PERMISSIONS                             REASON
+nomux.echo  Echo  0.1.0    stopped  -
+nomux.git   Git   0.1.0    stopped  fs=/tmp/nomux-demo/project,process=git
+```
+
+| Durum | Anlamı |
+|---|---|
+| `stopped` | Extension etkin ama process'i çalışmıyor. Sonraki çağrı onu başlatır |
+| `starting` | Process başladı ama henüz hazır değil |
+| `running` | Process çalışıyor. 60 saniye çağrı gelmezse durur |
+| `failed` | Process çöktü. Bir süre bekledikten sonra gelen çağrı onu yeniden başlatır. `REASON` hatayı söyler |
+| `disabled` | Daemon extension'ı başlatmaz. `REASON` nedenini söyler: siz devre dışı bıraktınız ya da art arda 5 kez çöktü |
+
+Kurulu ama hiç çağrılmayan bir extension'ın process'i yoktur; daemon'a maliyeti bir listedeki tek bir kayıttır.
+
+## Çağırmak
+
+`nomux ext call` bir extension'ın tek bir metodunu çağırır ve sonucun payload'ını standart çıktıya, başka hiçbir bayt eklemeden yazar. Komut script'ler ve testler içindir.
+Payload'lar bayttır; kodlamalarını metot belirler. Bu sayfadaki iki extension'ın metotları protobuf mesajları kullanır.
+
+Bu, git extension'ının `status` metodunu `/tmp/nomux-demo/project` içindeki Git reposu için çağırıyor. `status-request.bin` dosyasında `repository` alanı bu dizin olan bir `StatusRequest` mesajı var. Mesajların şemaları extension'ın [`proto`](https://github.com/nomux-sh/extensions/tree/main/git/proto/nomux/git/v1) dizininde.
+
+```console
+$ nomux ext call nomux.git status --payload @status-request.bin > status-response.bin
+$ wc -c status-response.bin
+25 status-response.bin
+$ nomux ext ls
+ID          NAME  VERSION  STATE    PERMISSIONS                             REASON
+nomux.echo  Echo  0.1.0    stopped  -
+nomux.git   Git   0.1.0    running  fs=/tmp/nomux-demo/project,process=git
+```
+
+Çağrı extension'ın process'ini başlattı. Sonuç 25 baytlık bir `StatusResponse` mesajı.
+
+Örnekteki `echo` metodu aldığı mesajı geri verir. Payload'ı `hi` metnini taşıyan bir protobuf mesajı:
+
+```console
+$ printf '\n\002hi' > request.bin
+$ nomux ext call nomux.echo echo --payload @request.bin > response.bin
+$ od -c response.bin
+0000000  \n 002   h   i
+0000004
+```
+
+`--payload <metin>` bir metnin baytlarını, `--payload @<dosya>` bir dosyanın içeriğini gönderir. Seçenek yoksa payload boştur.
+
+| Sonuç | Çıkış kodu |
+|---|---|
+| Metot bir sonuç verdi | 0 |
+| Bu kimlikte extension yok ya da extension'da bu metot yok | 2 |
+| Extension 30 saniye içinde cevap vermedi | 3 |
+| Extension gerekli izni olmadığını söyledi | 4 |
+| Extension devre dışı, process'i başlayamıyor ya da çöktü, veya başka bir hatayla cevap verdi | 1 |
+
+```console
+$ nomux ext call nomux.echo nothing
+nomux: the extension answered with an error: the extension has no method `nothing`
+$ nomux ext call nomux.echo echo
+nomux: the extension answered with an error: the text is empty
+```
+
+Bir extension'ın çökmesi kendi process'inde kalır. Daemon, Session'lar ve diğer extension'lar çalışmaya devam eder.
+
+## Devre dışı bırakmak, etkinleştirmek ve kaldırmak
+
+```console
+$ nomux ext disable nomux.echo
+extension nomux.echo disabled
+$ nomux ext call nomux.echo echo --payload @request.bin
+nomux: the extension nomux.echo: the extension is disabled: the user disabled the extension
+$ nomux ext enable nomux.echo
+extension nomux.echo enabled
+```
+
+`disable` extension'ın process'ini durdurur. Ardından `nomux ext ls` durumu `disabled`, nedeni `the user disabled the extension` olarak gösterir. `enable`, daemon'un art arda 5 çökmeden sonra devre dışı bıraktığı bir extension'ı da yeniden etkinleştirir.
+
+`rm` process'i durdurur; paketi, onaylanan izinleri ve extension'ın çalışma dizinini siler:
+
+```console
+$ nomux ext rm nomux.echo
+extension nomux.echo removed
+$ nomux ext rm nomux.echo
+nomux: no extension has the identifier nomux.echo
+$ nomux ext ls
+no extensions
+```
+
+Bu kimlikte extension yoksa `enable`, `disable` ve `rm` 2 çıkış koduyla biter.
+
+## Extension'lar nerede durur
+
+| Bilgisayar | Dizin |
+|---|---|
+| Linux | `~/.local/share/nomux/extensions` |
+| macOS | `~/Library/Application Support/nomux/extensions` |
+
+Dizinin modu 0700'dür. İçinde paketler, her extension'ın onaylanan izinleri ve çalışma dizini bulunur. Kurulu bir extension Host yeniden başladıktan sonra da yerinde durur.
+
+Extension'lar bir Host'a aittir. `--host <ad>` ile `ext` komutları bir [uzak Host'un](/docs/tr/guides/remote-hosts/) daemon'unu kullanır; `install`'a verilen dizin de o Host'taki mutlak bir yoldur. `ext validate` her zaman sizin bilgisayarınızdaki bir dizini okur.
+
+## Bu sürümün sınırları
+
+Bu maddeler nomux 0.3.0'ın [`docs/extensions.md`](https://github.com/nomux-sh/nomux/blob/v0.3.0/docs/extensions.md#not-done-yet) dosyasından:
+
+- Daemon bir extension'ın dosyalarını, programlarını ve ağ erişimini kısıtlamaz.
+- Daemon'un tek bir host servisi var: `sessions:read` kapsamlı `sessions.list`.
+- Registry'den kurulum, imza kontrolü ve güncelleme komutu yok.
+- İstemciler extension olaylarını almaz; hiçbir istemci bir extension'ın arayüz parçasını göstermez.
+- Daemon bir extension'ın process'ini durdurduğunda, extension'ın başlattığı process'ler çalışmaya devam eder.
+
+Her `ext` komutu JSON belgesiyle birlikte [CLI başvurusunda](/docs/tr/reference/cli/). Bu sayfadaki terimler [Sözlük](/docs/tr/reference/glossary/)'ten gelir.
