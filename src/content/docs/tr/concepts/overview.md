@@ -9,7 +9,7 @@ nomux native bir agentic geliştirme ortamıdır.
 Siz bir Görev açarsınız; nomux o Göreve bir Worktree ile bir agent Session'ı bağlar, işi de agent yapar.
 Her Agent çalışmasını ve her Alt işi durumuyla birlikte görürsünüz. Değişiklikleri diff'te inceler, onaylar ve commit'lersiniz.
 
-Bu sayfadaki terimler [Sözlük](/docs/tr/reference/glossary/) sayfasından gelir.
+Bu sayfa tasarımı anlatır. Hangi parçaların nomux 0.4.0'da var olduğunu sayfanın sonundaki [Durum](#durum) bölümü söyler. Bu sayfadaki terimler [Sözlük](/docs/tr/reference/glossary/) sayfasından gelir.
 
 ## Üç temel fikir
 
@@ -24,8 +24,10 @@ Hepsini tek tek kurup kaldırabilirsiniz. Kullanmadığınız extension hiç yü
 Bunun bugün ne kadarının var olduğunu [extension'lar sayfası](/docs/tr/concepts/extensions/) anlatır.
 
 **Her durumun kaynağı bellidir.**
-nomux bir agent'ın durumunu adapter event'lerinden, OSC 7501 terminal dizisinden, agent'ın kendi bildiriminden ya da son çare olarak bir yedek kaynaktan okur.
-Durumu, geldiği kaynakla birlikte saklar. Tahmine dayanan bir değeri kesinmiş gibi göstermez.
+nomux bir agent'ın durumunu sabit bir sırayla altı kaynaktan okur: adapter, program durumu (OSC 7501 terminal dizisi), öz bildirim, session geri yükleme, prompt işaretleri ve ön plandaki program. Son ikisi tahmindir.
+Durumu, geldiği kaynakla birlikte saklar. Tahmini tahmin olarak işaretler, kesinmiş gibi göstermez.
+Adapter'lar bir agent aracının hook olaylarını okur. Claude Code adapter'ı var ve henüz release edilmedi. Diğer araçların adapter'ları planlanıyor.
+[Agent durumu](/docs/tr/guides/agent-status/) rehberi durumu gerçek komutlarla gösterir.
 
 ## Çekirdekte ne var
 
@@ -37,6 +39,8 @@ Durumu, geldiği kaynakla birlikte saklar. Tahmine dayanan bir değeri kesinmiş
 - Takım Tab'ı ve mesaj kutuları. Orkestrasyonu nomux değil, agent'lar kendileri yapar.
 - Extension host'ları, tema motoru ve arayüz dili motoru.
 - İstemciler: CLI, desktop uygulaması ve mobil uygulamalar.
+
+nomux 0.4.0'da Host'lar (local ve SSH ile), holder ve daemon'lu Session'lar, yeniden başlatmadan sonra geri yükleme, agent durum motoru ve extension'ların daemon parçası var. Tek istemci CLI'dır. Proje, Worktree, Görev, Takım, Pane ağacı, desktop uygulaması, mobil uygulamalar, tema motoru, arayüz dili motoru ile doğrudan ve QUIC bağlantıları henüz yok.
 
 ## Parçalar nasıl bağlanır
 
@@ -70,5 +74,5 @@ Host, Linux ya da macOS üzerinde çalışır. Windows'ta Host, WSL içinde çal
 ## Durum
 
 nomux geliştirme aşamasında. 1.0.0 öncesindeki sürümler ön sürümdür: minor sürümler arasında API, CLI ve protokol değişebilir.
-Bugün hangi parçaların hazır olduğunu [yol haritası](/docs/tr/project/roadmap/) gösterir.
+Bugün hangi parçaların hazır olduğunu [yol haritası](/docs/tr/project/roadmap/) gösterir; mevcut sürümün ne yaptığını da [Nasıl çalışır](/docs/tr/concepts/how-it-works/) sayfası anlatır.
 Temel tasarım tercihlerinin gerekçeleri [mimari kararlar](/docs/tr/reference/decisions/) sayfasından başlayarak okunabilir.

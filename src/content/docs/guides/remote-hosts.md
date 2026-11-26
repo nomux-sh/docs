@@ -9,8 +9,8 @@ Its Sessions live on that computer: they continue when your laptop sleeps or the
 You install nomux only on the computer on which you type. `nomux host add` puts the binaries on the remote Host.
 
 :::note
-The commands that connect to a server (`host add`, `host doctor` with a Host, and each command with `--host`) were not run for this page. Their steps and their messages come from [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.3.0/docs/remote.md) and [`docs/cli.md`](https://github.com/nomux-sh/nomux/blob/v0.3.0/docs/cli.md) of nomux 0.3.0.
-The output on this page is the real output of nomux 0.3.0 on Linux for the commands that do not connect: `host ls`, `host rm`, `host doctor` without a Host, and the errors of a name that does not exist.
+The commands that connect to a server (`host add`, `host doctor` with a Host, and each command with `--host`) were not run for this page. Their steps and their messages come from [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/remote.md), [`docs/cli.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/cli.md) and [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/daemon.md) of nomux 0.4.0. Compared with nomux 0.3.0, two things change for a remote Host: the socket path of a long home directory ([Long home paths](/docs/guides/long-home-paths/)), and the environment of a Session ([Session environment on a remote Host](#session-environment-on-a-remote-host)).
+The output on this page is the real output of nomux 0.4.0 on Linux for the commands that do not connect: `host ls`, `host rm`, `host doctor` without a Host, and the errors of a name that does not exist or of a command that cannot use `--host`.
 :::
 
 ## What the remote Host needs
@@ -59,11 +59,13 @@ A different system is an error.
 | Path | Content | Mode |
 |---|---|---|
 | `~/.nomux/bin/<version>/` | `nomux`, `nomuxd` and `nomux-holder` of one version | 0700 |
-| `~/.nomux/run/` | The socket, the lock and the log of the daemon, and one directory for each Session | 0700, the socket 0600 |
+| `~/.nomux/run/` | The socket, the lock and the log of the daemon, and one directory for each Session. A directory with the suffix `.pool` is a pooled holder | 0700, the socket 0600 |
 
 The holders of the Host also write the state of each Session to the state directory of the Host, as on your computer. [After a restart](/docs/guides/after-a-restart/) describes it.
 nomux changes no shell startup file, no `PATH` and no service on the Host.
 The daemon on the Host listens only on its Unix socket. It has no network port.
+The daemon on the Host is the same daemon as on your computer. It starts its [holder pool](/docs/guides/holder-pool/) at the first request, and a pooled holder is a process of your user on the Host.
+If the home directory of the Host is long, the socket path of `~/.nomux/run` can be too long. Then the daemon and the client use a short link `/tmp/nomux-<hash>` to the directory, and the client computes it from the home directory that the probe gets: [Long home paths](/docs/guides/long-home-paths/).
 
 ## Use the Host
 
@@ -79,7 +81,8 @@ nomux --host vps daemon status
 - Each command first makes sure that the Host has the binaries of the version of your CLI. If they are absent, the command installs them as `host add` does, and writes one line about it to the standard error.
 - `new --cwd <dir>` needs an absolute path on the Host. Without `--cwd`, the command starts in your home directory on the Host.
 - `ext install <directory>` needs an absolute path on the Host.
-- `--host` does not work with the `host` commands and with `daemon install-service` and `daemon uninstall-service`. `version` prints the version of the CLI.
+- `ls --memory` shows the memory of the processes on the Host, because the daemon of the Host measures them.
+- `--host` does not work with the `host` commands, with `daemon install-service` and `daemon uninstall-service`, with `status set` and with the `hooks` commands. `version` prints the version of the CLI.
 
 The name must be in the configuration file:
 
@@ -90,7 +93,14 @@ $ nomux --host vps daemon install-service --dry-run
 nomux: the --host option cannot be used with this command: run it on the host
 ```
 
-The first command has the exit code 2, and the second one has the exit code 1.
+The first command has the exit code 2, and the second one has the exit code 1. The two commands of a tool that acts on your own computer fail in the same way, with the exit code 1:
+
+```console
+$ nomux --host vps status set working
+nomux: the --host option cannot be used with `status set`: the session is on the host of this process
+$ nomux --host vps hooks status
+nomux: the --host option cannot be used with a `hooks` command: the settings file of a tool is on its own computer, thus run the command there
+```
 
 ### When the connection ends during an attach
 
@@ -179,7 +189,19 @@ nomux sends its requests through an SSH channel to the Unix socket of the daemon
 - `sshd_config` has `AllowStreamLocalForwarding no` or `remote`, or `DisableForwarding yes`, or
 - the key in `authorized_keys` has `restrict` or `no-port-forwarding`.
 
-`AllowTcpForwarding no` does not change it. For such a server, nomux fails with a message that names these options. nomux 0.3.0 has no second way for these servers.
+`AllowTcpForwarding no` does not change it. For such a server, nomux fails with a message that names these options. nomux 0.4.0 has no second way for these servers.
+
+The channel goes to the socket `~/.nomux/run/nomuxd.sock` on the Host, or to the socket in the short link of a long home directory.
+
+## Session environment on a remote Host
+
+A Session on a remote Host gets the environment that the daemon of that Host makes. Nothing comes from the computer on which you type.
+
+- The daemon of the Host got its environment from `sshd`: the environment of a command, without the startup files of a login shell.
+- nomux adds `TERM=xterm-256color`, `COLORTERM=truecolor`, a UTF-8 character set if the daemon has no locale, and the variables `NOMUX_SESSION_ID`, `NOMUX_SOCK` and `NOMUX_TOKEN`.
+- Variables of your computer, for example `LANG`, `DISPLAY` and `SSH_AUTH_SOCK`, do not pass. [Issue 75](https://github.com/nomux-sh/nomux/issues/75) has this gap.
+
+[Session environment](/docs/guides/session-environment/) has the full rule.
 
 ## Check a Host
 
@@ -251,14 +273,14 @@ An old version stays in `~/.nomux/bin` until you remove it. Remove a version onl
 
 ## Limits of this version
 
-These items come from the open points of [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.3.0/docs/remote.md#open-points-for-the-next-versions):
+These items come from the open points of [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/remote.md#open-points-for-the-next-versions) of nomux 0.4.0:
 
 - No second way for a server that refuses the channel to the socket.
 - No fallback to the `ssh` program for an option that the SSH client of nomux does not support.
 - No local echo before the answer of the Host: on a connection with a long round trip, a key shows after one round trip.
 - No host certificates and no user certificates.
 - No removal of old versions from `~/.nomux/bin`.
-- A Session on a remote Host gets the environment that `sshd` gives a command: the startup files of a login shell are not read.
+- A Session on a remote Host gets the environment of the daemon of that Host: no variable of your computer passes, and the startup files of a login shell are not read. [Session environment on a remote Host](#session-environment-on-a-remote-host) has the rule.
 - `/etc/ssh/ssh_config` is not read.
 - No QUIC transport, no port forwarding and no file transfer.
 

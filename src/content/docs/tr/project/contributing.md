@@ -22,8 +22,8 @@ Her repoda ayrıca o repoya özel kuralları içeren bir `AGENTS.md` dosyası va
 
 - [`nomux`](https://github.com/nomux-sh/nomux): Rust ile yazılan çekirdek. Holder, daemon, extension host, SSH taşıma katmanı, istemci kütüphanesi ve CLI buradadır.
 - [`proto`](https://github.com/nomux-sh/proto): istemci ile daemon arasındaki protokol. Şemalar, spesifikasyonlar ve `nomux-proto` crate'i buradadır.
-- [`extension-api`](https://github.com/nomux-sh/extension-api): extension SDK'sı. Daemon ile bir extension'ın daemon parçası arasındaki protokol, `nomux-extension` crate'i ve `extension.toml` formatı buradadır.
-- [`extensions`](https://github.com/nomux-sh/extensions): resmi extension'lar. Şu an git extension'ı burada.
+- [`extension-api`](https://github.com/nomux-sh/extension-api): extension SDK'sı. Daemon ile bir extension'ın daemon parçası arasındaki protokol, Rust (`nomux-extension` crate'i), TypeScript ve Go SDK'ları, conformance suite'i ve `extension.toml` formatı buradadır.
+- [`extensions`](https://github.com/nomux-sh/extensions): resmi extension'lar. Şu an git extension'ı ile Claude Code adapter'ı burada.
 - [`themes`](https://github.com/nomux-sh/themes): tasarım token'ları, temalar ve `nomux-theme` crate'i. Her temayı [önizleme sayfası](https://nomux-sh.github.io/themes/) gösterir.
 - [`homebrew-tap`](https://github.com/nomux-sh/homebrew-tap): nomux'un Homebrew formula'sı.
 - [`docs`](https://github.com/nomux-sh/docs): bu site, sözlük, yol haritası, mimari karar kayıtları ve araştırma notları.

@@ -4,19 +4,24 @@ description: Install an extension with the permissions that you approve, list it
 ---
 
 An extension adds a feature to nomux. Its daemon part is a program that the daemon of the Host starts at the first call and stops when it is idle.
-This page shows how to use an extension with the CLI. To write an extension, refer to the [extension SDK](https://github.com/nomux-sh/extension-api#write-an-extension). [Extensions](/docs/concepts/extensions/) describes the model.
+This page shows how to use an extension with the CLI. To write an extension, read [Write an extension](/docs/guides/write-an-extension/) and the [extension SDK](https://github.com/nomux-sh/extension-api#write-an-extension). [Extensions](/docs/concepts/extensions/) describes the model.
 
-The output on this page is the real output of nomux 0.3.0 on Linux in a temporary home directory `/tmp/nomux-demo`.
+The output on this page is the real output of nomux 0.4.0 on Linux in a temporary home directory `/tmp/nomux-demo`.
 
 ## Which extensions exist
 
 No extension has a release yet. There is no registry and no package to download: `nomux ext install` installs from a directory.
-This page uses two extensions, built from their source for this run:
+This page uses two extensions, built from their source for this run, and checks the manifest of a third one:
 
 | Extension | Identifier | Source | Permissions in its manifest |
 |---|---|---|---|
-| Echo | `nomux.echo` | The example of the SDK: [`extension-api/examples/echo`](https://github.com/nomux-sh/extension-api/tree/main/examples/echo) | None |
+| Echo | `nomux.echo` | The example of the SDK: [`extension-api/examples/echo`](https://github.com/nomux-sh/extension-api/tree/v0.1.1/examples/echo) at the tag `v0.1.1` | None |
 | Git | `nomux.git` | The [`git`](https://github.com/nomux-sh/extensions/tree/main/git) directory of the `extensions` repository, on its `main` branch. Version 0.1.0 is not released | `fs=${worktree}`, `process=git` |
+| Claude Code adapter | `nomux.agent-claude` | The [`agent-claude`](https://github.com/nomux-sh/extensions/tree/main/agent-claude) directory of the `extensions` repository, on its `main` branch. Version 0.1.0 is not released | `scope=hooks:read`, `scope=agent:report` |
+
+The Claude Code adapter reports the status of Claude Code. This page only checks its manifest. The [Claude Code adapter guide](/docs/guides/claude-code/) builds, installs and uses it.
+
+Build the echo example from the tag `v0.1.1`. nomux 0.4.0 supplies the extension API version 0.1.1 to an extension. The example on the `main` branch of the SDK is built for version 0.1.2: the host refuses it with the message `the extension API version is not compatible`.
 
 A package is a directory with the manifest `extension.toml` and the program that the `[daemon]` table of the manifest names. For the git extension, the [README of the extension](https://github.com/nomux-sh/extensions/tree/main/git#readme) has the build steps:
 
@@ -25,6 +30,15 @@ cargo build --release -p nomux-git
 mkdir -p package/bin
 cp git/extension.toml package/
 cp target/release/nomux-git package/bin/
+```
+
+The echo example has the same steps in the `extension-api` repository:
+
+```sh
+cargo build --release -p nomux-echo
+mkdir -p package/bin
+cp examples/echo/extension.toml package/
+cp target/release/nomux-echo package/bin/
 ```
 
 ## Check a package
@@ -36,6 +50,8 @@ $ nomux ext validate ./nomux-echo
 extension.toml is valid: nomux.echo 0.1.0 (Echo) asks for no permissions
 $ nomux ext validate ./nomux-git
 extension.toml is valid: nomux.git 0.1.0 (Git) asks for the permissions: fs=${worktree} process=git
+$ nomux ext validate ./nomux-agent-claude
+extension.toml is valid: nomux.agent-claude 0.1.0 (Claude Code adapter) asks for the permissions: scope=hooks:read scope=agent:report
 ```
 
 A manifest that is not valid has one line for each problem, with the path of the field, and the exit code 1:
@@ -92,13 +108,21 @@ $ nomux ext install ./nomux-echo
 extension nomux.echo 0.1.0 installed with no permissions
 ```
 
-The examples on this page come from two runs in the same temporary home directory.
-
 The daemon copies the package. Thus a change in the source directory after the install changes nothing. A package can have only regular files and directories: the daemon refuses a symbolic link.
 `install` starts no process. The first call does.
 
+A scope gives access to a host service or to events of the daemon. nomux 0.4.0 has three:
+
+| Scope | Gives |
+|---|---|
+| `sessions:read` | The host service `sessions.list`: the Sessions of the Host |
+| `agent:report` | The host services `agent.report` and `agent.child`: the status of an Agent run and of its Child work |
+| `hooks:read` | The hook events of the tools that the `[adapter]` table of the manifest names |
+
+The `[adapter]` table makes an extension the [adapter](/docs/guides/agent-adapters/) of an agent tool. It needs the extension API version `^0.1.1`, as the manifest of `nomux.agent-claude` has it.
+
 :::caution
-In nomux 0.3.0 the daemon applies only the scopes of host services. It gives the other approved permissions (`fs`, `process` and `network`) to the extension, and the extension must obey them. The process of an extension has the file access of the daemon.
+In nomux 0.4.0 the daemon applies only the scopes (`sessions:read`, `agent:report` and `hooks:read`). It gives the other approved permissions (`fs`, `process` and `network`) to the extension, and the extension must obey them. The process of an extension has the file access of the daemon.
 The git extension applies its permissions to each request: its [README](https://github.com/nomux-sh/extensions/tree/main/git#permissions) has the rules.
 Install only an extension whose source you trust.
 :::
@@ -132,14 +156,14 @@ This is a call of the method `status` of the git extension for the Git repositor
 ```console
 $ nomux ext call nomux.git status --payload @status-request.bin > status-response.bin
 $ wc -c status-response.bin
-25 status-response.bin
+23 status-response.bin
 $ nomux ext ls
 ID          NAME  VERSION  STATE    PERMISSIONS                             REASON
 nomux.echo  Echo  0.1.0    stopped  -
 nomux.git   Git   0.1.0    running  fs=/tmp/nomux-demo/project,process=git
 ```
 
-The call started the process of the extension. The result is a `StatusResponse` message of 25 bytes.
+The call started the process of the extension. The repository of this run is a new repository on the branch `main` with one file that git does not track. The result is a `StatusResponse` message of 23 bytes.
 
 The method `echo` of the example gives back the message that it gets. Its payload is a protobuf message with the text `hi`:
 
@@ -170,6 +194,26 @@ nomux: the extension answered with an error: the text is empty
 
 A failure of an extension stays in its process. The daemon, the Sessions and the other extensions continue.
 
+## Events
+
+An extension can send an event. The daemon puts it into its event log, and a client reads the log with `nomux events --follow`. The `echo` method of the example sends the event `echoed` with the length of its text at each call.
+
+`--filter extension-event` prints only the events of extensions. Start this command in one terminal, and run `nomux ext call nomux.echo echo --payload @request.bin` in a second terminal:
+
+```console
+$ nomux events --follow --filter extension-event
+2 extension nomux.echo: echoed (2 bytes)
+```
+
+A line has the position of the event in the log (the number starts again when the daemon starts), the identifier of the extension, the name of the event and the size of its payload. With `--json`, an event is one JSON document on one line. The payload is in base64, because the extension chooses its encoding. Here `CAI=` is a protobuf message with the length 2:
+
+```console
+$ nomux --json events --follow --filter extension-event
+{"schema_version":1,"event":{"seq":3,"at_ms":1795691297643,"type":"extension_event","extension":{"id":"nomux.echo","name":"echoed","payload_base64":"CAI="}}}
+```
+
+The command prints the events after its start, and it ends with the exit code 0 on `Ctrl-C`. The daemon keeps the last 1024 events in memory and drops an event with a payload of more than 64 KiB. [Agent status](/docs/guides/agent-status/) uses the same command for the status events.
+
 ## Disable, enable and remove
 
 ```console
@@ -191,6 +235,11 @@ extension nomux.echo removed
 $ nomux ext rm nomux.echo
 nomux: no extension has the identifier nomux.echo
 $ nomux ext ls
+ID         NAME  VERSION  STATE    PERMISSIONS                             REASON
+nomux.git  Git   0.1.0    running  fs=/tmp/nomux-demo/project,process=git
+$ nomux ext rm nomux.git
+extension nomux.git removed
+$ nomux ext ls
 no extensions
 ```
 
@@ -209,12 +258,12 @@ The extensions belong to one Host. With `--host <name>`, the `ext` commands use 
 
 ## Limits of this version
 
-These items come from [`docs/extensions.md`](https://github.com/nomux-sh/nomux/blob/v0.3.0/docs/extensions.md#not-done-yet) of nomux 0.3.0:
+These items come from [`docs/extensions.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/extensions.md#not-done-yet) of nomux 0.4.0:
 
 - The daemon does not restrict the files, the programs and the network of an extension.
-- The daemon has one host service, `sessions.list`, with the scope `sessions:read`.
+- The daemon has three host services: `sessions.list` (the scope `sessions:read`), and `agent.report` and `agent.child` for the adapters (the scope `agent:report`).
 - No install from a registry, no signature check and no update command.
-- The clients get no events of an extension, and no client shows the UI part of an extension.
+- The daemon sends an event to an extension only as a call of the method `hook` of an adapter. No client shows the UI part of an extension.
 - When the daemon stops the process of an extension, the processes that the extension started continue to run.
 
 The [CLI reference](/docs/reference/cli/#nomux-ext-install) has each `ext` command with its JSON document. The terms on this page come from the [Glossary](/docs/reference/glossary/).

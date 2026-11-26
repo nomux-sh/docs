@@ -9,8 +9,8 @@ Session'ları o bilgisayarda yaşar: laptop'unuz uykuya geçse de bağlantı kop
 nomux'u yalnızca klavyesini kullandığınız bilgisayara kurarsınız. Binary'leri uzak Host'a `nomux host add` koyar.
 
 :::note
-Bir sunucuya bağlanan komutlar (`host add`, bir Host'la `host doctor` ve `--host` ile çalışan her komut) bu sayfa için çalıştırılmadı. Adımları ve mesajları nomux 0.3.0'ın [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.3.0/docs/remote.md) ve [`docs/cli.md`](https://github.com/nomux-sh/nomux/blob/v0.3.0/docs/cli.md) dosyalarından alındı.
-Bağlanmayan komutların çıktısı ise nomux 0.3.0'ın Linux'taki gerçek çıktısıdır: `host ls`, `host rm`, Host'suz `host doctor` ve var olmayan bir adın hataları.
+Bir sunucuya bağlanan komutlar (`host add`, bir Host'la `host doctor` ve `--host` ile çalışan her komut) bu sayfa için çalıştırılmadı. Adımları ve mesajları nomux 0.4.0'ın [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/remote.md), [`docs/cli.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/cli.md) ve [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/daemon.md) dosyalarından alındı. Bu dokümanlar nomux 0.3.0'a göre uzak bir Host için iki şeyi değiştirir: uzun bir home dizininin socket yolu ([Uzun home yolları](/docs/tr/guides/long-home-paths/)) ve Session'ın ortamı ([Uzak Host'ta Session ortamı](#uzak-hostta-session-ortamı)).
+Bağlanmayan komutların çıktısı ise nomux 0.4.0'ın Linux'taki gerçek çıktısıdır: `host ls`, `host rm`, Host'suz `host doctor`, var olmayan bir adın hataları ve `--host` kullanamayan komutların hataları.
 :::
 
 ## Uzak Host'ta ne gerekir
@@ -59,11 +59,13 @@ Başka bir sistem hatadır.
 | Yol | İçerik | Mod |
 |---|---|---|
 | `~/.nomux/bin/<sürüm>/` | Bir sürümün `nomux`, `nomuxd` ve `nomux-holder` binary'leri | 0700 |
-| `~/.nomux/run/` | Daemon'un socket'i, kilidi ve log'u; her Session için bir dizin | 0700, socket 0600 |
+| `~/.nomux/run/` | Daemon'un socket'i, kilidi ve log'u; her Session için bir dizin. `.pool` uzantılı dizin havuzdaki bir holder'dır | 0700, socket 0600 |
 
 Host'taki holder'lar da, sizin bilgisayarınızda olduğu gibi, her Session'ın state'ini Host'un state dizinine yazar. Bunu [Yeniden başlatmadan sonra](/docs/tr/guides/after-a-restart/) sayfası anlatıyor.
 nomux Host'ta hiçbir shell başlangıç dosyasına, `PATH`'e ya da servise dokunmaz.
 Host'taki daemon yalnızca kendi Unix socket'ini dinler; ağ portu yoktur.
+Host'taki daemon, bilgisayarınızdaki daemon'un aynısıdır. [Holder havuzunu](/docs/tr/guides/holder-pool/) ilk istekte başlatır; havuzdaki bir holder, Host'ta kullanıcınıza ait bir process'tir.
+Host'un home dizini uzunsa `~/.nomux/run` altındaki socket yolu çok uzun olabilir. O zaman daemon ve istemci dizine giden `/tmp/nomux-<hash>` kısa bağlantısını kullanır; istemci onu yoklamanın öğrendiği home dizininden hesaplar: [Uzun home yolları](/docs/tr/guides/long-home-paths/).
 
 ## Host'u kullanmak
 
@@ -79,7 +81,8 @@ nomux --host vps daemon status
 - Her komut önce Host'ta CLI'ınızın sürümüne ait binary'lerin olduğundan emin olur. Yoksa `host add` gibi kurar ve bununla ilgili tek satırı standart hataya yazar.
 - `new --cwd <dizin>` Host'ta mutlak bir yol ister. `--cwd` verilmezse komut Host'taki home dizininizde başlar.
 - `ext install <dizin>` Host'ta mutlak bir yol ister.
-- `--host`, `host` komutlarıyla ve `daemon install-service` ile `daemon uninstall-service` ile kullanılamaz. `version` CLI'ın sürümünü yazdırır.
+- `ls --memory` Host'taki process'lerin belleğini gösterir, çünkü onları Host'taki daemon ölçer.
+- `--host`, `host` komutlarıyla, `daemon install-service` ile `daemon uninstall-service` ile, `status set` ile ve `hooks` komutlarıyla kullanılamaz. `version` CLI'ın sürümünü yazdırır.
 
 Ad yapılandırma dosyasında olmalıdır:
 
@@ -90,7 +93,14 @@ $ nomux --host vps daemon install-service --dry-run
 nomux: the --host option cannot be used with this command: run it on the host
 ```
 
-İlk komut 2, ikincisi 1 çıkış koduyla biter.
+İlk komut 2, ikincisi 1 çıkış koduyla biter. Kendi bilgisayarınızda iş gören iki komut da aynı şekilde, 1 çıkış koduyla hata verir:
+
+```console
+$ nomux --host vps status set working
+nomux: the --host option cannot be used with `status set`: the session is on the host of this process
+$ nomux --host vps hooks status
+nomux: the --host option cannot be used with a `hooks` command: the settings file of a tool is on its own computer, thus run the command there
+```
 
 ### Attach sırasında bağlantı koparsa
 
@@ -179,7 +189,19 @@ nomux isteklerini daemon'un Unix socket'ine giden bir SSH kanalından (`direct-s
 - `sshd_config` dosyasında `AllowStreamLocalForwarding no` ya da `remote`, veya `DisableForwarding yes` varsa,
 - `authorized_keys` içindeki anahtarda `restrict` ya da `no-port-forwarding` varsa.
 
-`AllowTcpForwarding no` bunu etkilemez. Böyle bir sunucuda nomux bu seçenekleri sayan bir mesajla hata verir. nomux 0.3.0'da bu sunucular için ikinci bir yol yok.
+`AllowTcpForwarding no` bunu etkilemez. Böyle bir sunucuda nomux bu seçenekleri sayan bir mesajla hata verir. nomux 0.4.0'da bu sunucular için ikinci bir yol yok.
+
+Kanal Host'taki `~/.nomux/run/nomuxd.sock` socket'ine ya da uzun bir home dizininin kısa bağlantısındaki socket'e gider.
+
+## Uzak Host'ta Session ortamı
+
+Uzak Host'taki bir Session, o Host'un daemon'unun hazırladığı ortamı alır. Klavyesini kullandığınız bilgisayardan hiçbir şey gelmez.
+
+- Host'taki daemon ortamını `sshd`'den almıştır: bir komutun ortamı; login shell'in başlangıç dosyaları yoktur.
+- nomux `TERM=xterm-256color` ve `COLORTERM=truecolor` ekler; daemon'da locale yoksa UTF-8 karakter kümesini ekler; ayrıca `NOMUX_SESSION_ID`, `NOMUX_SOCK` ve `NOMUX_TOKEN` değişkenlerini ekler.
+- Bilgisayarınızdaki değişkenler, örneğin `LANG`, `DISPLAY` ve `SSH_AUTH_SOCK`, geçmez. Bu eksik [75 numaralı issue'da](https://github.com/nomux-sh/nomux/issues/75) duruyor.
+
+Kuralın tamamı [Session'ın ortamı](/docs/tr/guides/session-environment/) sayfasında.
 
 ## Host'u kontrol etmek
 
@@ -251,14 +273,14 @@ Eski bir sürüm siz silene kadar `~/.nomux/bin` altında kalır. Bir sürümü 
 
 ## Bu sürümün sınırları
 
-Bu maddeler [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.3.0/docs/remote.md#open-points-for-the-next-versions) dosyasının açık noktalarından:
+Bu maddeler nomux 0.4.0'ın [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/remote.md#open-points-for-the-next-versions) dosyasının açık noktalarından:
 
 - Socket'e giden kanalı reddeden sunucular için ikinci bir yol yok.
 - nomux'un SSH istemcisinin desteklemediği bir seçenek için `ssh` programına geri düşme yok.
 - Host'un cevabından önce local echo yok: gidiş-dönüş süresi uzun bir bağlantıda tuş bir gidiş-dönüş sonra görünür.
 - Host sertifikası ve kullanıcı sertifikası yok.
 - `~/.nomux/bin` altındaki eski sürümler silinmez.
-- Uzak Host'taki bir Session, `sshd`'nin bir komuta verdiği ortamı alır: login shell'in başlangıç dosyaları okunmaz.
+- Uzak Host'taki bir Session, o Host'taki daemon'un ortamını alır: bilgisayarınızdan hiçbir değişken geçmez ve login shell'in başlangıç dosyaları okunmaz. Kural için bkz. [Uzak Host'ta Session ortamı](#uzak-hostta-session-ortamı).
 - `/etc/ssh/ssh_config` okunmaz.
 - QUIC taşıması, port yönlendirme ve dosya aktarımı yok.
 
