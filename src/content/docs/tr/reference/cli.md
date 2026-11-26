@@ -16,8 +16,10 @@ CLI'ın yardım metinleri ve mesajları İngilizcedir; bu sayfada oldukları gib
 - Bütün komutlar aynı [çıkış kodlarını](#çıkış-kodları) kullanır. `attach` bunlara Session'ın komutunun çıkış durumunu da ekler.
 - Her komut `--json`, `--quiet` ve `--host <ad>` seçeneklerini kabul eder. `--json` ile `--quiet` birlikte kullanılamaz.
 - `--host` verilmezse komut local Host'un daemon'unu kullanır. `--host <ad>` ile SSH üzerinden uzak bir Host'un daemon'unu kullanır. Bkz. [`--host`](#--host).
-- Daemon'a ihtiyaç duyan komut, cevap veren bir daemon yoksa onu başlatır ve en fazla 5 saniye bekler. `daemon` komutları daemon başlatmaz.
-- Metin çıktısında yalnızca Session'ın durumu renklidir; o da standart çıktı bir terminalse ve `NO_COLOR` değişkeni tanımlı değilse.
+- Daemon'a ihtiyaç duyan komut, cevap veren bir daemon yoksa onu başlatır ve en fazla 5 saniye bekler. `daemon` komutları, `ext validate`, `hook`, `status set` ve `hooks uninstall` daemon başlatmaz.
+- `status set` ve `hook` yalnızca bir Session'ın içinde çalışır. Ortamlarından `NOMUX_SESSION_ID`, `NOMUX_SOCK` ve `NOMUX_TOKEN` değişkenlerini okurlar. Üç değişkeni [Session'ın ortamı](/docs/tr/guides/session-environment/) sayfası anlatır. Home dizini uzunsa `NOMUX_SOCK`, kısa bir bağlantının içindeki bir yoldur; nedeni [uzun home dizinleri](/docs/tr/guides/long-home-paths/) sayfasındadır.
+- Metin çıktısında yalnızca Session'ın durumu ve Session'daki işin durumu renklidir; o da standart çıktı bir terminalse ve `NO_COLOR` değişkeni tanımlı değilse.
+- Terminalde, metin çıktısındaki tablo terminalin genişliğine sığar. Önce komut sütunu kısaltılır, ardından not, mesaj ya da neden sütunu. Kesilen yeri bir üç nokta (`…`) gösterir; kısaltılan sütun başlığının genişliğini korur. Böylece durum ve mesaj görünür kalır. Standart çıktı bir terminal değilse ve JSON çıktısında hiçbir şey kısaltılmaz.
 
 ## Genel kullanım
 
@@ -35,9 +37,14 @@ Commands:
   restore-policy  Set when a dormant session starts again
   detach          Detach the clients that are attached to a session. The session continues
   kill            End a session. A dormant session is removed with its output
+  status          Show the status of each session: what works, what is done, what needs you
+  agent           Explain the status of the sessions
+  events          Print the events of the host when they come, until a signal stops the command
   daemon          Show or stop the daemon, and start it at login
   host            Add, list, remove and check the remote hosts
   ext             Install, list, remove and call the extensions of a host
+  hook            Send one event of an agent tool to the daemon of the session. A tool calls this command from its hooks: it reads the data of the event from the standard input
+  hooks           Install, remove and show the hooks of an agent tool in its settings file
   version         Print the version
 
 Options:
@@ -80,7 +87,7 @@ nomux --host vps ls --json
 
 - Her komut önce Host'ta CLI'ın sürümündeki binary'lerin bulunduğundan emin olur. Yoksa `host add` gibi onları kurar ve bununla ilgili tek satırı standart hataya yazar.
 - `--host` ile `new --cwd <dir>`, Host'ta mutlak bir yol ister. `--cwd` verilmezse komut Host'taki home dizininizde başlar.
-- `--host`, `host` komutlarıyla ve `daemon install-service`, `daemon uninstall-service` ile kullanılamaz. Bu komutlar `--host` ile 1 çıkış koduyla biter. `version`, CLI'ın sürümünü yazdırır.
+- `--host`, `host` komutlarıyla, `daemon install-service` ve `daemon uninstall-service` ile, `status set` ile ve `hooks` komutlarıyla kullanılamaz. Bu komutlar `--host` ile 1 çıkış koduyla biter. `version`, CLI'ın sürümünü yazdırır. `hook`, `--host`'u yok sayar.
 - SSH hatasının çıkış kodu 1'dir. Host hiçbir anahtarı kabul etmezse çıkış kodu 4'tür.
 
 Yapılandırma dosyasında olmayan bir ad 2 çıkış kodunu verir:
@@ -90,6 +97,10 @@ $ nomux --host vps ls
 nomux: no host has the name vps. `nomux host ls` shows the hosts, and `nomux host add` adds one
 $ nomux --host vps daemon install-service --dry-run
 nomux: the --host option cannot be used with this command: run it on the host
+$ nomux --host vps hooks status
+nomux: the --host option cannot be used with a `hooks` command: the settings file of a tool is on its own computer, thus run the command there
+$ nomux --host vps status set working
+nomux: the --host option cannot be used with `status set`: the session is on the host of this process
 ```
 
 Uzak bir Host'a bağlanan komutlar bu sayfa için çalıştırılmadı.
@@ -121,7 +132,7 @@ Options:
 | `--cwd <DIR>` | CLI'ın çalıştığı dizin | Komutun çalışma dizini. Göreli yol, CLI'ın çalıştığı dizine göre çözülür. Dizinin var olması gerekir. |
 | `--attach` | Kapalı | Terminali, [`nomux attach`](#nomux-attach) gibi yeni Session'a attach eder. Komut bu durumda session kimliğini değil, attach'in sonucunu yazdırır. |
 | `-- <COMMAND>...` | Kullanıcının shell'i: daemon'un `SHELL` değişkeni, yoksa `/bin/sh` | Session'ın komutu ve argümanları. |
-| `--cmd <COMMAND>...` | Aynısı | `--`'nin ikinci yazılışı. İkisinden yalnızca birini kullanın. |
+| `--cmd <COMMAND>...` | Aynısı | `--`'nin ikinci yazılışı. İki yazılış birlikte kullanılamaz. |
 
 **`--` ya da `--cmd`'den sonra gelen her argüman Session'ın komutuna gider; `nomux`'un kendi seçeneklerinden biri olsa bile.** Bu yüzden `nomux`'un seçenekleri komuttan önce yazılır:
 
@@ -132,10 +143,27 @@ nomux new -- sleep 300 --json      # --json is an argument of sleep
 
 ```console
 $ nomux new --cwd project -- sleep 600
-sl2ugpe7
+gurnvh37
 ```
 
-Komut, daemon'un ortam değişkenlerini alır. Bir istemci attach olana kadar terminali 24 satır, 80 sütundur; attach olan istemci Session'a kendi terminalinin pencere boyutunu verir.
+**İki yazılış birlikte kullanılamaz.** Önce `--cmd`, sonra `--` içeren bir komut satırı kullanım hatasıdır: çıkış kodu 1'dir ve Session açılmaz. `nomux`, o `--`'nin komutun bir argümanı mı yoksa ikinci yazılışın başlangıcı mı olduğunu bilemez.
+
+```console
+$ nomux new --cmd sh -- -c true
+error: the argument '--cmd <COMMAND>...' cannot be used with '--': nomux cannot know where the command of the session starts. Give the command in one form: `nomux new --cmd <command> [argument...]` or `nomux new -- <command> [argument...]`. For a command that has `--` as an argument, use the second form
+
+Usage: nomux new [OPTIONS] [-- <COMMAND>...]
+
+For more information, try '--help'.
+```
+
+Bu yüzden argümanlarından biri `--` olan komut, ikinci yazılışı ister. İlk `--`'den sonraki her `--` komuta aittir:
+
+```sh
+nomux new -- git log -- notes.txt        # the second -- is an argument of git
+```
+
+Komut, daemon'un ortam değişkenlerini alır; [Session'ın ortamı](/docs/tr/guides/session-environment/) sayfasının anlattığı değişiklikler de uygulanır: `TERM=xterm-256color`, `COLORTERM=truecolor`, daemon'da locale yoksa UTF-8 karakter kümesi ve `NOMUX_SESSION_ID`, `NOMUX_SOCK` ve `NOMUX_TOKEN` değişkenleri. Bir istemci attach olana kadar terminali 24 satır, 80 sütundur; attach olan istemci Session'a kendi terminalinin pencere boyutunu verir.
 
 Komut başlatılamazsa ya da dizin yoksa çıkış kodu 1'dir ve Session açılmaz:
 
@@ -163,6 +191,7 @@ Usage: nomux ls [OPTIONS]
 Options:
   -a, --all          Also list the sessions whose command ended
       --json         Print the result as one JSON document
+      --memory       Show the memory that the processes of each session use now
   -q, --quiet        Print only the necessary part of the result
       --host <NAME>  Use the daemon of a remote host of `nomux host ls` [default: the local host]
   -h, --help         Print help
@@ -170,14 +199,14 @@ Options:
 
 ```console
 $ nomux ls
-ID        STATE    PID      COMMAND
-sl2ugpe7  running  2616794  sleep 600
-z3yjk54g  running  2616707  sh
+ID        STATE    PID     COMMAND
+gurnvh37  running  959485  sleep 600
+ijzhc3lz  running  959490  sh
 $ nomux ls --all
-ID        STATE    PID      COMMAND    NOTE
-hqarpjgu  running  2616798  sleep 300
-sl2ugpe7  running  2616794  sleep 600
-z3yjk54g  ended    -        sh         exit status 3
+ID        STATE    PID     COMMAND    NOTE
+gurnvh37  running  959485  sleep 600
+ijzhc3lz  ended    -       sh         exit status 3
+vn3n3l6r  running  959494  sleep 300
 ```
 
 Hiç Session yoksa komut `no sessions` yazdırır.
@@ -194,6 +223,63 @@ Hiç Session yoksa komut `no sessions` yazdırır.
 | `ended` | Session'ın komutu bitti. Daemon Session'ı ve çıktısını saklama süresi boyunca, varsayılan olarak 24 saat tutar. Yalnızca `ls --all` gösterir. |
 | `damaged` | Daemon Session'ın tanımını okuyamıyor. Not, nedenini söyler. `kill` Session'ı siler. |
 | `unknown` | Daemon CLI'dan daha yeni ve CLI'ın tanımadığı bir durum gönderdi. |
+
+Bir terminalde tablo, terminalin genişliğine sığar. Önce komut sütunu kısaltılır; kesilen yeri bir üç nokta (`…`) gösterir. Aşağıdakiler, 50 sütunluk bir terminalde `nomux ls` ve `nomux ls --all` çıktılarıdır:
+
+```text
+ID        STATE    PID     COMMAND
+4irabyqw  running  951676  sh
+a7l2lbgk  running  951365  sh -c sleep 600 & sl…
+kitzeuit  running  948557  sleep 600
+r67mfnfw  running  951666  sh -c echo server st…
+xrysxwhn  running  948560  sh -c seq 1 200; exe…
+```
+
+```text
+ID        STATE    PID     COMMAND   NOTE
+4irabyqw  running  951676  sh
+6sxcisjq  ended    -       sleep 6…  signal 1
+a7l2lbgk  running  951365  sh -c s…
+fiktbeos  ended    -       sh        exit status 3
+iizairlj  ended    -       sh        signal 9
+kitzeuit  running  948557  sleep 6…
+r67mfnfw  running  951666  sh -c e…
+xrysxwhn  running  948560  sh -c s…
+```
+
+Kısaltılan sütun başlığının genişliğini korur; bu yüzden ikinci tabloda `COMMAND` 7 sütundur. Bir terminalde olmayan tablo, örneğin bir pipe'taki tablo, hiçbir zaman kısaltılmaz.
+
+#### `nomux ls --memory`
+
+`--memory` ile komut, her Session'ın process'lerinin komutun çalıştığı anda kullandığı belleği de gösterir. Belleği daemon yalnızca bu komut için ölçer: `--memory` olmadan `ls` hiçbir şey ölçmez.
+
+```console
+$ nomux ls --memory
+ID        STATE    MEMORY     PROCESSES  HOLDER     MEASURE  COMMAND
+3ohij454  dormant  -          -          -          -        sh
+bxebg7jh  running  147.0 KiB  1          274.0 KiB  pss      sh -c seq 1 200; exec sleep 600
+gurnvh37  running  148.0 KiB  1          262.0 KiB  pss      sleep 600
+v6srainn  running  150.0 KiB  1          273.0 KiB  pss      sh -c echo server started; exec sleep 600
+vn3n3l6r  running  150.0 KiB  1          265.0 KiB  pss      sleep 300
+total: 595.0 KiB in 4 processes of 4 sessions, and 1.0 MiB in the holders (pss)
+```
+
+| Sütun | Anlamı |
+|---|---|
+| `MEMORY` | Komutun process ağacının belleği: komut ve ondan türeyen her process. |
+| `PROCESSES` | Bu ağaçtaki process sayısı. |
+| `HOLDER` | Session'ın holder'ının belleği. `MEMORY`'nin parçası değildir. |
+| `MEASURE` | `pss`: birden fazla process'in kullandığı sayfayı bir kez sayan orantılı set boyutu. `rss`: böyle bir sayfayı her process için sayan resident set boyutu. Linux `pss`, macOS `rss` verir. |
+
+- Process'i olmayan bir Session'ın dört sütunu da `-` olur ve toplam satırına girmez.
+- Tabloda `PID` ve `NOTE` sütunları yoktur. `--memory` olmadan `ls` bu sütunları gösterir.
+- Bir boyutun birimi `KiB`, `MiB` ya da `GiB`'dir (1024 byte, 1024 KiB, 1024 MiB) ve bir ondalık basamağı vardır. JSON çıktısında byte sayısı bulunur.
+- Session'ların ölçüsü aynı değilse toplam satırında `pss and rss` yazar: toplam bu durumda iki türden değer içerir.
+- `--memory`, `--all` ile birlikte çalışır.
+- Bu seçeneği bilmeyen eski bir daemon hatayla cevap verir ve çıkış kodu 1 olur.
+- `--host` ile uzak Host'un daemon'u, o Host'taki process'leri ölçer.
+
+Daemon'un nasıl ölçtüğünü, değerlerin neyi saymadığını ve komutun ne kadar sürdüğünü [Session belleği](/docs/tr/guides/session-memory/) sayfası anlatır.
 
 ### `nomux attach`
 
@@ -267,26 +353,26 @@ Yani `attach`'in çıkış kodu [çıkış kodları](#çıkış-kodları) tablos
 Aşağıda attach'in dört bitişi var: detach, 3 çıkış durumuyla biten komut, sinyalle sonlanan komut ve duran daemon.
 
 ```console
-detached from session z3yjk54g
+detached from session 3ohij454
 ```
 
 ```console
 sh-5.3$ exit 3
 exit
 
-session z3yjk54g ended with exit status 3
+session 6u5wjcn4 ended with exit status 3
 ```
 
 ```console
 sh-5.3$ kill -9 $$
 
-session 3lptmq6f ended by signal 9
+session 5hi3yzhd ended by signal 9
 ```
 
 Son ikisinin çıkış kodu 3 ve 137'dir.
 
 ```console
-nomux: the daemon stopped. The session continues: run `nomux attach z3yjk54g` to attach again
+nomux: the daemon stopped. The session continues: run `nomux attach l7blp5b2` to attach again
 ```
 
 Verilen kimlikte bir Session yoksa ya da Session bitmişse:
@@ -294,9 +380,11 @@ Verilen kimlikte bir Session yoksa ya da Session bitmişse:
 ```console
 $ nomux attach aaaaaaaa
 nomux: no session has the identifier aaaaaaaa
-$ nomux attach z3yjk54g
-nomux: session z3yjk54g ended: its command does not run
+$ nomux attach ijzhc3lz
+nomux: session ijzhc3lz ended: its command does not run
 ```
+
+Terminali olmayan bir `attach`, Session'ı aramadan önce başarısız olur: çıkış kodu 1'dir ve mesaj `nomux: attach needs a terminal: the standard input is not a terminal` olur.
 
 ### `nomux start`
 
@@ -318,12 +406,12 @@ Options:
 Komut, Session'ın çalışma dizininde ve Session'ın son pencere boyutuyla başlar. Geri yükleme politikası `manual` olsa da başlar.
 
 ```console
-$ nomux start ds3kchg4
-session ds3kchg4 runs
+$ nomux start 3ohij454
+session 3ohij454 runs
 ```
 
 - Komutu zaten çalışan bir Session'da komut başarılı olur ve hiçbir şeyi değiştirmez.
-- Biten bir Session'da çıkış kodu 2'dir: `nomux: session z3yjk54g ended: its command does not run`.
+- Biten bir Session'da çıkış kodu 2'dir: `nomux: session ijzhc3lz ended: its command does not run`.
 - Komut başlatılamazsa, örneğin çalışma dizini silinmişse, çıkış kodu 1'dir ve Session uykuda kalır.
 
 ### `nomux capture`
@@ -346,8 +434,8 @@ Options:
 
 ```console
 $ nomux new -- sh -c 'seq 1 200; exec sleep 600'
-ebxd36mw
-$ nomux capture ebxd36mw --lines 3
+bxebg7jh
+$ nomux capture bxebg7jh --lines 3
 198
 199
 200
@@ -383,9 +471,9 @@ Options:
 | `manual` | Yalnızca `start` ile. `attach` 1 çıkış koduyla başarısız olur |
 
 ```console
-$ nomux restore-policy zapitg2m auto
-session zapitg2m has the restore policy auto
-$ nomux restore-policy ds3kchg4 sometimes
+$ nomux restore-policy v6srainn auto
+session v6srainn has the restore policy auto
+$ nomux restore-policy 3ohij454 sometimes
 error: invalid value 'sometimes' for '<POLICY>': a restore policy is `auto`, `on-focus` or `manual`
 
 For more information, try '--help'.
@@ -413,10 +501,10 @@ Options:
 Bu istemcilerin her biri, detach tuşlarına basılmış gibi biter. Attach olmuş istemci yoksa da komut başarılıdır:
 
 ```console
-$ nomux detach z3yjk54g
-detached 1 client from session z3yjk54g
-$ nomux detach z3yjk54g
-detached 0 clients from session z3yjk54g
+$ nomux detach 7uk6xzoz
+detached 1 client from session 7uk6xzoz
+$ nomux detach 7uk6xzoz
+detached 0 clients from session 7uk6xzoz
 ```
 
 Verilen kimlikte bir Session yoksa çıkış kodu 2'dir.
@@ -442,15 +530,15 @@ Options:
 Session'ın komutuna `SIGHUP` gönderilir. Komut 2 saniye sonra hâlâ çalışıyorsa `SIGKILL` gönderilir. Session bundan sonra biten bir Session'dır: `ls --all` onu saklama süresi boyunca gösterir.
 
 ```console
-$ nomux kill sl2ugpe7
-session sl2ugpe7 ended
+$ nomux kill vn3n3l6r
+session vn3n3l6r ended
 ```
 
 Verilen kimlikte bir Session yoksa ya da komutu zaten bitmişse çıkış kodu 2'dir. Aynı Session için ikinci `kill` de bu yüzden 2 ile biter:
 
 ```console
-$ nomux kill sl2ugpe7
-nomux: session sl2ugpe7 ended: its command does not run
+$ nomux kill vn3n3l6r
+nomux: session vn3n3l6r ended: its command does not run
 ```
 
 Uykudaki ve bozuk Session'ların sonlandırılacak bir komutu yoktur. `kill` böyle bir Session'ı state dizinindeki dosyalarıyla birlikte siler: çıktısı da gider.
@@ -473,7 +561,7 @@ Options:
 
 ```console
 $ nomux daemon status
-nomuxd 0.3.0 runs: process ID 2616705, 1 session
+nomuxd 0.4.0 runs: process ID 942506, 6 sessions
 $ nomux daemon stop
 nomuxd stopped
 $ nomux daemon status
@@ -540,6 +628,8 @@ Options:
 ```
 
 ```console
+$ nomux daemon uninstall-service --dry-run
+would remove /tmp/nomux-demo/.config/systemd/user/nomuxd.service
 $ nomux daemon uninstall-service
 removed /tmp/nomux-demo/.config/systemd/user/nomuxd.service
 The daemon that runs continues. To make the service manager forget the file, run: systemctl --user daemon-reload
@@ -552,7 +642,7 @@ Dosya yoksa da çıkış kodu 0'dır. Çalışan daemon çalışmaya devam eder.
 ## Host komutları
 
 Bu komutlar, bilgisayarınızdaki yapılandırma dosyasında duran uzak Host'ları yönetir. Bağlantı, güven kuralları ve nomux'un Host'a yazdıkları [Uzak Host'lar](/docs/tr/guides/remote-hosts/) sayfasındadır.
-Bir Host'a bağlanan komutlar (`host add` ve bir Host verilen `host doctor`) bu sayfa için çalıştırılmadı. Anlatımları nomux 0.3.0'ın [`docs/cli.md`](https://github.com/nomux-sh/nomux/blob/v0.3.0/docs/cli.md) dosyasından alındı.
+Bir Host'a bağlanan komutlar (`host add` ve bir Host verilen `host doctor`) bu sayfa için çalıştırılmadı. Anlatımları nomux 0.4.0'ın [`docs/cli.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/cli.md) dosyasından alındı; o dosya bu komutları 0.3.0 dokümanıyla aynı biçimde anlatır.
 
 ### `nomux host add`
 
@@ -843,6 +933,516 @@ nomux: the file ./nothing/extension.toml does not exist
 
 Geçerli bir manifest'te çıkış kodu 0, geçersiz bir manifest'te 1, dosyası olmayan bir dizinde 2'dir. Komut paketin diğer dosyalarını kontrol etmez.
 
+## Durum komutları
+
+Bu komutlar, her Session'daki işin ne yaptığını, neyi beklediğini ya da neyi tamamladığını gösterir. Modeli, durumun kaynaklarını ve onları birleştiren kuralları [Agent durumu](/docs/tr/guides/agent-status/) sayfası anlatır. Terimler sözlükte: [agent durumu](/docs/tr/reference/glossary/#agent-durumu).
+
+Bu bölümdeki örnekler, tek bir daemon'daki beş Session'dan gelir:
+
+| Session'ın komutu | Durumu nereden geliyor |
+|---|---|
+| `sh build.sh` | `nomux status set working "build the docs"` çalıştıran bir script: öz bildirim. |
+| `sh ask.sh` | `blocked` durumlu bir OSC 7501 bildirimi yazan bir script: program durumu. |
+| `sh replay.sh permission-request 4` | Claude Code'un kaydedilmiş 4 hook olayını `nomux hook claude <olay>` ile gönderen bir script: adapter. |
+| `sh replay.sh background-subagent 6` | Aynısı; bir subagent başlatan bir çalışmanın 6 kaydedilmiş olayıyla: Alt işli adapter. |
+| `sh` | Hiçbir şey bildirmeyen bir shell. |
+
+Claude Code adapter'ı nomux 0.4.0 ile yayımlanmadı. Örnekler onun bir build'ini kullanır; build `nomux ext install ./claude-adapter --grant-all` ile kuruldu. Her script ilk bildiriminden önce bir saniye bekler.
+
+### `nomux status`
+
+Her Session'ın durumunu gösterir: neyin çalıştığını, neyin bittiğini ve neyin sizi beklediğini.
+
+```text
+Usage: nomux status [OPTIONS]
+       nomux status <COMMAND>
+
+Commands:
+  set  Report the status of the session of this process. The command works only inside a nomux session
+
+Options:
+      --json         Print the result as one JSON document
+      --tree         Also show the Child work of each session
+  -q, --quiet        Print only the necessary part of the result
+      --host <NAME>  Use the daemon of a remote host of `nomux host ls` [default: the local host]
+  -h, --help         Print help
+```
+
+| Seçenek | Ne yapar |
+|---|---|
+| `--tree` | Her Alt işi, Session'ının altında bir satır olarak gösterir; her seviye için iki boşluk içeri alınır. Hiçbir kaynağın bildirmediği bir Alt işin durumu `-` olur. |
+
+```console
+$ nomux status
+  SESSION   COMMAND                             STATE                  FOR  MESSAGE
+* 3i7kj4zx  sh replay.sh background-subagent 6  working                2s
+* 43ks3umx  sh build.sh                         working                3s   build the docs
+! ab56frrn  sh ask.sh                           needs you: question    3s   which branch?
+  hsleq2qd  sh                                  idle                   4s
+! n4taafjh  sh replay.sh permission-request 4   needs you: permission  2s   touch b.txt
+$ nomux status --tree
+  SESSION              COMMAND                             STATE                  FOR  MESSAGE
+* 3i7kj4zx             sh replay.sh background-subagent 6  working                2s
+*   a45f24c823c444cb5                                      working                2s
+* 43ks3umx             sh build.sh                         working                3s   build the docs
+! ab56frrn             sh ask.sh                           needs you: question    3s   which branch?
+  hsleq2qd             sh                                  idle                   4s
+! n4taafjh             sh replay.sh permission-request 4   needs you: permission  2s   touch b.txt
+$ nomux status --quiet
+ab56frrn
+n4taafjh
+```
+
+Her satırda şunlar vardır: durumun işareti, session kimliği, komut, durum, durumda geçen süre (`FOR`) ve mesaj.
+
+- Satırlar session kimliğine göre sıralıdır. Komut, biten olmayan her Session için ve son Agent çalışmasını saklayan (aşağıya bakın) her biten Session için bir satır yazdırır. Hiç Session yoksa `no sessions` yazdırır.
+- Satırın durumu, Session'ın ve Alt işlerinin en acil durumudur. Bir kaynak bekleyişin türünü söylüyorsa `needs you` bunu taşır: `needs you: permission`, `needs you: question` ya da `needs you: auth`.
+- İşaretler: `!` needs you, `x` error, `+` done, `*` working; idle için işaret yoktur.
+- Daemon'un tahmin ettiği bir durumun yanında `(guess)` yazar; örneğin ön planda `sleep 600` çalıştıran bir shell için `working (guess)`. Tahmin, shell'in prompt işaretlerinden ya da terminalin ön plandaki programından gelir; bir programın bildiriminden asla.
+- Sizin gördüğünüz bir sonucun yanında `(seen)` yazar; örneğin `done (seen)`. Bir Session'a attach olmak, onun sonuçlarını görüldü olarak işaretler.
+- `--quiet` ile komut, sizi bekleyen her Session'ın kimliğini, her satıra bir tane olarak yazdırır. Çıkış kodu her durumda 0'dır.
+- `--json` ile doküman aynı Session'ları içerir. Alanlar [JSON bölümündeki `status`](#status) başlığındadır.
+
+Biten bir Session, son Agent çalışmasını saklar: saklanan çalışma. Yukarıdaki örnekteki `n4taafjh` Session'ına uygulanan `nomux kill`, onun satırını değiştirir. Bekleyen iş artık `done` olur ve satır, daemon Session'ı silene kadar kalır:
+
+```console
+$ nomux kill n4taafjh
+session n4taafjh ended
+$ nomux status
+  SESSION   COMMAND                             STATE                FOR  MESSAGE
+* 3i7kj4zx  sh replay.sh background-subagent 6  working              8s
+* 43ks3umx  sh build.sh                         working              8s   build the docs
+! ab56frrn  sh ask.sh                           needs you: question  8s   which branch?
+  hsleq2qd  sh                                  idle                 9s
++ n4taafjh  sh replay.sh permission-request 4   done                 0s
+```
+
+### `nomux status set`
+
+Komutun çalıştığı Session'ın durumunu bildirir. OSC 7501 yazmayan bir script ya da araç bunu kullanır: durum bir öz bildirimdir.
+
+```text
+Usage: nomux status set [OPTIONS] <STATE> [MESSAGE]
+
+Arguments:
+  <STATE>    The state of the work in the session. idle takes the report back [possible values: working, done, blocked, error, idle]
+  [MESSAGE]  What the work does, waits for or completed: one line
+
+Options:
+      --json         Print the result as one JSON document
+  -q, --quiet        Print only the necessary part of the result
+      --host <NAME>  Use the daemon of a remote host of `nomux host ls` [default: the local host]
+  -h, --help         Print help
+```
+
+| Durum | Agent durumu |
+|---|---|
+| `working` | `working` |
+| `done` | `done` |
+| `blocked` | `needs you` |
+| `error` | `error` |
+| `idle` | Komut bildirimini geri alır. |
+
+```console
+$ nomux status set working "tests run"
+session ab5azvpo: working
+$ nomux status set blocked "run the tests?"
+session ab5azvpo: needs you
+$ nomux status set error "2 tests failed"
+session ab5azvpo: error
+$ nomux status set idle
+session ab5azvpo: the report is taken back
+```
+
+- Komut, holder'ın bir Session'ın her process'ine verdiği `NOMUX_SESSION_ID`, `NOMUX_SOCK` ve `NOMUX_TOKEN` değişkenlerini okur. `NOMUX_SOCK`'taki socket'e bağlanır. Daemon başlatmaz ve `--host` kabul etmez.
+- Bir bildirim, bir sonrakine kadar kalır.
+- Mesaj tek satırdır; en fazla 512 byte olabilir ve kontrol karakteri içeremez. Çok uzun bir mesaj ya da satır sonu içeren mesaj 1 çıkış kodunu verir:
+
+```console
+$ nomux status set done "$(printf 'a\nb')"
+nomux: the message must be one line of text without a control character
+$ nomux status set done "$(head -c 600 /dev/zero | tr '\0' a)"
+nomux: the message has 600 bytes: 512 at most
+```
+
+- 4 çıkış kodu, komutun kendi Session'ını kanıtlayamadığı anlamına gelir: bir değişken tanımlı değil (komut bir Session'da çalışmıyor), token yanlış, Session'ın process'i yok ya da holder'ı token üretemeyecek kadar eski.
+
+```console
+$ nomux status set working
+nomux: NOMUX_SESSION_ID is not set: `nomux status set` works only inside a nomux session
+$ NOMUX_TOKEN=0000 nomux status set done
+nomux: the status of session ab5azvpo did not change: the token of the request is not the token of the session
+```
+
+`--quiet` ile komut hiçbir şey yazdırmaz.
+
+### `nomux agent explain`
+
+Her kaynağın bir Session'ın durumu hakkında ne söylediğini gösterir. Bir durum beklediğiniz gibi değilse bunu kullanın.
+
+```text
+Usage: nomux agent explain [OPTIONS] <ID>
+
+Arguments:
+  <ID>  The session identifier
+
+Options:
+      --json         Print the result as one JSON document
+  -q, --quiet        Print only the necessary part of the result
+      --host <NAME>  Use the daemon of a remote host of `nomux host ls` [default: the local host]
+  -h, --help         Print help
+```
+
+İlk satır, Session'ın durumudur ve kaynağını da yazar. Altındaki liste, her kaynağı karar verme sırasıyla gösterir: ne söylediğini ve nedenini, yani kaynağın notunu. Hiçbir şey bildirmeyen bir kaynak da listede yer alır.
+
+```console
+$ nomux agent explain 43ks3umx
+session 43ks3umx: working for 3s, from self-report; message from self-report: build the docs
+
+sources, in the sequence in which they decide:
+  adapter             nothing: no adapter extension reported a status
+  program status      nothing: no program of the session reported a status
+  self-report         working: build the docs (a program of the session reported it with `nomux status set`)
+  session restore     nothing: the session did not lose a process with work that ran or waited
+  prompt marks        nothing: the shell of the session sent no prompt mark
+  foreground program  nothing: the command of the session is in the foreground of its terminal
+```
+
+Session'ın Alt işi varsa çıktı onları listeler. Bir adapter ayrıntı verdiyse çıktı onlarla biter: aracın session kimliği ve resume komutu.
+
+```console
+$ nomux agent explain 3i7kj4zx
+session 3i7kj4zx: working for 2s, from adapter
+
+sources, in the sequence in which they decide:
+  adapter             working (an adapter extension reported it from the events of the agent tool)
+  program status      nothing: no program of the session reported a status
+  self-report         nothing: no program of the session reported a status with `nomux status set`
+  session restore     nothing: the session did not lose a process with work that ran or waited
+  prompt marks        nothing: the shell of the session sent no prompt mark
+  foreground program  nothing: the command of the session is in the foreground of its terminal
+
+child work:
+  a45f24c823c444cb5: working for 2s, from adapter
+
+from the adapter:
+  tool session: 00000000-0000-4000-8000-000000000003
+  resume: claude --resume 00000000-0000-4000-8000-000000000003
+```
+
+Biten bir Session için komut, daemon Session'ı silene kadar saklanan çalışmasını, aracın resume komutuyla birlikte yazdırır. Durum `session restore` kaynağından gelir:
+
+```console
+$ nomux agent explain n4taafjh
+session n4taafjh: done for 0s, from session restore
+
+sources, in the sequence in which they decide:
+  adapter             nothing: no adapter extension reported a status
+  program status      nothing: the session has no process
+  self-report         nothing: no program of the session reported a status with `nomux status set`
+  session restore     done (the session lost its process: the status is what the session had then, and work that ran or waited is shown as complete)
+  prompt marks        nothing: the session has no process
+  foreground program  nothing: the session has no process
+
+from the adapter:
+  tool session: 00000000-0000-4000-8000-000000000006
+  resume: claude --resume 00000000-0000-4000-8000-000000000006
+```
+
+Verilen kimlikte bir Session yoksa ya da biten bir Session'ın saklanan çalışması yoksa çıkış kodu 2'dir:
+
+```console
+$ nomux agent explain aaaaaaaa
+nomux: no session that is not ended has the identifier aaaaaaaa
+```
+
+`--quiet` ile komut hiçbir şey yazdırmaz. `--json` ile doküman, [`agent explain`](#agent-explain) dokümanıdır.
+
+### `nomux events`
+
+Host'un olaylarını geldikçe yazdırır; bir sinyal komutu durdurana kadar. Bu sürümdeki tek kip `--follow`'dur.
+
+```text
+Usage: nomux events [OPTIONS] --follow
+
+Options:
+      --follow
+          Wait for the events. This is the only mode now
+
+      --json
+          Print the result as one JSON document
+
+      --filter <TYPE>
+          Print only the events of this type. Give the option more than one time for more types
+
+          Possible values:
+          - agent-run-changed: The status of a session or of its Child work changed
+          - agent-run-removed: A session ended or was removed
+          - extension-event:   The daemon part of an extension sent an event
+
+  -q, --quiet
+          Print only the necessary part of the result
+
+      --host <NAME>
+          Use the daemon of a remote host of `nomux host ls` [default: the local host]
+
+  -h, --help
+          Print help (see a summary with '-h')
+```
+
+`--follow` olmadan `nomux events` 1 çıkış koduyla biter ve argüman ayrıştırıcının kullanım mesajını yazdırır.
+
+| Seçenek | Ne yapar |
+|---|---|
+| `--follow` | Olaylara abone olur ve her olayı geldiğinde yazdırır. |
+| `--filter <type>` | Yalnızca bir türün olaylarını yazdırır: `agent-run-changed`, `agent-run-removed` ya da `extension-event`. Daha fazla tür için seçeneği birden çok kez verin. Snapshot her zaman yazdırılır. |
+
+Aşağıdaki, bir Session `sh report.sh` çalıştırırken (`nomux status set` ile `working`, `blocked` ve `done` bildiren bir script) ve `nomux kill` durumu olmayan bir Session'ı sonlandırırken alınan metin çıktısıdır:
+
+```console
+$ nomux events --follow
+12 52bhqxil working build the docs
+13 52bhqxil needs you deploy to production?
+14 52bhqxil done docs built
+15 52bhqxil done docs built
+16 rado2qro removed
+```
+
+- Komut, başladıktan sonraki olayları yazdırır. Daemon'da komutun ihtiyaç duyduğu olaylar yoksa bir snapshot gelir.
+- Bir satır, değişiklik için `<seq> <session> <state> <message>`; biten ya da silinen bir Session için `<seq> <session> removed`; bir extension olayı için `<seq> extension <id>: <name> (<n> bytes)`; snapshot için `<seq> snapshot: ...` biçimindedir. Metinde kaynak yoktur: 15. satır, Session'ın komutu bittiğinde ve kaynak `self-report`'tan `session restore`'a geçtiğinde gelir. Olayın JSON dokümanı kaynağı gösterir.
+- `<seq>`, olayın daemon'un olay günlüğündeki sırasıdır. Daemon yeniden başlayınca numaralar yeniden başlar.
+- `--quiet` ile çıktı aynı satırlardır.
+- Çıkış kodu şu durumlarda 0'dır: `SIGINT` (Ctrl-C) ya da `SIGTERM` komutu durdurduğunda, daemon bağlantıyı kapattığında (örneğin `nomux daemon stop` sonrası) ve standart çıktıyı okuyan taraf onu kapattığında.
+
+`--json` ile her satır bir JSON dokümanıdır (NDJSON). Filtre verilirse komut yalnızca filtrenin adını verdiği türlerin olaylarını yazdırır. Aşağıdaki, aynı kill sırasında alınan `nomux events --follow --json --filter agent-run-removed` çıktısıdır:
+
+```console
+$ nomux events --follow --json --filter agent-run-removed
+{"schema_version":1,"event":{"seq":16,"at_ms":1795691221747,"type":"agent_run_removed","session":"rado2qro"}}
+```
+
+Bu bölümde bu sayfa için çalıştırılmayanlar: bir `extension-event` ve bir `snapshot` satırı. Claude Code adapter'ı hiçbir extension olayı göndermez; daemon da snapshot'ı yalnızca fazla geride kalmış bir istemciye gönderir.
+
+## Hook komutları
+
+Bir agent aracı, örneğin Claude Code, işinin her olayında bir komut çalıştırır. nomux için bu komut `nomux hook <araç> <olay>`'dır. Aracın adapter extension'ı olayları bir duruma çevirir. Bir olayın izlediği yolu [Agent adapter'ları](/docs/tr/guides/agent-adapters/) sayfası, Claude Code hook'larının kullanımını [Claude Code](/docs/tr/guides/claude-code/) sayfası anlatır.
+
+Bu bölümdeki örnekler Claude Code adapter'ını kullanır; adapter nomux 0.4.0 ile yayımlanmadı. Paket onun bir build'idir. `nomux ext install ./claude-adapter --grant-all` onu çalıştırmanın home dizinine kurdu; ayar dosyası da o home dizinindeki `~/.claude/settings.json`'dur. Dosyada, ilk örnekten önce kullanıcının kendi bir hook'u vardı:
+
+```json
+{
+  "model": "sonnet",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "notify-send",
+            "args": ["done"]
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### `nomux hook`
+
+Bir agent aracının tek bir olayını Session'ın daemon'una gönderir. Bir araç bu komutu kendi hook'larından çağırır: olayın verisini standart girdiden okur.
+
+```text
+Usage: nomux hook [OPTIONS] <TOOL> <EVENT>
+
+Arguments:
+  <TOOL>   The name of the tool, as its adapter extension names it
+  <EVENT>  The name of the event
+
+Options:
+      --json         Print the result as one JSON document
+  -q, --quiet        Print only the necessary part of the result
+      --host <NAME>  Use the daemon of a remote host of `nomux host ls` [default: the local host]
+  -h, --help         Print help
+```
+
+`hooks install` bu çağrıyı aracın ayar dosyasına yazar; komutu kendiniz yazmazsınız. Aşağıdaki, olayın verisi Claude Code'un verdiği biçimde olan bir veri dosyasıyla tek bir olayın çağrısıdır:
+
+```console
+$ nomux hook claude PermissionRequest < replay/permission-request/04-PermissionRequest.json
+$ echo $?
+0
+```
+
+Komut hiçbir şey yazdırmaz: bu sürümde araç için cevap boştur.
+
+- Komut, olayın verisini standart girdiden okurken en fazla 256 KiB alır; girdinin sonuna kadar ya da en fazla 40 ms bekler. Daha büyük girdi verisiz gider. Terminal, girdi sayılmaz.
+- `NOMUX_SESSION_ID`, `NOMUX_SOCK` ve `NOMUX_TOKEN` değişkenlerini okur, `NOMUX_SOCK`'taki socket'e bağlanır ve tek bir istek gönderir. Daemon, shell ya da başka bir process başlatmaz. `--host` etkisizdir.
+- Bir hook, aracını bloklamamalı ve bozmamalıdır: **çıkış kodu her zaman 0'dır.** Session'ın dışında, daemon yokken ve daemon komutun başlamasından sonra 80 ms içinde cevap vermezse komut çıktısız biter. Daemon hook'a, adapter olayı almadan önce cevap verir.
+- Daemon olayı reddederse, örneğin token yanlışsa, komut standart hataya tek satır yazar. Çıkış kodu yine 0'dır:
+
+```console
+$ echo '{}' | NOMUX_TOKEN=wrong nomux hook claude Stop
+nomux hook: the hook event of session jyekle7t was refused: the token of the request is not the token of the session
+```
+
+- Adapter'ı olmayan bir araç için çıktı olmaz ve hiçbir durum değişmez.
+- `--json` ve `--quiet` ile komut, araç için cevabı bunlarsız olduğu gibi yazdırır: hiçbir şey.
+
+### `nomux hooks`
+
+`hooks` komutları, bir agent aracının hook'larını bu bilgisayardaki ayar dosyasında değiştirir ve gösterir. Hook'ların hangi girdilere ihtiyaç duyduğunu aracın adapter extension'ı tarif eder. `--host` kabul edilmez: aracın ayar dosyası aracın kendi bilgisayarındadır.
+
+```text
+Usage: nomux hooks [OPTIONS] <COMMAND>
+
+Commands:
+  install    Show the change that the hooks of a tool need in its settings file. Write it only with --apply
+  uninstall  Show how the removal of the hooks of a tool changes its settings file. Write it only with --apply
+  status     Show each tool: its adapter, and if its hooks are installed, missing or different
+
+Options:
+      --json         Print the result as one JSON document
+  -q, --quiet        Print only the necessary part of the result
+      --host <NAME>  Use the daemon of a remote host of `nomux host ls` [default: the local host]
+  -h, --help         Print help
+```
+
+nomux, `--apply` olmadan hiçbir ayar dosyası yazmaz; bir aracın komutunu hiçbir zaman sarmaz ya da değiştirmez ve aracın izin kontrollerini atlayan hiçbir seçenek eklemez.
+
+### `nomux hooks install`
+
+Bir aracın hook'larının ayar dosyasında gerektirdiği değişikliği gösterir; yalnızca `--apply` ile yazar.
+
+```text
+Usage: nomux hooks install [OPTIONS] <TOOL>
+
+Arguments:
+  <TOOL>  The name of the tool, as its adapter extension names it
+
+Options:
+      --dry-run      Print the change and write nothing. This is the default
+      --json         Print the result as one JSON document
+      --apply        Write the change to the settings file of the tool
+  -q, --quiet        Print only the necessary part of the result
+      --host <NAME>  Use the daemon of a remote host of `nomux host ls` [default: the local host]
+  -h, --help         Print help
+```
+
+Komut adapter'dan kurulum planını ister, ayar dosyasının yeni içeriğini hesaplar ve bunu unified diff olarak yazdırır. Claude Code adapter'ının diff'i 266 satırdır: Claude Code'un her olayı için bir hook. Aşağıdaki ilk komut, `| head -20` ile ilk 20 satırını; ikincisi de çıktının son satırını gösterir:
+
+```console
+$ nomux hooks install claude | head -20
+--- /tmp/nomux-demo/.claude/settings.json
++++ /tmp/nomux-demo/.claude/settings.json
+@@ -7,7 +7,262 @@
+           {
+             "type": "command",
+             "command": "notify-send",
+-            "args": ["done"]
++            "args": [
++              "done"
++            ]
++          }
++        ]
++      },
++      {
++        "hooks": [
++          {
++            "type": "command",
++            "command": "nomux",
++            "args": [
++              "hook",
+$ nomux hooks install claude | tail -1
+dry run: nothing is written. Add --apply to write the change
+```
+
+Dosya, kullanıcının hook'unu korur: `Stop` için yeni hook ondan sonra gelir. Komut dosyayı iki boşluk girintili JSON olarak yazar; bu yüzden tek satırda yazdığınız bir değer birkaç satıra bölünebilir, örnekteki `"args": ["done"]` satırında olduğu gibi.
+
+`--apply` ile komut aynı diff'i yazdırır ve dosyayı yazar. Son satır bunu söyler:
+
+```console
+$ nomux hooks install claude --apply | tail -1
+the hooks of claude are installed in /tmp/nomux-demo/.claude/settings.json
+$ nomux hooks install claude --apply
+the hooks of claude are installed in /tmp/nomux-demo/.claude/settings.json: nothing to change
+```
+
+- `--dry-run` varsayılandır ve bunu yeniden söyler. `--dry-run` ile `--apply` birlikte kullanılamaz: çıkış kodu 1'dir.
+- Ayar dosyasının yerine, aynı dizindeki geçici bir dosya geçer; sembolik bağlantı bağlantı olarak kalır. Dosyanın anahtarları sırasını korur. Dosyada zaten olan bir değer yeniden eklenmez: yukarıdaki ikinci komut hiçbir şeyi değiştirmez ve çıkış kodu 0'dır.
+- Olmayan bir dosya oluşturulur: diff bu durumda `--- /dev/null` ile başlar.
+- `--apply` ayrıca nomux'un veri dizinindeki `hooks/<araç>/` altına bir kayıt yazar (Linux'ta `~/.local/share/nomux`, macOS'ta `~/Library/Application Support/nomux`): kurulumdan önceki dosyanın byte'ları, yazılan dosyanın checksum'ı ve girdiler.
+- Aracın adapter'ı yoksa çıkış kodu 2'dir: `nomux: no extension is the adapter of the tool claude`. JSON olmayan bir ayar dosyası 1 çıkış kodunu ve `nomux: the settings file /tmp/nomux-demo/.claude/settings.json cannot get the hooks: key must be a string at line 1 column 3; nothing changed` mesajını verir. Bu durumların hiçbirinde bir şey yazılmaz.
+
+### `nomux hooks uninstall`
+
+Bir aracın hook'larının kaldırılmasının ayar dosyasını nasıl değiştireceğini gösterir; yalnızca `--apply` ile yazar.
+
+```text
+Usage: nomux hooks uninstall [OPTIONS] <TOOL>
+
+Arguments:
+  <TOOL>  The name of the tool
+
+Options:
+      --dry-run      Print the change and write nothing. This is the default
+      --json         Print the result as one JSON document
+      --apply        Write the change to the settings file of the tool
+  -q, --quiet        Print only the necessary part of the result
+      --host <NAME>  Use the daemon of a remote host of `nomux host ls` [default: the local host]
+  -h, --help         Print help
+```
+
+Komut yalnızca `hooks install --apply`'ın yazdığı kaydı ister; daemon'u istemez.
+
+- Ayar dosyası kurulumdan sonra değişmediyse dosya, kurulumdan önceki byte'larına geri döner. Dosya yoksa silinir.
+- Dosya değiştiyse yalnızca nomux'un girdileri kaldırılır.
+
+```console
+$ nomux hooks uninstall claude | tail -1
+dry run: nothing is written. Add --apply to write the change
+$ nomux hooks uninstall claude --apply | tail -1
+/tmp/nomux-demo/.claude/settings.json has its content from before the install again
+$ nomux hooks uninstall claude --apply
+nomux: nomux did not install the hooks of claude
+```
+
+Son komutun çıkış kodu 2'dir: nomux o aracın hook'larını kurmadı, bu yüzden kaydı yok.
+
+### `nomux hooks status`
+
+Adapter'ı ya da kaydı olan her aracı gösterir: adapter'ı, hook'larının ayar dosyasındaki durumunu ve dosyanın yolunu.
+
+```text
+Usage: nomux hooks status [OPTIONS]
+
+Options:
+      --json         Print the result as one JSON document
+  -q, --quiet        Print only the necessary part of the result
+      --host <NAME>  Use the daemon of a remote host of `nomux host ls` [default: the local host]
+  -h, --help         Print help
+```
+
+```console
+$ nomux hooks status
+TOOL    ADAPTER             HOOKS
+claude  nomux.agent-claude  missing in /tmp/nomux-demo/.claude/settings.json
+$ nomux hooks install claude --apply | tail -1
+the hooks of claude are installed in /tmp/nomux-demo/.claude/settings.json
+$ nomux hooks status
+TOOL    ADAPTER             HOOKS
+claude  nomux.agent-claude  installed in /tmp/nomux-demo/.claude/settings.json
+```
+
+| Durum | Anlamı |
+|---|---|
+| `installed` | Ayar dosyasında kurulum planının her girdisi var. |
+| `missing` | Ayar dosyasında girdilerin hiçbiri yok ya da dosya yok. |
+| `different` | Ayar dosyasında kurulum planının girdilerinin bir kısmı var; kurulum diğerlerini ekler. |
+| `not known` | nomux ayar dosyasını okuyamıyor. Metin nedenini söyler; örneğin JSON olmayan bir dosya için. |
+
+Adapter'ı ya da kaydı olan bir araç yoksa komut `no tool has an adapter or installed hooks` yazdırır. Çıkış kodu her durumda 0'dır. `--quiet` ile komut hiçbir şey yazdırmaz.
+
 ## Diğer komutlar
 
 ### `nomux version`
@@ -861,9 +1461,9 @@ Options:
 
 ```console
 $ nomux version
-nomux 0.3.0
+nomux 0.4.0
 $ nomux version --quiet
-0.3.0
+0.4.0
 ```
 
 ## Sessiz çıktı
@@ -877,15 +1477,27 @@ $ nomux version --quiet
 | `capture` | Çıktı satırları; `--quiet` olmadan olduğu gibi |
 | `host ls` | Her satırda bir Host adı |
 | `ext ls` | Her satırda bir extension kimliği |
+| `status` | Sizi bekleyen her Session için bir session kimliği, her satırda bir tane |
+| `events --follow` | Metin çıktısının satırları |
 | `ext call` | Sonucun payload'ı; `--quiet` olmadan olduğu gibi |
 | `version` | Sürüm numarası |
 | Diğer bütün komutlar | Hiçbir şey. Sonuç, çıkış kodudur |
 
 ```console
 $ nomux ls --quiet
-hqarpjgu
-sl2ugpe7
-z3yjk54g
+4irabyqw
+6sxcisjq
+kitzeuit
+r67mfnfw
+xrysxwhn
+$ nomux ls --all --quiet
+4irabyqw
+6sxcisjq
+fiktbeos
+iizairlj
+kitzeuit
+r67mfnfw
+xrysxwhn
 ```
 
 ## Hatalar
@@ -909,13 +1521,13 @@ For more information, try '--help'.
 | Kod | JSON'daki adı | Anlamı |
 |---:|---|---|
 | 0 | | Başarılı |
-| 1 | `error` | Başka bir koda girmeyen hata. Hatalı komut satırı, kurulamayan SSH bağlantısı, güvenilmeyen host anahtarı, başarısız bir `host doctor` kontrolü, başlatılamayan uykudaki Session, geçersiz manifest ve çöken extension da buna dahildir |
-| 2 | `not_found` | Aranan şey yok: verilen kimlikte bir Session yok, Session'ın komutu bitmiş, verilen adda bir Host yok, verilen kimlikte bir extension yok ya da daemon çalışmıyor (`daemon status`) |
+| 1 | `error` | Başka bir koda girmeyen hata. Hatalı komut satırı, kurulamayan SSH bağlantısı, güvenilmeyen host anahtarı, başarısız bir `host doctor` kontrolü, başlatılamayan uykudaki Session, geçersiz manifest, çöken extension, geçersiz bir `status set` mesajı ve `hooks install`'ın değiştiremediği bir ayar dosyası da buna dahildir |
+| 2 | `not_found` | Aranan şey yok: verilen kimlikte bir Session yok, Session'ın komutu bitmiş, biten bir Session'ın saklanan çalışması yok (`agent explain`), verilen adda bir Host yok, verilen kimlikte bir extension yok, nomux bir aracın hook'larını kurmamış (`hooks uninstall`), bir aracın adapter'ı olan extension yok (`hooks install`) ya da daemon çalışmıyor (`daemon status`) |
 | 3 | `timeout` | İşlem izin verilen sürede tamamlanmadı: daemon başladıktan sonra cevap vermedi, Session hazır olmadı, komut sonlanmadı ya da extension cevap vermedi |
-| 4 | `no_permission` | Kullanıcının yetkisi yok; örneğin daemon'un socket'i için, ya da uzak Host hiçbir anahtarı kabul etmedi. İzinleri onaylanmadan çalıştırılan `ext install` ve gereken izni olmayan bir extension da bu kodu verir |
+| 4 | `no_permission` | Kullanıcının yetkisi yok; örneğin daemon'un socket'i için, ya da uzak Host hiçbir anahtarı kabul etmedi. İzinleri onaylanmadan çalıştırılan `ext install`, gereken izni olmayan bir extension ve Session'ını kanıtlayamayan bir `status set` da bu kodu verir |
 | 5 | `version_mismatch` | CLI ile daemon'un ortak bir protokol sürümü yok. Hangisi eskiyse onu güncelleyin |
 
-`attach` ve `new --attach` için çıkış kodunun bir kaynağı daha vardır: Session attach sırasında sonlanırsa çıkış kodu, komutunun çıkış durumudur. Bkz. [attach nasıl biter](#attach-nasıl-biter).
+`hook`'un çıkış kodu, olayı gönderemediğinde de her olay için 0'dır: bir hook aracını bozmamalıdır. Yalnızca hatalı bir komut satırı 1 çıkış kodunu verir. `attach` ve `new --attach` için çıkış kodunun bir kaynağı daha vardır: Session attach sırasında sonlanırsa çıkış kodu, komutunun çıkış durumudur. Bkz. [attach nasıl biter](#attach-nasıl-biter).
 
 ## JSON çıktısı
 
@@ -931,7 +1543,7 @@ Yeni bir alan eklenmesi değeri artırmaz. Bu yüzden dokümanı okuyan kod, tan
 ### `new` ve `start`
 
 ```json
-{"schema_version":1,"session":{"id":"hqarpjgu","state":"running","pid":2616798,"command":["sleep","300"],"cwd":"/tmp/nomux-demo","rows":24,"columns":80,"started_at":1795655156,"epoch":1,"restore_policy":"on-focus"}}
+{"schema_version":1,"session":{"id":"c7d77b72","state":"running","pid":967789,"command":["sleep","300"],"cwd":"/tmp/nomux-demo","rows":24,"columns":80,"started_at":1795691400,"epoch":1,"restore_policy":"on-focus"}}
 ```
 
 | Alan | Tür | Anlamı |
@@ -953,21 +1565,40 @@ Dokümanda komutun ortam değişkenleri hiçbir zaman bulunmaz.
 ### `ls`
 
 ```json
-{"schema_version":1,"sessions":[{"id":"47eqwqyr","state":"dormant","pid":null,"command":["sh"],"cwd":"/tmp/nomux-demo/project","rows":24,"columns":80,"started_at":1795655221,"epoch":1,"restore_policy":"on-focus"},{"id":"zapitg2m","state":"running","pid":2618368,"command":["sh","-c","echo server started; exec sleep 600"],"cwd":"/tmp/nomux-demo","rows":24,"columns":80,"started_at":1795655226,"epoch":2,"restore_policy":"auto"}]}
+{"schema_version":1,"sessions":[{"id":"7foof65g","state":"dormant","pid":null,"command":["sh"],"cwd":"/tmp/nomux-demo/project","rows":24,"columns":80,"started_at":1795690771,"epoch":1,"restore_policy":"on-focus"},{"id":"atgrw65j","state":"running","pid":869838,"command":["sh","-c","echo server started; exec sleep 600"],"cwd":"/tmp/nomux-demo","rows":24,"columns":80,"started_at":1795690775,"epoch":2,"restore_policy":"auto"},{"id":"qqdrvzzv","state":"running","pid":861740,"command":["sleep","600"],"cwd":"/tmp/nomux-demo/project","rows":24,"columns":80,"started_at":1795690729,"epoch":1,"restore_policy":"on-focus"}]}
 ```
 
 `sessions`, `new`'un verdiği nesnelerden oluşan ve kimliğe göre sıralı bir dizidir. Hiç Session yoksa boştur. Biten bir Session diziye yalnızca `--all` ile girer:
 
 ```json
-{"schema_version":1,"sessions":[{"id":"z3yjk54g","state":"ended","pid":null,"command":["sh"],"cwd":"/tmp/nomux-demo","rows":24,"columns":80,"started_at":1795655146,"epoch":1,"restore_policy":"on-focus","exit":{"ended_at":1795655216,"exit_code":3}}]}
+{"schema_version":1,"sessions":[{"id":"fiktbeos","state":"ended","pid":null,"command":["sh"],"cwd":"/tmp/nomux-demo","rows":24,"columns":80,"started_at":1795691292,"epoch":1,"restore_policy":"on-focus","exit":{"ended_at":1795691295,"exit_code":3}}]}
 ```
 
-İki örnek de aynı çalıştırmadaki daha uzun dokümanlardan alınmış parçalardır.
+İkinci örnek, daha uzun bir dokümandan alınmış bir parçadır.
+
+### `ls --memory`
+
+```json
+{"schema_version":1,"sessions":[{"id":"7foof65g","state":"dormant","pid":null,"command":["sh"],"cwd":"/tmp/nomux-demo/project","rows":24,"columns":80,"started_at":1795690771,"epoch":1,"restore_policy":"on-focus","memory":null},{"id":"atgrw65j","state":"running","pid":869838,"command":["sh","-c","echo server started; exec sleep 600"],"cwd":"/tmp/nomux-demo","rows":24,"columns":80,"started_at":1795690775,"epoch":2,"restore_policy":"auto","memory":{"command_bytes":152576,"command_processes":1,"holder_bytes":291840,"measure":"pss"}},{"id":"qqdrvzzv","state":"running","pid":861740,"command":["sleep","600"],"cwd":"/tmp/nomux-demo/project","rows":24,"columns":80,"started_at":1795690729,"epoch":1,"restore_policy":"on-focus","memory":{"command_bytes":146432,"command_processes":1,"holder_bytes":270336,"measure":"pss"}}],"memory_total":{"command_bytes":299008,"command_processes":2,"holder_bytes":562176,"sessions":2,"measure":"pss"}}
+```
+
+Doküman, `ls` dokümanıdır; her Session'da bir alan ve en üstte bir alan fazladır. `--memory` olmadan dokümanda bu iki alan da bulunmaz.
+
+| Alan | Tür | Anlamı |
+|---|---|---|
+| `sessions[].memory` | object ya da `null` | Session'ın process'lerinin belleği. Session'ın process'i yoksa `null` |
+| `sessions[].memory.command_bytes` | number | Komutun process ağacının byte cinsinden belleği; holder hariç |
+| `sessions[].memory.command_processes` | number | Bu ağaçtaki process sayısı |
+| `sessions[].memory.holder_bytes` | number | Session'ın holder'ının byte cinsinden belleği |
+| `sessions[].memory.measure` | string | `pss`, `rss` ya da CLI'ın tanımadığı bir ölçü için `unknown` |
+| `memory_total.command_bytes`, `memory_total.command_processes`, `memory_total.holder_bytes` | number | Process'i olan Session'ların üç değerinin toplamları |
+| `memory_total.sessions` | number | Toplamlara giren Session sayısı |
+| `memory_total.measure` | string ya da `null` | Toplamların ölçüsü. Session'ların ölçüsü aynı değilse ya da hiçbir Session'ın process'i yoksa `null` |
 
 ### `capture`
 
 ```json
-{"schema_version":1,"capture":{"id":"ebxd36mw","output":"198\r\n199\r\n200\r\n"}}
+{"schema_version":1,"capture":{"id":"wg6h27bl","output":"198\r\n199\r\n200\r\n"}}
 ```
 
 | Alan | Tür | Anlamı |
@@ -978,15 +1609,15 @@ Dokümanda komutun ortam değişkenleri hiçbir zaman bulunmaz.
 ### `restore-policy`
 
 ```json
-{"schema_version":1,"restore_policy":{"id":"ds3kchg4","policy":"manual"}}
+{"schema_version":1,"restore_policy":{"id":"4irabyqw","policy":"manual"}}
 ```
 
 ### `attach` ve `new --attach`
 
 ```json
-{"schema_version":1,"attach":{"id":"z3yjk54g","end":"detached"}}
-{"schema_version":1,"attach":{"id":"5k3dkgvd","end":"exited","exit_code":0}}
-{"schema_version":1,"attach":{"id":"sshjdp4m","end":"signaled","signal":9}}
+{"schema_version":1,"attach":{"id":"a4xd7tz6","end":"detached"}}
+{"schema_version":1,"attach":{"id":"a4xd7tz6","end":"exited","exit_code":0}}
+{"schema_version":1,"attach":{"id":"x3jerlzh","end":"signaled","signal":9}}
 ```
 
 Komut dokümanı attach bittikten sonra yazdırır. Sonlanan bir Session'ın dokümanı standart çıktıya gider; çıkış kodu [attach nasıl biter](#attach-nasıl-biter) tablosundaki değerdir.
@@ -1001,7 +1632,7 @@ Komut dokümanı attach bittikten sonra yazdırır. Sonlanan bir Session'ın dok
 ### `detach`
 
 ```json
-{"schema_version":1,"detached":{"id":"z3yjk54g","clients":0}}
+{"schema_version":1,"detached":{"id":"7uk6xzoz","clients":0}}
 ```
 
 | Alan | Tür | Anlamı |
@@ -1012,7 +1643,7 @@ Komut dokümanı attach bittikten sonra yazdırır. Sonlanan bir Session'ın dok
 ### `kill`
 
 ```json
-{"schema_version":1,"killed":"hqarpjgu"}
+{"schema_version":1,"killed":"v6srainn"}
 ```
 
 `killed`, sonlanan Session'ın kimliğidir.
@@ -1020,7 +1651,7 @@ Komut dokümanı attach bittikten sonra yazdırır. Sonlanan bir Session'ın dok
 ### `daemon status`
 
 ```json
-{"schema_version":1,"daemon":{"running":true,"version":"0.3.0","pid":2616705,"sessions":1}}
+{"schema_version":1,"daemon":{"running":true,"version":"0.4.0","pid":1017163,"sessions":1}}
 {"schema_version":1,"daemon":{"running":false}}
 ```
 
@@ -1170,10 +1801,129 @@ Extension bir hatayla cevap verdiyse standart hatada hata dokümanı bulunur.
 
 Manifest geçersiz olsa da doküman standart çıktıya gider.
 
+### `status`
+
+```json
+{"schema_version":1,"status":{"attention":{"session":"duif5fve","status":{"state":"working","kind":null,"source":"adapter","guess":false,"since_ms":1795691439478,"seen":false,"message":null,"title":null,"progress":null,"tool":null}},"sessions":[{"id":"duif5fve","command":["sh","replay.sh","background-subagent","6"],"status":{"state":"working","kind":null,"source":"adapter","guess":false,"since_ms":1795691439478,"seen":false,"message":null,"title":null,"progress":null,"tool":null},"aggregate":{"state":"working","kind":null,"source":"adapter","guess":false,"since_ms":1795691439478,"seen":false,"message":null,"title":null,"progress":null,"tool":null},"details":{"model":null,"provider_session_id":"00000000-0000-4000-8000-000000000003","resume_command":"claude --resume 00000000-0000-4000-8000-000000000003"}}]}}
+```
+
+`--tree` ile `status.sessions` öğelerinin her birinde `details`'ten önce `children` alanı bulunur. Aynı Session'ın `--tree` ile dokümanı:
+
+```json
+{"schema_version":1,"status":{"attention":{"session":"duif5fve","status":{"state":"working","kind":null,"source":"adapter","guess":false,"since_ms":1795691439478,"seen":false,"message":null,"title":null,"progress":null,"tool":null}},"sessions":[{"id":"duif5fve","command":["sh","replay.sh","background-subagent","6"],"status":{"state":"working","kind":null,"source":"adapter","guess":false,"since_ms":1795691439478,"seen":false,"message":null,"title":null,"progress":null,"tool":null},"aggregate":{"state":"working","kind":null,"source":"adapter","guess":false,"since_ms":1795691439478,"seen":false,"message":null,"title":null,"progress":null,"tool":null},"children":[{"name":"a45f24c823c444cb5","status":{"state":"working","kind":null,"source":"adapter","guess":false,"since_ms":1795691440095,"seen":false,"message":null,"title":{"text":"general-purpose","source":"adapter"},"progress":null,"tool":null},"aggregate":{"state":"working","kind":null,"source":"adapter","guess":false,"since_ms":1795691440095,"seen":false,"message":null,"title":{"text":"general-purpose","source":"adapter"},"progress":null,"tool":null},"children":[]}],"details":{"model":null,"provider_session_id":"00000000-0000-4000-8000-000000000003","resume_command":"claude --resume 00000000-0000-4000-8000-000000000003"}}]}}
+```
+
+| Alan | Tür | Anlamı |
+|---|---|---|
+| `status.attention` | object ya da `null` | En acil duruma sahip Session ve o durum. Host'ta Session yoksa `null` |
+| `status.sessions[]` | liste | Biten olmayan her Session için ve son Agent çalışmasını saklayan her biten Session için bir Agent çalışması; kimliğe göre sıralı |
+| `.id`, `.command` | string, string dizisi | Session ve komutu |
+| `.status` | durum | Agent çalışmasının durumu |
+| `.aggregate` | durum | Agent çalışmasının ve Alt işlerinin en acil durumu |
+| `.children[]` | liste | Yalnızca `--tree` ile. Her Alt iş: `name`, `status` (bir durum; hiçbir kaynak bildirmiyorsa `null`), `aggregate` ve `children` |
+| `.details` | object | Yalnızca bir adapter verdiyse: `model`, `provider_session_id` ve `resume_command`; her biri string ya da `null` |
+
+Host'ta Session yoksa doküman `{"schema_version":1,"status":{"attention":null,"sessions":[]}}` olur.
+
+Bir durumun alanları şunlardır:
+
+| Alan | Tür | Anlamı |
+|---|---|---|
+| `state` | string | `idle`, `working`, `done`, `needs_you`, `error` ya da CLI'ın tanımadığı bir durum için `unknown` |
+| `kind` | string ya da `null` | `needs_you` için: `permission`, `question` ya da `auth`; hiçbir kaynak söylemiyorsa `null` |
+| `source` | string | `adapter`, `program_status`, `self_report`, `session_restore`, `prompt_marks`, `foreground_program`, `none` (hiçbir kaynak işi bildirmiyor) ya da `unknown` |
+| `guess` | boolean | Daemon durumu tahmin ettiyse `true`: kaynak `prompt_marks` ya da `foreground_program` |
+| `since_ms` | number | Daemon'un durumu ilk gördüğü an: Unix epoch'undan bu yana geçen milisaniye |
+| `seen` | boolean | `done` ve `error` için: kullanıcı sonucu gördüyse `true` |
+| `message`, `title`, `tool` | object ya da `null` | `{"text": ..., "source": ...}`: metin ve kendi kaynağı |
+| `progress` | object ya da `null` | `{"percent": ..., "source": ...}` |
+
+### `status set`
+
+```json
+{"schema_version":1,"status_set":{"session":"ab5azvpo","state":"done"}}
+```
+
+### `agent explain`
+
+```json
+{"schema_version":1,"explain":{"session":"duif5fve","run":{"id":"duif5fve","status":{"state":"working","kind":null,"source":"adapter","guess":false,"since_ms":1795691439478,"seen":false,"message":null,"title":null,"progress":null,"tool":null},"aggregate":{"state":"working","kind":null,"source":"adapter","guess":false,"since_ms":1795691439478,"seen":false,"message":null,"title":null,"progress":null,"tool":null},"children":[{"name":"a45f24c823c444cb5","status":{"state":"working","kind":null,"source":"adapter","guess":false,"since_ms":1795691440095,"seen":false,"message":null,"title":{"text":"general-purpose","source":"adapter"},"progress":null,"tool":null},"aggregate":{"state":"working","kind":null,"source":"adapter","guess":false,"since_ms":1795691440095,"seen":false,"message":null,"title":{"text":"general-purpose","source":"adapter"},"progress":null,"tool":null},"children":[]}],"details":{"model":null,"provider_session_id":"00000000-0000-4000-8000-000000000003","resume_command":"claude --resume 00000000-0000-4000-8000-000000000003"}},"sources":[{"source":"adapter","guess":false,"reported":true,"state":"working","kind":null,"message":null,"note":"an adapter extension reported it from the events of the agent tool"},{"source":"program_status","guess":false,"reported":false,"state":null,"kind":null,"message":null,"note":"no program of the session reported a status"},{"source":"self_report","guess":false,"reported":false,"state":null,"kind":null,"message":null,"note":"no program of the session reported a status with `nomux status set`"},{"source":"session_restore","guess":false,"reported":false,"state":null,"kind":null,"message":null,"note":"the session did not lose a process with work that ran or waited"},{"source":"prompt_marks","guess":true,"reported":false,"state":null,"kind":null,"message":null,"note":"the shell of the session sent no prompt mark"},{"source":"foreground_program","guess":true,"reported":false,"state":null,"kind":null,"message":null,"note":"the command of the session is in the foreground of its terminal"}]}}
+```
+
+`explain.run`, `status.sessions` öğesinin alanlarını Alt işleriyle birlikte taşır; `command` yoktur. `explain.sources` her kaynağı karar verme sırasıyla içerir. Hiçbir şey söylemeyen kaynak için `reported` değeri `false`'tur: bu durumda `state`, `kind` ve `message` `null` olur ve `note` nedenini söyler. Bir notun metni sabit değildir.
+
+### `events --follow`
+
+Her satır bir dokümandır. Aşağıdakiler, gerçek çalıştırmalardan bir `agent_run_changed` ve bir `agent_run_removed` olayıdır:
+
+```json
+{"schema_version":1,"event":{"seq":1,"at_ms":1795691201577,"type":"agent_run_changed","session":"ebqcnmoo","run":{"id":"ebqcnmoo","status":{"state":"working","kind":null,"source":"self_report","guess":false,"since_ms":1795691201577,"seen":false,"message":{"text":"build the docs","source":"self_report"},"title":null,"progress":null,"tool":null},"aggregate":{"state":"working","kind":null,"source":"self_report","guess":false,"since_ms":1795691201577,"seen":false,"message":{"text":"build the docs","source":"self_report"},"title":null,"progress":null,"tool":null},"children":[]}}}
+{"schema_version":1,"event":{"seq":16,"at_ms":1795691221747,"type":"agent_run_removed","session":"rado2qro"}}
+```
+
+Aşağıdaki, bir `snapshot` olayının biçimidir. Komut bu sayfa için snapshot'lı çalıştırılmadı; doküman `v0.4.0` etiketindeki `docs/cli.md` dosyasından alındı:
+
+```json
+{"schema_version":1,"event":{"seq":13,"at_ms":1795670005000,"type":"snapshot"}}
+```
+
+| Alan | Tür | Anlamı |
+|---|---|---|
+| `event.seq` | number | Olayın daemon'un olay günlüğündeki sırası. Daemon yeniden başlayınca numaralar yeniden başlar |
+| `event.at_ms` | number | Olayın gerçekleştiği an: Unix epoch'undan bu yana geçen milisaniye |
+| `event.type` | string | `agent_run_changed`, `agent_run_removed`, `extension_event`, `snapshot` ya da CLI'ın tanımadığı bir olay için `unknown` |
+| `event.session` | string | Session. Yalnızca `agent_run_changed` ve `agent_run_removed` içinde |
+| `event.run` | object | Yalnızca `agent_run_changed` içinde: değişiklikten sonraki Agent çalışması; alanları `explain.run` ile aynıdır |
+| `event.extension` | object | Yalnızca `extension_event` içinde: `id` (extension), `name` (olayın adı) ve `payload_base64` (payload, Base64 olarak: kodlamasını extension seçer) |
+
+Bir `snapshot` olayından sonra, her Session için gelen bir `agent_run_changed` olayı Host'un şimdiki durumunu verir. Dokümanı okuyan kod, elindeki durumu atar.
+
+### `hook`
+
+Komut, JSON dokümanı değil, araç için cevabı yazdırır; `--json` ile de. Bu sürümde cevap boştur; bu yüzden çıktı da boştur.
+
+### `hooks install` ve `hooks uninstall`
+
+Sayfa, `diff` değerini `@@` ile başlayan ilk satırdan sonra kısaltır. Gerçek değerde diff'in tamamı vardır.
+
+```json
+{"schema_version":1,"hooks_change":{"action":"install","tool":"claude","path":"/tmp/nomux-demo/.claude/settings.json","diff":"--- /tmp/nomux-demo/.claude/settings.json\n+++ /tmp/nomux-demo/.claude/settings.json\n@@ ...","changed":true,"applied":false,"restores_original":false}}
+{"schema_version":1,"hooks_change":{"action":"uninstall","tool":"claude","path":"/tmp/nomux-demo/.claude/settings.json","diff":"--- /tmp/nomux-demo/.claude/settings.json\n+++ /tmp/nomux-demo/.claude/settings.json\n@@ ...","changed":true,"applied":true,"restores_original":true}}
+```
+
+| Alan | Tür | Anlamı |
+|---|---|---|
+| `hooks_change.action` | string | `install` ya da `uninstall` |
+| `hooks_change.tool` | string | Araç |
+| `hooks_change.path` | string | Ayar dosyası |
+| `hooks_change.diff` | string | Değişiklik, unified diff olarak. Hiçbir şey değişmiyorsa boş |
+| `hooks_change.changed` | boolean | Diff boş değilse `true` |
+| `hooks_change.applied` | boolean | `--apply` ile `true`: komut değişikliği yazdı |
+| `hooks_change.restores_original` | boolean | `uninstall` için: dosya kurulumdan önceki byte'larına dönüyorsa `true`; yalnızca nomux'un girdileri kaldırılıyorsa `false` |
+
+Hook'lar zaten kuruluysa `nomux hooks install claude --json` dokümanında `"diff":""`, `"changed":false` ve `"applied":false` bulunur.
+
+### `hooks status`
+
+```json
+{"schema_version":1,"hooks":[{"tool":"claude","adapter":"nomux.agent-claude","state":"installed","path":"/tmp/nomux-demo/.claude/settings.json","recorded":true,"problem":null}]}
+{"schema_version":1,"hooks":[{"tool":"claude","adapter":"nomux.agent-claude","state":null,"path":null,"recorded":false,"problem":"the settings file /tmp/nomux-demo/.claude/settings.json cannot get the hooks: key must be a string at line 1 column 3; nothing changed"}]}
+```
+
+| Alan | Tür | Anlamı |
+|---|---|---|
+| `hooks[].tool`, `.adapter` | string, string ya da `null` | Araç ve adapter extension'ı. `null`: aracın adapter'ı yok, yalnızca bir kurulum kaydı var |
+| `.state` | string ya da `null` | `installed`, `missing` ya da `different`. Durum bilinmiyorsa `null`: nedenini `problem` söyler |
+| `.path` | string ya da `null` | Ayar dosyası |
+| `.recorded` | boolean | nomux'un bir kurulum kaydı varsa `true`: `hooks uninstall` hook'ları kaldırabilir |
+| `.problem` | string ya da `null` | Durumun neden bilinmediği, insanın okuması için İngilizce. Metni sabit değildir. Durum biliniyorsa `null` |
+
+Adapter'ı ya da kaydı olan bir araç yoksa doküman `{"schema_version":1,"hooks":[]}` olur.
+
 ### `version`
 
 ```json
-{"schema_version":1,"version":"0.3.0"}
+{"schema_version":1,"version":"0.4.0"}
 ```
 
 ### Hata
@@ -1220,6 +1970,13 @@ Environment:
 
 ## Bu sayfanın anlattığı sürüm
 
-Bu sayfa nomux 0.3.0'ı anlatır: `nomux-sh/nomux` reposunun [`v0.3.0`](https://github.com/nomux-sh/nomux/releases/tag/v0.3.0) etiketi, [`03ad9a8`](https://github.com/nomux-sh/nomux/commit/03ad9a82ea79e1cf5d37d78e30945cb1f8c22f23) commit'i.
+Bu sayfa nomux 0.4.0'ı anlatır: `nomux-sh/nomux` reposunun [`v0.4.0`](https://github.com/nomux-sh/nomux/releases/tag/v0.4.0) etiketi, [`0a30b68`](https://github.com/nomux-sh/nomux/commit/0a30b68f5948e48f395f5ee2e6c6832acb123cb7) commit'i.
 Yardım metinleri ve örnekler, o sürümün binary'lerinin Linux x86_64 üzerinde, geçici `/tmp/nomux-demo` home dizinindeki gerçek çıktısıdır. Session kimlikleri ve process ID'leri birden fazla çalıştırmadan gelir.
-Şu kısımlar bu sayfa için çalıştırılmadı; aynı etiketteki [`docs/cli.md`](https://github.com/nomux-sh/nomux/blob/v0.3.0/docs/cli.md) dosyasından alındı: uzak bir Host'a bağlanan her komut (`host add`, bir Host verilen `host doctor`, var olan bir Host için `--host` ile çalışan komutlar), 3 çıkış kodu, SSH için 4 çıkış kodu ve 5 çıkış kodu, `unreachable`, `damaged` ve `unknown` durumları, `attach.end` alanının `lost` ve `unknown` değerleri, CLI'ın aldığı bir sinyalle biten attach ve attach sırasında pencere boyutunun değişmesi.
+Örneklerde dört şey, yayımlanmış ürünün düz bir çalıştırması değildir:
+
+- Claude Code'un adapter extension'ı (`nomux.agent-claude`) 0.4.0 ile yayımlanmadı. Durum komutlarının ve hook komutlarının örnekleri onun bir build'ini kullanır. `replay.sh` script'lerinin gönderdiği hook olayları, Claude Code'un kaydedilmiş olaylarıdır.
+- Extension komutlarının örneklerindeki paketler, Echo extension'ı (extension API örneğinin bir build'i) ve daemon programı yerine geçen bir script olan bir Git extension'ıdır: `ext install` ve `ext ls` yalnızca manifest'i okur ve extension'ın hiçbir process'ini başlatmaz.
+- `nomux hooks install`, çalıştırmanın home dizinindeki ayar dosyasını yazdı. Bu, gerçek bir Claude Code'un ayar dosyası değildir.
+- Terminal örnekleri (`attach` ve 50 sütunluk bir terminaldeki `ls` tabloları) bir pseudoterminal içinde çalıştı.
+
+Şu kısımlar bu sayfa için çalıştırılmadı; aynı etiketteki [`docs/cli.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/cli.md) dosyasından alındı: uzak bir Host'a bağlanan her komut (`host add`, bir Host verilen `host doctor`, var olan bir Host için `--host` ile çalışan komutlar), 3 çıkış kodu, SSH için 4 çıkış kodu ve 5 çıkış kodu, `unreachable`, `damaged` ve `unknown` durumları, `attach.end` alanının `lost` ve `unknown` değerleri, CLI'ın aldığı bir sinyalle biten attach, attach sırasında pencere boyutunun değişmesi, `ls --memory` için `rss` ölçüsü ve toplam satırındaki `pss and rss`, eski bir daemon için `ls --memory` hatası, durumu `-` olan `status --tree` satırları, `events --follow` için `extension-event` ve `snapshot` satırları, sembolik bağlantı olan bir ayar dosyasının yazılması ve `hooks install`'ın yapıp yazdığı bir ayar dosyasının silinmesi.
