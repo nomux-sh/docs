@@ -9,8 +9,9 @@ Its Sessions live on that computer: they continue when your laptop sleeps or the
 You install nomux only on the computer on which you type. `nomux host add` puts the binaries on the remote Host.
 
 :::note
-The commands that connect to a server (`host add`, `host doctor` with a Host, and each command with `--host`) were not run for this page. Their steps and their messages come from [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/remote.md), [`docs/cli.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/cli.md) and [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/daemon.md) of nomux 0.4.0. Compared with nomux 0.3.0, two things change for a remote Host: the socket path of a long home directory ([Long home paths](/docs/guides/long-home-paths/)), and the environment of a Session ([Session environment on a remote Host](#session-environment-on-a-remote-host)).
-The output on this page is the real output of nomux 0.4.0 on Linux for the commands that do not connect: `host ls`, `host rm`, `host doctor` without a Host, and the errors of a name that does not exist or of a command that cannot use `--host`.
+**What ran for this page.** The Host in the examples is a second `sshd` of OpenSSH on the same Linux computer. It listened on its own port, had its own host key and its own user key, and gave its Sessions a separate home directory. nomux 0.5.0 reached it through SSH with a `Host` entry named `vps` in `~/.ssh/config`. The outputs show `deploy@vps.example.com`, port 22 and the home directory `/home/deploy` in place of the real values.
+These commands ran: `host add` (with the download of the release archive), `host ls`, `host rm`, `host doctor`, `--host` with `new`, `ls`, `status`, `send`, `capture`, `kill`, `daemon status`, `daemon stop` and `ext`, an attach while the daemon of the Host was replaced, a server that refuses the channel, and the commands that cannot use `--host`.
+These did not run: a Host on a second computer, a Host with macOS or with ARM64, a slow connection, a key with a passphrase, `ProxyJump`, a changed host key, the options of `~/.ssh/config` that stop the command, and the replacement of a daemon that has no common protocol version with the client. Their rows below come from [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/remote.md), [`docs/cli.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/cli.md) and [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/daemon.md) of nomux 0.5.0.
 :::
 
 ## What the remote Host needs
@@ -54,12 +55,32 @@ You can run the command again with the same name and the same target: it install
 
 A different system is an error.
 
+This is the first `host add` in the run. The Host key was not known, thus the command stopped and told what to do. The fingerprint is the one that the SSH server of the run has:
+
+```console
+$ nomux host add vps
+nomux: the host key of vps.example.com is not known. The host sent the ssh-ed25519 key with the fingerprint SHA256:UYdsWSeDf9G83x/lrT1v7m38J3MLhsKDlru4dLpczN0. If the fingerprint is correct, run `ssh -o HostKeyAlgorithms=ssh-ed25519 'vps' exit` and answer `yes`, then run nomux again
+$ ssh -o HostKeyAlgorithms=ssh-ed25519 vps exit
+Warning: Permanently added 'vps.example.com' (ED25519) to the list of known hosts.
+$ nomux host add vps
+nomux: downloading https://github.com/nomux-sh/nomux/releases/download/v0.5.0/nomux-0.5.0-x86_64-unknown-linux-musl.tar.gz
+nomux: installing nomux 0.5.0 for x86_64-unknown-linux-musl on the host (8761 KiB)
+host vps added: Linux x86_64, nomux in ~/.nomux/bin/0.5.0 (installed), nomuxd 0.5.0 runs: process ID 4161064, 0 sessions
+memory limit: the operating system applies no limit (the daemon cannot reach the systemd user manager: it has no DBUS_SESSION_BUS_ADDRESS and no $XDG_RUNTIME_DIR/bus); a limit is a threshold for the hibernation of an idle agent session
+```
+
+The second command shows the real line that `ssh` printed in the run. In the run, the whole `host add` took about 1.5 seconds. A second `host add vps` installs nothing: it says `(already there)` in place of `(installed)`.
+
+The last line is new in nomux 0.5.0. The daemon of the Host tells if the operating system can apply a [memory limit](/docs/guides/session-memory/) to the Sessions. Here the SSH session of the run had no user manager of systemd (`DBUS_SESSION_BUS_ADDRESS` and `$XDG_RUNTIME_DIR/bus` were missing), thus the limit is only a threshold for the [hibernation](/docs/guides/hibernation/) of an idle agent Session. On a Host that has a user manager for your SSH login, the line says `the kernel ends the processes of a session at its limit: a systemd user scope with MemoryMax`.
+
 ### What is on the Host after that
 
 | Path | Content | Mode |
 |---|---|---|
 | `~/.nomux/bin/<version>/` | `nomux`, `nomuxd` and `nomux-holder` of one version | 0700 |
 | `~/.nomux/run/` | The socket, the lock and the log of the daemon, and one directory for each Session. A directory with the suffix `.pool` is a pooled holder | 0700, the socket 0600 |
+
+After the run, `~/.nomux` had these paths: `bin/0.5.0/` with the three binaries, and `run/` with `nomuxd.sock`, `nomuxd.lock`, `nomuxd.log`, the directory `pool` and one `<id>.pool` directory for each pooled holder.
 
 The holders of the Host also write the state of each Session to the state directory of the Host, as on your computer. [After a restart](/docs/guides/after-a-restart/) describes it.
 nomux changes no shell startup file, no `PATH` and no service on the Host.
@@ -78,9 +99,27 @@ nomux --host vps attach k3xq2abc
 nomux --host vps daemon status
 ```
 
+This is a short session with the Host of the run:
+
+```console
+$ nomux --host vps daemon status
+nomuxd 0.5.0 runs: process ID 4161064, 0 sessions
+memory limit: the operating system applies no limit (the daemon cannot reach the systemd user manager: it has no DBUS_SESSION_BUS_ADDRESS and no $XDG_RUNTIME_DIR/bus); a limit is a threshold for the hibernation of an idle agent session
+$ nomux --host vps new -n web
+gfo7fn3d
+$ nomux --host vps ls
+ID        NAME  STATE    PID      COMMAND
+gfo7fn3d  web   running  4161066  /bin/bash
+$ nomux --host vps status
+  SESSION  COMMAND    STATE  FOR  MESSAGE
+  web      /bin/bash  idle   1s
+```
+
+[Sessions](/docs/guides/sessions/) describes the Session commands, and [Agent status](/docs/guides/agent-status/) shows the status of the Sessions of a Host. A [hibernated Session](/docs/guides/hibernation/) lives on the Host too.
+
 - Each command first makes sure that the Host has the binaries of the version of your CLI. If they are absent, the command installs them as `host add` does, and writes one line about it to the standard error.
 - `new --cwd <dir>` needs an absolute path on the Host. Without `--cwd`, the command starts in your home directory on the Host.
-- `ext install <directory>` needs an absolute path on the Host.
+- `ext install <directory>` needs an absolute path on the Host. The directory is on the Host, not on your computer. In the run, `nomux --host vps ext install /path/to/package` installed an extension, and `ext ls` and `ext rm` worked. `ext validate` always reads a directory on your computer.
 - `ls --memory` shows the memory of the processes on the Host, because the daemon of the Host measures them.
 - `--host` does not work with the `host` commands, with `daemon install-service` and `daemon uninstall-service`, with `status set` and with the `hooks` commands. `version` prints the version of the CLI.
 
@@ -112,6 +151,20 @@ If the daemon no longer has these bytes, which is more than 256 KiB of output du
 - The keys that you type during the outage are discarded. nomux does not type into a Session that you cannot see. The detach keys work.
 
 A command that is not an attach connects one time. If it cannot connect, it fails with the reason.
+
+### When the daemon of the Host is replaced
+
+A client replaces the daemon of a Host when the daemon and the client have no common protocol version (`nomuxd --replace`). The first daemon answers the requests that it began, removes its socket and ends. No Session ends: a holder is never replaced.
+
+nomux 0.5.0 adds a rule to this step: a connection that the first daemon did not answer closes, and the client connects again until the new daemon answers. This page did not run this rule, because it needs a daemon that has no common protocol version with the client.
+
+An attach does not survive a replacement. In the run, `nomuxd --detach --replace` ran on the Host while the CLI was attached to the Session `web`. The title of the terminal window changed to `nomux: connection lost, connecting again`, and then the attach ended with this message and the exit code 1:
+
+```text
+nomux: the daemon stopped. The session continues: run `nomux --host vps attach web` to attach again
+```
+
+The Session continued, and its output from before was still there. Attach again, and you get the new daemon.
 
 ## What nomux reads from `~/.ssh/config`
 
@@ -189,7 +242,12 @@ nomux sends its requests through an SSH channel to the Unix socket of the daemon
 - `sshd_config` has `AllowStreamLocalForwarding no` or `remote`, or `DisableForwarding yes`, or
 - the key in `authorized_keys` has `restrict` or `no-port-forwarding`.
 
-`AllowTcpForwarding no` does not change it. For such a server, nomux fails with a message that names these options. nomux 0.4.0 has no second way for these servers.
+`AllowTcpForwarding no` does not change it. For such a server, nomux fails with a message that names these options. nomux 0.5.0 has no second way for these servers. In the run, a second `sshd` had `AllowStreamLocalForwarding no`. `host add` stopped with this message, and `host doctor` showed the same text as the failed check `daemon`:
+
+```console
+$ nomux host add locked
+nomux: the SSH server refuses connections to Unix sockets. nomux needs them to reach its daemon. On the host, `AllowStreamLocalForwarding` must permit `local` (the default is `yes`) and `DisableForwarding` must be `no` in `sshd_config`, and the key in `authorized_keys` must not have `restrict` or `no-port-forwarding`
+```
 
 The channel goes to the socket `~/.nomux/run/nomuxd.sock` on the Host, or to the socket in the short link of a long home directory.
 
@@ -199,6 +257,7 @@ A Session on a remote Host gets the environment that the daemon of that Host mak
 
 - The daemon of the Host got its environment from `sshd`: the environment of a command, without the startup files of a login shell.
 - nomux adds `TERM=xterm-256color`, `COLORTERM=truecolor`, a UTF-8 character set if the daemon has no locale, and the variables `NOMUX_SESSION_ID`, `NOMUX_SOCK` and `NOMUX_TOKEN`.
+- In the run, the shell of a Session on the Host had these variables: `COLORTERM`, `HOME`, `LC_CTYPE`, `LOGNAME`, `MAIL`, `NOMUX_SESSION_ID`, `NOMUX_SOCK`, `NOMUX_TOKEN`, `PATH`, `PWD`, `SHELL`, `SHLVL`, `SSH_CLIENT`, `SSH_CONNECTION`, `TERM` and `USER`. `SSH_CLIENT` and `SSH_CONNECTION` come from `sshd`, and `LC_CTYPE` is the UTF-8 character set that nomux adds.
 - Variables of your computer, for example `LANG`, `DISPLAY` and `SSH_AUTH_SOCK`, do not pass. [Issue 75](https://github.com/nomux-sh/nomux/issues/75) has this gap.
 
 [Session environment](/docs/guides/session-environment/) has the full rule.
@@ -215,8 +274,25 @@ A Session on a remote Host gets the environment that the daemon of that Host mak
 | `permissions` | `~/.nomux`, `~/.nomux/bin`, `~/.nomux/run` and the socket belong to you, other users cannot write to the first two, and other users have no access to the last two |
 | `daemon` | A daemon answers, or no daemon runs. It fails if the SSH server refuses the channel to the socket |
 | `versions` | The CLI and the daemon have a common protocol version. Only if a daemon answers |
+| `memory-limit` | Always passes. It says if the operating system of the Host applies a memory limit to the Sessions: see [Session memory](/docs/guides/session-memory/) |
 
 A check that cannot run after a failure is not in the output. The exit code is 0 if each check passed, and 1 if a check failed. A failed check has `FAIL`, the reason and what to do.
+
+This is the output for the Host of the run:
+
+```console
+$ nomux host doctor vps
+vps
+  ok    connection    deploy@vps.example.com port 22, host key ssh-ed25519 SHA256:UYdsWSeDf9G83x/lrT1v7m38J3MLhsKDlru4dLpczN0
+  ok    platform      Linux x86_64: x86_64-unknown-linux-musl
+  ok    binaries      nomux 0.5.0 is in ~/.nomux/bin/0.5.0
+  ok    permissions   private to the user: ~/.nomux drwx------, ~/.nomux/bin drwx------, ~/.nomux/run drwx------, ~/.nomux/run/nomuxd.sock srw-------
+  ok    daemon        nomuxd 0.5.0 runs: process ID 4161064, 0 sessions
+  ok    versions      the client and the daemon have the version 0.5.0
+  ok    memory-limit  the operating system applies no limit (the daemon cannot reach the systemd user manager: it has no DBUS_SESSION_BUS_ADDRESS and no $XDG_RUNTIME_DIR/bus); a limit is a threshold for the hibernation of an idle agent session
+```
+
+The check `memory-limit` has no entry in the check list of the [CLI documentation](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/cli.md#host-doctor) of nomux 0.5.0, but the command prints it and the [memory documentation](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/memory.md) describes it.
 
 Without a Host in the configuration file:
 
@@ -229,12 +305,14 @@ nomux: no host has the name vps. `nomux host ls` shows the hosts, and `nomux hos
 
 ## The configuration file
 
-`host add` saves the Host on your computer:
+`host add` saves the Host on your computer. The Host of the run was added with the `Host` entry `vps`, thus the file has this content:
 
 ```toml
 [hosts.vps]
-ssh = "deploy@vps.example.com"
+ssh = "vps"
 ```
+
+With `nomux host add deploy@vps.example.com --name vps`, the line is `ssh = "deploy@vps.example.com"`.
 
 | Computer | Path |
 |---|---|
@@ -244,12 +322,14 @@ ssh = "deploy@vps.example.com"
 
 nomux keeps each other part of the file, also the comments, when it writes the file. It writes the file with the mode 0600.
 
-`host ls` and `host rm` read and change only this file. They do not connect to a Host. For this run, the file had the content above, written by hand:
+The daemon reads the same file one time, when it starts. It reads no other path. On macOS, a file in `~/.config/nomux` has no effect if `XDG_CONFIG_HOME` is not set. A relative `XDG_CONFIG_HOME` is ignored. `nomux daemon status` shows the path of the file. In the run on Linux, it showed `~/.config/nomux/config.toml`, and with `XDG_CONFIG_HOME=/tmp/xdgtest` it showed `/tmp/xdgtest/nomux/config.toml`. The path of the macOS file comes from the [documentation of the daemon](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/daemon.md#configuration): this page did not run it on macOS.
+
+`host ls` and `host rm` read and change only this file. They do not connect to a Host:
 
 ```console
 $ nomux host ls
 NAME  SSH
-vps   deploy@vps.example.com
+vps   vps
 $ nomux host rm vps
 host vps removed
 $ nomux host ls
@@ -273,7 +353,7 @@ An old version stays in `~/.nomux/bin` until you remove it. Remove a version onl
 
 ## Limits of this version
 
-These items come from the open points of [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/remote.md#open-points-for-the-next-versions) of nomux 0.4.0:
+These items come from the open points of [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/remote.md#open-points-for-the-next-versions) of nomux 0.5.0:
 
 - No second way for a server that refuses the channel to the socket.
 - No fallback to the `ssh` program for an option that the SSH client of nomux does not support.
@@ -283,6 +363,8 @@ These items come from the open points of [`docs/remote.md`](https://github.com/n
 - A Session on a remote Host gets the environment of the daemon of that Host: no variable of your computer passes, and the startup files of a login shell are not read. [Session environment on a remote Host](#session-environment-on-a-remote-host) has the rule.
 - `/etc/ssh/ssh_config` is not read.
 - No QUIC transport, no port forwarding and no file transfer.
+- An attach ends when the daemon of the Host is replaced or stops. The Session continues: [When the daemon of the Host is replaced](#when-the-daemon-of-the-host-is-replaced).
+- A Host that has no user manager of systemd for your SSH login applies no [memory limit](/docs/guides/session-memory/) to the Sessions. `host doctor` and `daemon status` say it.
 
 If the Host has `KillUserProcesses=yes` in the configuration of `systemd-logind`, a logout stops the daemon and the Sessions.
 

@@ -9,8 +9,9 @@ Session'ları o bilgisayarda yaşar: laptop'unuz uykuya geçse de bağlantı kop
 nomux'u yalnızca klavyesini kullandığınız bilgisayara kurarsınız. Binary'leri uzak Host'a `nomux host add` koyar.
 
 :::note
-Bir sunucuya bağlanan komutlar (`host add`, bir Host'la `host doctor` ve `--host` ile çalışan her komut) bu sayfa için çalıştırılmadı. Adımları ve mesajları nomux 0.4.0'ın [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/remote.md), [`docs/cli.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/cli.md) ve [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/daemon.md) dosyalarından alındı. Bu dokümanlar nomux 0.3.0'a göre uzak bir Host için iki şeyi değiştirir: uzun bir home dizininin socket yolu ([Uzun home yolları](/docs/tr/guides/long-home-paths/)) ve Session'ın ortamı ([Uzak Host'ta Session ortamı](#uzak-hostta-session-ortamı)).
-Bağlanmayan komutların çıktısı ise nomux 0.4.0'ın Linux'taki gerçek çıktısıdır: `host ls`, `host rm`, Host'suz `host doctor`, var olmayan bir adın hataları ve `--host` kullanamayan komutların hataları.
+**Bu sayfa için ne çalıştırıldı.** Örneklerdeki Host, aynı Linux bilgisayardaki ikinci bir OpenSSH `sshd`'dir. Kendi portunu, kendi host anahtarını ve kendi kullanıcı anahtarını kullandı; Session'larına ayrı bir home dizini verdi. nomux 0.5.0 ona SSH ile, `~/.ssh/config` içindeki `vps` adlı bir `Host` girdisiyle bağlandı. Çıktılarda gerçek değerlerin yerine `deploy@vps.example.com`, 22 numaralı port ve `/home/deploy` home dizini görünür.
+Şu komutlar çalıştı: `host add` (release arşivinin indirilmesiyle), `host ls`, `host rm`, `host doctor`, `new`, `ls`, `status`, `send`, `capture`, `kill`, `daemon status`, `daemon stop` ve `ext` ile `--host`, Host'un daemon'u değiştirilirken bir attach, kanalı reddeden bir sunucu ve `--host` kullanamayan komutlar.
+Şunlar çalışmadı: ikinci bir bilgisayardaki Host, macOS ya da ARM64 Host, yavaş bir bağlantı, parolalı bir anahtar, `ProxyJump`, değişmiş bir host anahtarı, `~/.ssh/config` içinde komutu durduran seçenekler ve istemciyle ortak protokol sürümü olmayan bir daemon'un değiştirilmesi. Bunların satırları nomux 0.5.0'ın [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/remote.md), [`docs/cli.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/cli.md) ve [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/daemon.md) dosyalarından gelir.
 :::
 
 ## Uzak Host'ta ne gerekir
@@ -54,12 +55,32 @@ Komutu aynı ad ve aynı hedefle yeniden çalıştırabilirsiniz: Host'ta zaten 
 
 Başka bir sistem hatadır.
 
+Çalıştırmadaki ilk `host add` bu oldu. Host anahtarı bilinmiyordu; bu yüzden komut durdu ve ne yapılacağını söyledi. Parmak izi, çalıştırmadaki SSH sunucusunun parmak izidir:
+
+```console
+$ nomux host add vps
+nomux: the host key of vps.example.com is not known. The host sent the ssh-ed25519 key with the fingerprint SHA256:UYdsWSeDf9G83x/lrT1v7m38J3MLhsKDlru4dLpczN0. If the fingerprint is correct, run `ssh -o HostKeyAlgorithms=ssh-ed25519 'vps' exit` and answer `yes`, then run nomux again
+$ ssh -o HostKeyAlgorithms=ssh-ed25519 vps exit
+Warning: Permanently added 'vps.example.com' (ED25519) to the list of known hosts.
+$ nomux host add vps
+nomux: downloading https://github.com/nomux-sh/nomux/releases/download/v0.5.0/nomux-0.5.0-x86_64-unknown-linux-musl.tar.gz
+nomux: installing nomux 0.5.0 for x86_64-unknown-linux-musl on the host (8761 KiB)
+host vps added: Linux x86_64, nomux in ~/.nomux/bin/0.5.0 (installed), nomuxd 0.5.0 runs: process ID 4161064, 0 sessions
+memory limit: the operating system applies no limit (the daemon cannot reach the systemd user manager: it has no DBUS_SESSION_BUS_ADDRESS and no $XDG_RUNTIME_DIR/bus); a limit is a threshold for the hibernation of an idle agent session
+```
+
+İkinci komutta gösterilen satır, çalıştırmada `ssh`'in yazdığı gerçek satırdır. Çalıştırmada `host add`'in tamamı yaklaşık 1,5 saniye sürdü. İkinci bir `host add vps` hiçbir şey kurmaz: `(installed)` yerine `(already there)` der.
+
+Son satır nomux 0.5.0'da yenidir. Host'taki daemon, işletim sisteminin Session'lara bir [bellek limiti](/docs/tr/guides/session-memory/) uygulayıp uygulayamayacağını söyler. Çalıştırmadaki SSH oturumunda systemd kullanıcı yöneticisi yoktu (`DBUS_SESSION_BUS_ADDRESS` ve `$XDG_RUNTIME_DIR/bus` eksikti); bu yüzden limit yalnızca boştaki bir agent Session'ının [hazırda bekletilmesi](/docs/tr/guides/hibernation/) için bir eşiktir. SSH girişiniz için bir kullanıcı yöneticisi olan bir Host'ta satır `the kernel ends the processes of a session at its limit: a systemd user scope with MemoryMax` der.
+
 ### Sonrasında Host'ta ne olur
 
 | Yol | İçerik | Mod |
 |---|---|---|
 | `~/.nomux/bin/<sürüm>/` | Bir sürümün `nomux`, `nomuxd` ve `nomux-holder` binary'leri | 0700 |
 | `~/.nomux/run/` | Daemon'un socket'i, kilidi ve log'u; her Session için bir dizin. `.pool` uzantılı dizin havuzdaki bir holder'dır | 0700, socket 0600 |
+
+Çalıştırmadan sonra `~/.nomux` altında şu yollar vardı: üç binary'li `bin/0.5.0/` ve `run/`; içinde `nomuxd.sock`, `nomuxd.lock`, `nomuxd.log`, `pool` dizini ve havuzdaki her holder için bir `<id>.pool` dizini.
 
 Host'taki holder'lar da, sizin bilgisayarınızda olduğu gibi, her Session'ın state'ini Host'un state dizinine yazar. Bunu [Yeniden başlatmadan sonra](/docs/tr/guides/after-a-restart/) sayfası anlatıyor.
 nomux Host'ta hiçbir shell başlangıç dosyasına, `PATH`'e ya da servise dokunmaz.
@@ -78,9 +99,27 @@ nomux --host vps attach k3xq2abc
 nomux --host vps daemon status
 ```
 
+Çalıştırmadaki Host'la kısa bir oturum:
+
+```console
+$ nomux --host vps daemon status
+nomuxd 0.5.0 runs: process ID 4161064, 0 sessions
+memory limit: the operating system applies no limit (the daemon cannot reach the systemd user manager: it has no DBUS_SESSION_BUS_ADDRESS and no $XDG_RUNTIME_DIR/bus); a limit is a threshold for the hibernation of an idle agent session
+$ nomux --host vps new -n web
+gfo7fn3d
+$ nomux --host vps ls
+ID        NAME  STATE    PID      COMMAND
+gfo7fn3d  web   running  4161066  /bin/bash
+$ nomux --host vps status
+  SESSION  COMMAND    STATE  FOR  MESSAGE
+  web      /bin/bash  idle   1s
+```
+
+[Session'lar](/docs/tr/guides/sessions/) sayfası Session komutlarını anlatır; [Agent durumu](/docs/tr/guides/agent-status/) bir Host'taki Session'ların durumunu gösterir. [Hazırda bekleyen bir Session](/docs/tr/guides/hibernation/) de Host'ta yaşar.
+
 - Her komut önce Host'ta CLI'ınızın sürümüne ait binary'lerin olduğundan emin olur. Yoksa `host add` gibi kurar ve bununla ilgili tek satırı standart hataya yazar.
 - `new --cwd <dizin>` Host'ta mutlak bir yol ister. `--cwd` verilmezse komut Host'taki home dizininizde başlar.
-- `ext install <dizin>` Host'ta mutlak bir yol ister.
+- `ext install <dizin>` Host'ta mutlak bir yol ister. Dizin Host'tadır, sizin bilgisayarınızda değil. Çalıştırmada `nomux --host vps ext install /path/to/package` bir extension kurdu; `ext ls` ve `ext rm` çalıştı. `ext validate` her zaman kendi bilgisayarınızdaki bir dizini okur.
 - `ls --memory` Host'taki process'lerin belleğini gösterir, çünkü onları Host'taki daemon ölçer.
 - `--host`, `host` komutlarıyla, `daemon install-service` ile `daemon uninstall-service` ile, `status set` ile ve `hooks` komutlarıyla kullanılamaz. `version` CLI'ın sürümünü yazdırır.
 
@@ -112,6 +151,20 @@ Daemon bu baytları artık tutmuyorsa, yani kesinti sırasında 256 KiB'tan fazl
 - Kesinti sırasında bastığınız tuşlar atılır: nomux göremediğiniz bir Session'a yazı yazmaz. Detach tuşları çalışır.
 
 Attach olmayan bir komut tek bir kez bağlanmayı dener. Bağlanamazsa nedenini söyleyerek hata verir.
+
+### Host'un daemon'u değiştirilirse
+
+Daemon ile istemcinin ortak bir protokol sürümü olmadığında istemci Host'un daemon'unu değiştirir (`nomuxd --replace`). İlk daemon başlattığı istekleri cevaplar, socket'ini siler ve biter. Hiçbir Session bitmez: bir holder asla değiştirilmez.
+
+nomux 0.5.0 bu adıma bir kural ekler: ilk daemon'un cevaplamadığı bir bağlantı kapanır ve istemci, yeni daemon cevap verene kadar yeniden bağlanır. Bu sayfa bu kuralı çalıştırmadı, çünkü istemciyle ortak protokol sürümü olmayan bir daemon gerekir.
+
+Bir attach, değiştirilmeye dayanmaz. Çalıştırmada CLI `web` Session'ına attach olmuşken Host'ta `nomuxd --detach --replace` çalıştı. Terminal penceresinin başlığı `nomux: connection lost, connecting again` oldu, sonra attach şu mesajla ve 1 çıkış koduyla bitti:
+
+```text
+nomux: the daemon stopped. The session continues: run `nomux --host vps attach web` to attach again
+```
+
+Session devam etti ve önceki çıktısı yerindeydi. Yeniden attach olun, yeni daemon'a bağlanırsınız.
 
 ## nomux `~/.ssh/config` dosyasından neyi okur
 
@@ -189,7 +242,12 @@ nomux isteklerini daemon'un Unix socket'ine giden bir SSH kanalından (`direct-s
 - `sshd_config` dosyasında `AllowStreamLocalForwarding no` ya da `remote`, veya `DisableForwarding yes` varsa,
 - `authorized_keys` içindeki anahtarda `restrict` ya da `no-port-forwarding` varsa.
 
-`AllowTcpForwarding no` bunu etkilemez. Böyle bir sunucuda nomux bu seçenekleri sayan bir mesajla hata verir. nomux 0.4.0'da bu sunucular için ikinci bir yol yok.
+`AllowTcpForwarding no` bunu etkilemez. Böyle bir sunucuda nomux bu seçenekleri sayan bir mesajla hata verir. nomux 0.5.0'da bu sunucular için ikinci bir yol yok. Çalıştırmada ikinci bir `sshd`'de `AllowStreamLocalForwarding no` vardı. `host add` bu mesajla durdu ve `host doctor` aynı metni başarısız `daemon` kontrolü olarak gösterdi:
+
+```console
+$ nomux host add locked
+nomux: the SSH server refuses connections to Unix sockets. nomux needs them to reach its daemon. On the host, `AllowStreamLocalForwarding` must permit `local` (the default is `yes`) and `DisableForwarding` must be `no` in `sshd_config`, and the key in `authorized_keys` must not have `restrict` or `no-port-forwarding`
+```
 
 Kanal Host'taki `~/.nomux/run/nomuxd.sock` socket'ine ya da uzun bir home dizininin kısa bağlantısındaki socket'e gider.
 
@@ -199,6 +257,7 @@ Uzak Host'taki bir Session, o Host'un daemon'unun hazırladığı ortamı alır.
 
 - Host'taki daemon ortamını `sshd`'den almıştır: bir komutun ortamı; login shell'in başlangıç dosyaları yoktur.
 - nomux `TERM=xterm-256color` ve `COLORTERM=truecolor` ekler; daemon'da locale yoksa UTF-8 karakter kümesini ekler; ayrıca `NOMUX_SESSION_ID`, `NOMUX_SOCK` ve `NOMUX_TOKEN` değişkenlerini ekler.
+- Çalıştırmada Host'taki bir Session'ın shell'inde şu değişkenler vardı: `COLORTERM`, `HOME`, `LC_CTYPE`, `LOGNAME`, `MAIL`, `NOMUX_SESSION_ID`, `NOMUX_SOCK`, `NOMUX_TOKEN`, `PATH`, `PWD`, `SHELL`, `SHLVL`, `SSH_CLIENT`, `SSH_CONNECTION`, `TERM` ve `USER`. `SSH_CLIENT` ve `SSH_CONNECTION` `sshd`'den gelir; `LC_CTYPE`, nomux'un eklediği UTF-8 karakter kümesidir.
 - Bilgisayarınızdaki değişkenler, örneğin `LANG`, `DISPLAY` ve `SSH_AUTH_SOCK`, geçmez. Bu eksik [75 numaralı issue'da](https://github.com/nomux-sh/nomux/issues/75) duruyor.
 
 Kuralın tamamı [Session'ın ortamı](/docs/tr/guides/session-environment/) sayfasında.
@@ -215,8 +274,25 @@ Kuralın tamamı [Session'ın ortamı](/docs/tr/guides/session-environment/) say
 | `permissions` | `~/.nomux`, `~/.nomux/bin`, `~/.nomux/run` ve socket size aitse, ilk ikisine başka kullanıcılar yazamıyorsa ve son ikisine başka kullanıcıların erişimi yoksa |
 | `daemon` | Bir daemon cevap veriyorsa ya da hiç daemon çalışmıyorsa. SSH sunucusu socket'e giden kanalı reddederse geçmez |
 | `versions` | CLI ile daemon'un ortak bir protokol sürümü varsa. Yalnızca bir daemon cevap verdiğinde |
+| `memory-limit` | Her zaman geçer. Host'un işletim sisteminin Session'lara bellek limiti uygulayıp uygulamadığını söyler: bkz. [Session'ların belleği](/docs/tr/guides/session-memory/) |
 
 Bir hatadan sonra çalışamayan kontrol çıktıda yer almaz. Her kontrol geçerse çıkış kodu 0, biri geçmezse 1'dir. Geçmeyen kontrolde `FAIL`, nedeni ve ne yapılacağı yazar.
+
+Çalıştırmadaki Host için çıktı:
+
+```console
+$ nomux host doctor vps
+vps
+  ok    connection    deploy@vps.example.com port 22, host key ssh-ed25519 SHA256:UYdsWSeDf9G83x/lrT1v7m38J3MLhsKDlru4dLpczN0
+  ok    platform      Linux x86_64: x86_64-unknown-linux-musl
+  ok    binaries      nomux 0.5.0 is in ~/.nomux/bin/0.5.0
+  ok    permissions   private to the user: ~/.nomux drwx------, ~/.nomux/bin drwx------, ~/.nomux/run drwx------, ~/.nomux/run/nomuxd.sock srw-------
+  ok    daemon        nomuxd 0.5.0 runs: process ID 4161064, 0 sessions
+  ok    versions      the client and the daemon have the version 0.5.0
+  ok    memory-limit  the operating system applies no limit (the daemon cannot reach the systemd user manager: it has no DBUS_SESSION_BUS_ADDRESS and no $XDG_RUNTIME_DIR/bus); a limit is a threshold for the hibernation of an idle agent session
+```
+
+nomux 0.5.0'ın [CLI dokümanındaki](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/cli.md#host-doctor) kontrol listesinde `memory-limit` yok; ama komut onu yazdırır ve [bellek dokümanı](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/memory.md) onu anlatır.
 
 Yapılandırma dosyasında Host yokken:
 
@@ -229,12 +305,14 @@ nomux: no host has the name vps. `nomux host ls` shows the hosts, and `nomux hos
 
 ## Yapılandırma dosyası
 
-`host add` Host'u bilgisayarınıza kaydeder:
+`host add` Host'u bilgisayarınıza kaydeder. Çalıştırmadaki Host `vps` adlı `Host` girdisiyle eklendi; bu yüzden dosya şu içeriğe sahip:
 
 ```toml
 [hosts.vps]
-ssh = "deploy@vps.example.com"
+ssh = "vps"
 ```
+
+`nomux host add deploy@vps.example.com --name vps` ile satır `ssh = "deploy@vps.example.com"` olur.
 
 | Bilgisayar | Yol |
 |---|---|
@@ -244,12 +322,14 @@ ssh = "deploy@vps.example.com"
 
 nomux dosyayı yazarken diğer her kısmını, yorumlar dahil, korur. Dosyayı 0600 moduyla yazar.
 
-`host ls` ve `host rm` yalnızca bu dosyayı okur ve değiştirir; hiçbir Host'a bağlanmaz. Bu çalıştırmada dosyada elle yazılmış yukarıdaki içerik vardı:
+Daemon aynı dosyayı, başlarken bir kez okur. Başka bir yol okumaz. macOS'ta `XDG_CONFIG_HOME` ayarlı değilse `~/.config/nomux` altındaki bir dosyanın etkisi yoktur. Göreli bir `XDG_CONFIG_HOME` yok sayılır. `nomux daemon status` dosyanın yolunu gösterir. Linux'taki çalıştırmada `~/.config/nomux/config.toml` gösterdi; `XDG_CONFIG_HOME=/tmp/xdgtest` ile `/tmp/xdgtest/nomux/config.toml` gösterdi. macOS dosyasının yolu [daemon dokümanından](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/daemon.md#configuration) gelir: bu sayfa onu macOS'ta çalıştırmadı.
+
+`host ls` ve `host rm` yalnızca bu dosyayı okur ve değiştirir; hiçbir Host'a bağlanmaz:
 
 ```console
 $ nomux host ls
 NAME  SSH
-vps   deploy@vps.example.com
+vps   vps
 $ nomux host rm vps
 host vps removed
 $ nomux host ls
@@ -273,7 +353,7 @@ Eski bir sürüm siz silene kadar `~/.nomux/bin` altında kalır. Bir sürümü 
 
 ## Bu sürümün sınırları
 
-Bu maddeler nomux 0.4.0'ın [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/remote.md#open-points-for-the-next-versions) dosyasının açık noktalarından:
+Bu maddeler nomux 0.5.0'ın [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/remote.md#open-points-for-the-next-versions) dosyasının açık noktalarından:
 
 - Socket'e giden kanalı reddeden sunucular için ikinci bir yol yok.
 - nomux'un SSH istemcisinin desteklemediği bir seçenek için `ssh` programına geri düşme yok.
@@ -283,6 +363,8 @@ Bu maddeler nomux 0.4.0'ın [`docs/remote.md`](https://github.com/nomux-sh/nomux
 - Uzak Host'taki bir Session, o Host'taki daemon'un ortamını alır: bilgisayarınızdan hiçbir değişken geçmez ve login shell'in başlangıç dosyaları okunmaz. Kural için bkz. [Uzak Host'ta Session ortamı](#uzak-hostta-session-ortamı).
 - `/etc/ssh/ssh_config` okunmaz.
 - QUIC taşıması, port yönlendirme ve dosya aktarımı yok.
+- Host'un daemon'u değiştirildiğinde ya da durduğunda bir attach biter. Session devam eder: [Host'un daemon'u değiştirilirse](#hostun-daemonu-değiştirilirse).
+- SSH girişiniz için systemd kullanıcı yöneticisi olmayan bir Host, Session'lara [bellek limiti](/docs/tr/guides/session-memory/) uygulamaz. `host doctor` ve `daemon status` bunu söyler.
 
 Host'ta `systemd-logind` yapılandırmasında `KillUserProcesses=yes` varsa oturumu kapatmak daemon'u ve Session'ları durdurur.
 
