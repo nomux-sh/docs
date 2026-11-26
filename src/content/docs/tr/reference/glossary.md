@@ -36,6 +36,32 @@ Bu terimler bir Host'ta çalışan process'leri ve onların dosyalarını adland
 | istemci | client | Session'ları göstermek ya da değiştirmek için daemon'a bağlanan program. CLI (`nomux`), desktop uygulaması ve mobil uygulamalar birer istemcidir. |
 | runtime dizini | runtime directory | Daemon'un ve holder'ların socket'lerini ve keşif dosyalarını tuttuğu dizin: `~/.nomux/run`. |
 | session kimliği | session identifier | Bir Session'ın o Host'taki adı. Daemon üretir: `a`-`z` ve `2`-`7` karakterlerinden oluşan 8 karakter. CLI bu kimliği yazdırır ve komutlarda bu kimliği bekler. |
+| state dizini | state directory | Her Session'ın tanımını ve journal'ını tuttuğu dizin: Linux'ta `~/.local/state/nomux`, macOS'ta `~/Library/Application Support/nomux`. Host yeniden başlasa da silinmez. |
+| journal | journal | Bir Session'ın diskteki çıktısı; state dizininde durur. Onu holder yazar. Bir Session için en fazla 32 MiB dosya tutar. `nomux capture` buradan okur. |
+| checkpoint | checkpoint | Session ekranının, journal'daki belirli bir konumdaki kopyası. Holder başlangıçta, her 1 MiB çıktıdan sonra ve pencere boyutu değiştiğinde bir checkpoint yazar. |
+| epoch | epoch | Session komutunun kaçıncı kez çalıştığını gösteren sayı: yeni bir Session'da 1'dir, her geri yüklemede bir artar. |
+| servis dosyası | service file | Daemon'u oturum açılışında başlatan dosya: Linux'ta bir systemd kullanıcı unit'i, macOS'ta bir launchd agent'ı. Onu `nomux daemon install-service` yazar. |
+
+## Session durumları ve geri yükleme
+
+Bu terimler de, Session dışında, küçük harfle yazılır. CLI durumları `running`, `unreachable`, `dormant`, `ended` ve `damaged` olarak gösterir.
+
+| Türkçe terim | İngilizce terim | Tanım |
+|---|---|---|
+| uykudaki Session | dormant Session | Process'i olmayan Session: holder'ı gitmiştir ama komutu bitmemiştir. Host yeniden başladıktan sonra her Session bu durumdadır. Daemon tanımını ve journal'ını saklar; geri yükleme komutu yeniden başlatır. |
+| biten Session | ended Session | Komutu bitmiş Session. Daemon onu çıkış durumu ve journal'ıyla birlikte saklama süresi boyunca tutar. Yalnızca `nomux ls --all` gösterir. |
+| bozuk Session | damaged Session | Daemon'un tanımını okuyamadığı Session. `nomux kill` onu siler. |
+| geri yükleme | restore | Uykudaki bir Session'ın komutunu aynı komut, çalışma dizini ve pencere boyutuyla yeniden başlatmak. Önceki process'ler geri gelmez; önceki çıktı journal'da kalır. |
+| geri yükleme politikası | restore policy | Daemon'un uykudaki bir Session'ı ne zaman geri yükleyeceği: `auto` (daemon başlarken), `on-focus` (ilk attach'te ya da `nomux start` ile; varsayılan budur) veya `manual` (yalnızca `nomux start` ile). CLI komutu `nomux restore-policy`'dir. |
+| saklama süresi | retention time | Daemon'un biten bir Session'ı ne kadar tuttuğu. Varsayılanı 24 saattir. |
+| hazırda bekletme | hibernation | Planlanıyor, nomux 0.3.0'da yok: daemon boşta duran bir agent'ın komutunu durdurur, Session'ını açtığınızda resume komutuyla yeniden başlatır. Uykudaki Session ile karıştırmayın; o, holder'ın sona ermesiyle oluşur. |
+
+## Uzak Host'lar
+
+| Türkçe terim | İngilizce terim | Tanım |
+|---|---|---|
+| uzak Host | remote Host | İstemcinin SSH ile bağlandığı Host. `nomux host add` onu kaydeder, `--host <ad>` onu seçer. |
+| bootstrap | bootstrap | nomux binary'lerini uzak bir Host'a koyan adımlar: sistemi yoklar, release arşivini istemcide indirip doğrular, binary'leri Host'ta `~/.nomux/bin/<sürüm>` altına kopyalar ve orada da doğrular. Bunu `nomux host add` yapar; `--host` ile çalışan her komut da binary'ler yoksa yapar. |
 
 ## Attach ve extension'lar
 
@@ -45,8 +71,10 @@ Bu terimler de küçük harfle yazılır.
 |---|---|---|
 | attach | attach | Bir istemcinin terminalini bir Session'ın terminaline bağlamak: istemci Session'ın ekranını gösterir ve tuşlarını ona gönderir. Bu bağlantının kendisine de attach denir. Aynı Session'a birden fazla istemci attach olabilir. CLI komutu `nomux attach`'tir. |
 | detach | detach | Bir attach'i bitirmek. Session yaşamaya devam eder. CLI komutu `nomux detach`'tir. |
-| extension | extension | nomux'a bir özellik ekleyen paket. Bir manifest'i (`extension.toml`) ve bir ya da daha fazla parçası vardır. |
-| daemon parçası | daemon part | Extension'ın Host'ta ayrı bir process olarak çalışan parçası. Onu `nomuxd` başlatır. |
+| extension | extension | nomux'a bir özellik ekleyen paket. Bir manifest'i (`extension.toml`) ve bir ya da daha fazla parçası vardır. Bir Host'a `nomux ext install` ile kurulur. |
+| daemon parçası | daemon part | Extension'ın Host'ta ayrı bir process olarak çalışan parçası. `nomuxd` onu ilk çağrıda başlatır, 60 saniye çağrı gelmezse durdurur. |
+| extension host | extension host | Daemon'un kurulu extension'ları tutan ve daemon parçalarını çalıştıran kısmı. |
+| izin | permission | Bir extension'ın manifest'inde istediği ve kullanıcının kurulumda onayladığı erişim: bir dizin (`fs`), bir program (`process`), ağ erişimi (`network`) ya da bir host servisinin kapsamı (`scope`). |
 | arayüz parçası | UI part | Extension'ın istemcide çalışan parçası. |
 
 ## Kavramlar birbirine nasıl bağlanır
@@ -68,5 +96,6 @@ Böylece desktop istemcisi ile mobil istemci aynı Session'a farklı görünüml
 
 - Terimi olduğu gibi kullanın, yerine eş anlamlısını koymayın: Proje yerine "çalışma alanı", Pane yerine "pencere" demeyin.
 - Türkçe metinde Türkçe terimi, İngilizce metinde İngilizce terimi yazın.
-- On terim iki dilde de aynıdır: Host, Worktree, Session, Pane, Tab, holder, daemon, attach, detach ve extension.
+- Şu terimler iki dilde de aynıdır: Host, Worktree, Session, Pane, Tab, holder, daemon, journal, checkpoint, epoch, bootstrap, attach, detach, extension ve extension host.
+- CLI'ın yazdırdığı ya da beklediği değerler çevrilmez: durumlar (`running`, `dormant`, `ended`) ve geri yükleme politikaları (`auto`, `on-focus`, `manual`).
 - Koddaki adlar İngilizce terimden türetilir. Örnek: `sessions`, `agent_runs` ve `child_work` veritabanı tabloları ile `NOMUX_SURFACE_ID` ortam değişkeni.
