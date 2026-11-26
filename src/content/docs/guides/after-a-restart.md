@@ -6,7 +6,7 @@ description: What a restart of the Host does to the Sessions, how a dormant Sess
 A restart of the Host stops each process, also each holder and each command of a Session.
 nomux keeps the description and the output of each Session on disk. Thus after the restart, `nomux ls` shows each Session as **dormant**, and one command starts it again.
 
-The output on this page is the real output of one run with nomux 0.3.0 on Linux. The run did not restart the computer: it stopped each nomux process of a temporary home directory with `kill -9`, which is what a restart does to these processes. Your session identifiers and process IDs are different.
+The output on this page is the real output of one run with nomux 0.4.0 on Linux. The run did not restart the computer: it stopped each nomux process of a temporary home directory with `kill -9` (the daemon, the holders and the commands of the Sessions), which is what a restart does to these processes. Your session identifiers and process IDs are different.
 
 ## What is restored and what is not
 
@@ -17,7 +17,7 @@ The output on this page is the real output of one run with nomux 0.3.0 on Linux.
 | The output from before the restart | Yes: it is in the journal on disk. An attach shows its end, and `nomux capture` prints it |
 | The restore policy of the Session | Yes |
 | The processes of the Session: the shell, the programs that ran in it, their memory | **No.** The new command starts from the beginning |
-| The environment variables of the command | **No.** The new command gets the environment of the daemon at the time of the restore. nomux does not store the environment, because it can have secrets |
+| The environment variables of the command | **No.** The new command gets the [environment of a Session](/docs/guides/session-environment/) that the daemon makes at the time of the restore: the environment of the daemon, with `TERM`, `COLORTERM`, a UTF-8 character set and the three `NOMUX_*` variables of the Session. nomux does not store the environment of the old command, because it can have secrets |
 | The output of the last second before the stop | Maybe not. The holder writes the output to disk after 1 second at most. A power cut can also lose what the kernel did not write to the disk yet |
 
 A program that can continue its own work, for example an agent with a resume command, must do that itself after the restore.
@@ -28,30 +28,30 @@ This run has three Sessions: a shell, a server and a command that must not start
 
 ```console
 $ nomux new --cwd project -- sh
-4actd3we
-$ nomux attach 4actd3we
+rgubz6li
+$ nomux attach rgubz6li
 sh-5.3$ echo written before the restart
 written before the restart
 sh-5.3$
-detached from session 4actd3we
+detached from session rgubz6li
 $ nomux new -- sh -c 'echo server started; exec sleep 600'
-sqkjxrqa
+lbfxvjl3
 $ nomux new -- sleep 700
-wjzdelno
+f255tn7t
 ```
 
 Each Session gets a [restore policy](#restore-policies). The default is `on-focus`. Here the server gets `auto` and the last command gets `manual`:
 
 ```console
-$ nomux restore-policy sqkjxrqa auto
-session sqkjxrqa has the restore policy auto
-$ nomux restore-policy wjzdelno manual
-session wjzdelno has the restore policy manual
+$ nomux restore-policy lbfxvjl3 auto
+session lbfxvjl3 has the restore policy auto
+$ nomux restore-policy f255tn7t manual
+session f255tn7t has the restore policy manual
 $ nomux ls
-ID        STATE    PID      COMMAND
-4actd3we  running  2624341  sh
-sqkjxrqa  running  2624364  sh -c echo server started; exec sleep 600
-wjzdelno  running  2624370  sleep 700
+ID        STATE    PID     COMMAND
+f255tn7t  running  896121  sleep 700
+lbfxvjl3  running  896118  sh -c echo server started; exec sleep 600
+rgubz6li  running  896082  sh
 ```
 
 ## After the restart
@@ -60,19 +60,23 @@ No nomux process runs now. The first command starts the daemon, and the daemon r
 
 ```console
 $ nomux ls
-ID        STATE    PID      COMMAND
-4actd3we  dormant  -        sh
-sqkjxrqa  running  2624402  sh -c echo server started; exec sleep 600
-wjzdelno  dormant  -        sleep 700
+ID        STATE    PID     COMMAND
+f255tn7t  dormant  -       sleep 700
+lbfxvjl3  running  896453  sh -c echo server started; exec sleep 600
+rgubz6li  dormant  -       sh
 ```
 
-- `4actd3we` and `wjzdelno` are dormant. No process of them runs, and `PID` is `-`.
-- `sqkjxrqa` has the policy `auto`, thus the daemon started its command again at its own start. It has a new process ID.
+- `rgubz6li` and `f255tn7t` are dormant. No process of them runs, and `PID` is `-`.
+- `lbfxvjl3` has the policy `auto`, thus the daemon started its command again at its own start. It has a new process ID.
+
+A dormant Session has no process. `nomux status` shows it as `idle` and `nomux ls --memory` shows `-` for its memory: [Session memory](/docs/guides/session-memory/) has the rules.
+
+A pooled holder is not a Session, and it ends with its daemon, thus a restart ends it too. The new daemon starts its own pool at the first request of a client: [Holder pool](/docs/guides/holder-pool/).
 
 The output of a dormant Session is on disk. `nomux capture` prints it without a restore:
 
 ```console
-$ nomux capture 4actd3we --lines 2
+$ nomux capture rgubz6li --lines 2
 written before the restart
 sh-5.3$
 ```
@@ -84,7 +88,7 @@ The real output also has the escape sequences of the prompt of the shell. [Read 
 **With an attach.** `nomux attach` starts the command again and attaches. The command gets the window size of your terminal. The terminal first shows the end of the old output, then a line from nomux, then the new command:
 
 ```console
-$ nomux attach 4actd3we
+$ nomux attach rgubz6li
 sh-5.3$ echo written before the restart
 written before the restart
 sh-5.3$
@@ -93,7 +97,7 @@ sh-5.3$
 sh-5.3$ echo typed after the restart
 typed after the restart
 sh-5.3$
-detached from session 4actd3we
+detached from session rgubz6li
 ```
 
 The run had empty lines between the line of nomux and the new prompt: the old output and the line move to the scrollback of your terminal, and the new shell draws its screen below them. The example shows one empty line.
@@ -102,15 +106,15 @@ The new shell is a new process. It knows nothing of the commands that you typed 
 **Without an attach.** `nomux start` starts the command again with the window size that the Session had. A Session with the policy `manual` starts only in this way:
 
 ```console
-$ nomux attach wjzdelno
-nomux: session wjzdelno is dormant and its restore policy is manual: run `nomux start wjzdelno`
-$ nomux start wjzdelno
-session wjzdelno runs
+$ nomux attach f255tn7t
+nomux: session f255tn7t is dormant and its restore policy is manual: run `nomux start f255tn7t`
+$ nomux start f255tn7t
+session f255tn7t runs
 $ nomux ls
-ID        STATE    PID      COMMAND
-4actd3we  running  2624414  sh
-sqkjxrqa  running  2624402  sh -c echo server started; exec sleep 600
-wjzdelno  running  2624410  sleep 700
+ID        STATE    PID     COMMAND
+f255tn7t  running  896488  sleep 700
+lbfxvjl3  running  896453  sh -c echo server started; exec sleep 600
+rgubz6li  running  896462  sh
 ```
 
 The `attach` of a `manual` Session has the exit code 1. `nomux start` for a Session whose command runs succeeds and changes nothing.
@@ -120,7 +124,7 @@ If the command cannot start, for example because its working directory is gone, 
 `capture` now prints the output of the two runs of the command, the old one and the new one:
 
 ```console
-$ nomux capture 4actd3we
+$ nomux capture rgubz6li
 sh-5.3$ echo written before the restart
 written before the restart
 sh-5.3$ sh-5.3$ echo typed after the restart
@@ -150,18 +154,20 @@ default_policy = "on-focus"   # auto | on-focus | manual
 ended_retention = "24h"       # a number with the unit s, m, h or d
 ```
 
-The daemon reads the file one time, at its start. A file that is not valid does not stop the daemon: the daemon writes the problem to its log and uses the defaults. These two keys come from [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.3.0/docs/daemon.md#configuration). They were not changed for this page.
+The daemon reads the file one time, at its start. A file that is not valid does not stop the daemon: the daemon writes the problem to its log and uses the defaults. These two keys come from [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/daemon.md#configuration) of nomux 0.4.0. They were not changed for this page. The file has a third table, `[pool]`, for the holder pool: [Holder pool](/docs/guides/holder-pool/) describes it.
 
 ## Remove a dormant Session
 
 A dormant Session has no command to end. `nomux kill` removes it and its output:
 
 ```console
-$ nomux kill wjzdelno
-session wjzdelno ended
-$ nomux capture wjzdelno
-nomux: no session has the identifier wjzdelno
+$ nomux kill rgubz6li
+session rgubz6li ended
+$ nomux capture rgubz6li
+nomux: no session has the identifier rgubz6li
 ```
+
+Before this command, a second stop of each nomux process made the Session `rgubz6li` dormant again.
 
 Nothing else removes a dormant Session. Its journal has 32 MiB of files at most.
 
@@ -204,6 +210,7 @@ The macOS row comes from `docs/daemon.md`. The nomux documents say that the laun
 - **`--replace`.** The daemon of the service takes the place of a daemon that a command started before. No Session ends.
 - **`Restart=on-failure`.** A daemon that fails starts again. A daemon that `nomux daemon stop` stopped stays stopped.
 - **The path of `nomuxd`** is in the file. If you move the binaries, run `nomux daemon install-service` again.
+- **The environment.** A service manager gives the daemon no `TERM`, and launchd gives it no `LANG`. A Session gets `TERM` and a UTF-8 character set from nomux anyway. For a language, add `LANG` to the file: `Environment=` in the unit, `EnvironmentVariables` in the launchd agent. [Session environment](/docs/guides/session-environment/) has the rules.
 
 To remove the file:
 
@@ -213,14 +220,19 @@ removed /tmp/nomux-demo/.config/systemd/user/nomuxd.service
 The daemon that runs continues. To make the service manager forget the file, run: systemctl --user daemon-reload
 ```
 
-`uninstall-service` has the exit code 0 also when the file does not exist.
+`uninstall-service` has the exit code 0 also when the file does not exist:
+
+```console
+$ nomux daemon uninstall-service
+no service file: /tmp/nomux-demo/.config/systemd/user/nomuxd.service does not exist
+```
 
 **A logout.** systemd stops the user manager after the last logout, and with it each process of its units: the daemon and the holders. `loginctl enable-linger` keeps the user manager, and thus the Sessions, after a logout. This behaviour comes from the documentation of systemd; the nomux documents say that it was not tested.
 
 ## Limits of this version
 
 - The processes of a Session do not come back. Only the command starts again.
-- A restore gives the command the environment of the daemon, not the environment of the first command.
+- A restore gives the command the environment that the daemon makes at that time, not the environment of the first command. The client that attaches gives no variable: [Session environment](/docs/guides/session-environment/) has the gap.
 - An attach that starts a Session again shows 1 MiB of the old output at most. `nomux capture` prints the rest of the journal.
 - No command starts the command of an ended Session again, and no command removes an ended Session before its retention time is over.
 

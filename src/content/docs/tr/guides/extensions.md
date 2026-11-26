@@ -4,19 +4,24 @@ description: nomux CLI ile bir extension'ı onayladığınız izinlerle kurun, l
 ---
 
 Extension nomux'a bir özellik ekler. Daemon parçası, Host'taki daemon'un ilk çağrıda başlattığı ve boşta kalınca durdurduğu bir programdır.
-Bu sayfa bir extension'ı CLI ile nasıl kullanacağınızı gösterir. Extension yazmak için [extension SDK](https://github.com/nomux-sh/extension-api#write-an-extension)'ya bakın. Modeli [Extension'lar](/docs/tr/concepts/extensions/) kavram sayfası anlatır.
+Bu sayfa bir extension'ı CLI ile nasıl kullanacağınızı gösterir. Extension yazmak için [Extension yazmak](/docs/tr/guides/write-an-extension/) sayfasını ve [extension SDK](https://github.com/nomux-sh/extension-api#write-an-extension)'yı okuyun. Modeli [Extension'lar](/docs/tr/concepts/extensions/) kavram sayfası anlatır.
 
-Bu sayfadaki çıktılar, nomux 0.3.0'ın Linux'ta geçici bir home dizininde (`/tmp/nomux-demo`) verdiği gerçek çıktılardır.
+Bu sayfadaki çıktılar, nomux 0.4.0'ın Linux'ta geçici bir home dizininde (`/tmp/nomux-demo`) verdiği gerçek çıktılardır.
 
 ## Hangi extension'lar var
 
 Henüz hiçbir extension'ın release'i yok. Registry de, indirilecek paket de yok: `nomux ext install` bir dizinden kurar.
-Bu sayfada iki extension kullanılıyor; ikisi de bu çalıştırma için kaynağından derlendi:
+Bu sayfada iki extension kullanılıyor; ikisi de bu çalıştırma için kaynağından derlendi. Üçüncüsünün yalnızca manifest'i kontrol ediliyor:
 
 | Extension | Kimlik | Kaynak | Manifest'teki izinler |
 |---|---|---|---|
-| Echo | `nomux.echo` | SDK'nın örneği: [`extension-api/examples/echo`](https://github.com/nomux-sh/extension-api/tree/main/examples/echo) | Yok |
+| Echo | `nomux.echo` | SDK'nın örneği: `v0.1.1` etiketindeki [`extension-api/examples/echo`](https://github.com/nomux-sh/extension-api/tree/v0.1.1/examples/echo) | Yok |
 | Git | `nomux.git` | `extensions` reposunun `main` branch'indeki [`git`](https://github.com/nomux-sh/extensions/tree/main/git) dizini. 0.1.0 sürümü yayımlanmadı | `fs=${worktree}`, `process=git` |
+| Claude Code adapter'ı | `nomux.agent-claude` | `extensions` reposunun `main` branch'indeki [`agent-claude`](https://github.com/nomux-sh/extensions/tree/main/agent-claude) dizini. 0.1.0 sürümü yayımlanmadı | `scope=hooks:read`, `scope=agent:report` |
+
+Claude Code adapter'ı Claude Code'un durumunu bildirir. Bu sayfa yalnızca manifest'ini kontrol eder. Onu derlemeyi, kurmayı ve kullanmayı [Claude Code adapter'ı](/docs/tr/guides/claude-code/) rehberi anlatır.
+
+Echo örneğini `v0.1.1` etiketinden derleyin. nomux 0.4.0 bir extension'a extension API'nin 0.1.1 sürümünü sunar. SDK'nın `main` branch'indeki örnek 0.1.2 sürümü için derlenmiştir: host onu `the extension API version is not compatible` mesajıyla reddeder.
 
 Paket, `extension.toml` manifest'ini ve manifest'in `[daemon]` tablosunda adı geçen programı içeren bir dizindir. Git extension'ının derleme adımları [extension'ın README'sinde](https://github.com/nomux-sh/extensions/tree/main/git#readme):
 
@@ -25,6 +30,15 @@ cargo build --release -p nomux-git
 mkdir -p package/bin
 cp git/extension.toml package/
 cp target/release/nomux-git package/bin/
+```
+
+Echo örneğinin adımları `extension-api` reposunda aynıdır:
+
+```sh
+cargo build --release -p nomux-echo
+mkdir -p package/bin
+cp examples/echo/extension.toml package/
+cp target/release/nomux-echo package/bin/
 ```
 
 ## Paketi kontrol etmek
@@ -36,6 +50,8 @@ $ nomux ext validate ./nomux-echo
 extension.toml is valid: nomux.echo 0.1.0 (Echo) asks for no permissions
 $ nomux ext validate ./nomux-git
 extension.toml is valid: nomux.git 0.1.0 (Git) asks for the permissions: fs=${worktree} process=git
+$ nomux ext validate ./nomux-agent-claude
+extension.toml is valid: nomux.agent-claude 0.1.0 (Claude Code adapter) asks for the permissions: scope=hooks:read scope=agent:report
 ```
 
 Geçersiz bir manifest'te her sorun, alanın yoluyla birlikte ayrı bir satırda yazar ve çıkış kodu 1 olur:
@@ -92,13 +108,21 @@ $ nomux ext install ./nomux-echo
 extension nomux.echo 0.1.0 installed with no permissions
 ```
 
-Bu sayfadaki örnekler aynı geçici home dizinindeki iki çalıştırmadan geliyor.
-
 Daemon paketi kopyalar; kurulumdan sonra kaynak dizinde yaptığınız bir değişiklik hiçbir şeyi değiştirmez. Pakette yalnızca normal dosyalar ve dizinler olabilir: daemon sembolik link'i reddeder.
 `install` hiçbir process başlatmaz; bunu ilk çağrı yapar.
 
+Bir kapsam, bir host servisine ya da daemon'un olaylarına erişim verir. nomux 0.4.0'ın üç kapsamı var:
+
+| Kapsam | Verdiği |
+|---|---|
+| `sessions:read` | `sessions.list` host servisi: Host'taki Session'lar |
+| `agent:report` | `agent.report` ve `agent.child` host servisleri: bir Agent çalışmasının ve Alt işlerinin durumu |
+| `hooks:read` | Manifest'teki `[adapter]` tablosunda adı geçen araçların hook olayları |
+
+`[adapter]` tablosu bir extension'ı bir agent aracının [adapter'ı](/docs/tr/guides/agent-adapters/) yapar. Extension API'nin `^0.1.1` sürümünü ister; `nomux.agent-claude` manifest'inde de böyledir.
+
 :::caution
-nomux 0.3.0'da daemon yalnızca host servislerinin kapsamlarını uygular. Onaylanan diğer izinleri (`fs`, `process` ve `network`) extension'a iletir; bunlara uymak extension'ın işidir. Extension'ın process'i daemon'la aynı dosya erişimine sahiptir.
+nomux 0.4.0'da daemon yalnızca kapsamları (`sessions:read`, `agent:report` ve `hooks:read`) uygular. Onaylanan diğer izinleri (`fs`, `process` ve `network`) extension'a iletir; bunlara uymak extension'ın işidir. Extension'ın process'i daemon'la aynı dosya erişimine sahiptir.
 Git extension'ı izinlerini her istekte kendisi uygular; kuralları [README'sinde](https://github.com/nomux-sh/extensions/tree/main/git#permissions).
 Yalnızca kaynağına güvendiğiniz extension'ları kurun.
 :::
@@ -132,14 +156,14 @@ Bu, git extension'ının `status` metodunu `/tmp/nomux-demo/project` içindeki G
 ```console
 $ nomux ext call nomux.git status --payload @status-request.bin > status-response.bin
 $ wc -c status-response.bin
-25 status-response.bin
+23 status-response.bin
 $ nomux ext ls
 ID          NAME  VERSION  STATE    PERMISSIONS                             REASON
 nomux.echo  Echo  0.1.0    stopped  -
 nomux.git   Git   0.1.0    running  fs=/tmp/nomux-demo/project,process=git
 ```
 
-Çağrı extension'ın process'ini başlattı. Sonuç 25 baytlık bir `StatusResponse` mesajı.
+Çağrı extension'ın process'ini başlattı. Bu çalıştırmadaki repo, `main` branch'inde yeni bir repodur ve git'in izlemediği tek bir dosyası var. Sonuç 23 baytlık bir `StatusResponse` mesajı.
 
 Örnekteki `echo` metodu aldığı mesajı geri verir. Payload'ı `hi` metnini taşıyan bir protobuf mesajı:
 
@@ -170,6 +194,26 @@ nomux: the extension answered with an error: the text is empty
 
 Bir extension'ın çökmesi kendi process'inde kalır. Daemon, Session'lar ve diğer extension'lar çalışmaya devam eder.
 
+## Olaylar
+
+Bir extension olay gönderebilir. Daemon olayı olay günlüğüne yazar, bir istemci de günlüğü `nomux events --follow` ile okur. Örnekteki `echo` metodu her çağrıda metninin uzunluğunu taşıyan `echoed` olayını gönderir.
+
+`--filter extension-event` yalnızca extension olaylarını yazdırır. Bu komutu bir terminalde başlatın, ikinci terminalde `nomux ext call nomux.echo echo --payload @request.bin` çalıştırın:
+
+```console
+$ nomux events --follow --filter extension-event
+2 extension nomux.echo: echoed (2 bytes)
+```
+
+Bir satırda olayın günlükteki sırası (daemon yeniden başlayınca numara yeniden başlar), extension'ın kimliği, olayın adı ve payload'ının boyutu bulunur. `--json` ile her olay tek satırlık bir JSON belgesidir. Payload base64'tür, çünkü kodlamayı extension seçer. Buradaki `CAI=`, uzunluğu 2 olan bir protobuf mesajıdır:
+
+```console
+$ nomux --json events --follow --filter extension-event
+{"schema_version":1,"event":{"seq":3,"at_ms":1795691297643,"type":"extension_event","extension":{"id":"nomux.echo","name":"echoed","payload_base64":"CAI="}}}
+```
+
+Komut yalnızca başladıktan sonraki olayları yazdırır; `Ctrl-C` ile 0 çıkış koduyla biter. Daemon son 1024 olayı bellekte tutar ve payload'ı 64 KiB'tan büyük olayı atar. [Agent durumu](/docs/tr/guides/agent-status/) sayfası aynı komutu durum olayları için kullanır.
+
 ## Devre dışı bırakmak, etkinleştirmek ve kaldırmak
 
 ```console
@@ -191,6 +235,11 @@ extension nomux.echo removed
 $ nomux ext rm nomux.echo
 nomux: no extension has the identifier nomux.echo
 $ nomux ext ls
+ID         NAME  VERSION  STATE    PERMISSIONS                             REASON
+nomux.git  Git   0.1.0    running  fs=/tmp/nomux-demo/project,process=git
+$ nomux ext rm nomux.git
+extension nomux.git removed
+$ nomux ext ls
 no extensions
 ```
 
@@ -209,12 +258,12 @@ Extension'lar bir Host'a aittir. `--host <ad>` ile `ext` komutları bir [uzak Ho
 
 ## Bu sürümün sınırları
 
-Bu maddeler nomux 0.3.0'ın [`docs/extensions.md`](https://github.com/nomux-sh/nomux/blob/v0.3.0/docs/extensions.md#not-done-yet) dosyasından:
+Bu maddeler nomux 0.4.0'ın [`docs/extensions.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/extensions.md#not-done-yet) dosyasından:
 
 - Daemon bir extension'ın dosyalarını, programlarını ve ağ erişimini kısıtlamaz.
-- Daemon'un tek bir host servisi var: `sessions:read` kapsamlı `sessions.list`.
+- Daemon'un üç host servisi var: `sessions.list` (`sessions:read` kapsamı) ile adapter'lar için `agent.report` ve `agent.child` (`agent:report` kapsamı).
 - Registry'den kurulum, imza kontrolü ve güncelleme komutu yok.
-- İstemciler extension olaylarını almaz; hiçbir istemci bir extension'ın arayüz parçasını göstermez.
+- Daemon bir extension'a olayı yalnızca bir adapter'ın `hook` metodunun çağrısı olarak gönderir. Hiçbir istemci bir extension'ın arayüz parçasını göstermez.
 - Daemon bir extension'ın process'ini durdurduğunda, extension'ın başlattığı process'ler çalışmaya devam eder.
 
 Her `ext` komutu JSON belgesiyle birlikte [CLI başvurusunda](/docs/tr/reference/cli/). Bu sayfadaki terimler [Sözlük](/docs/tr/reference/glossary/)'ten gelir.

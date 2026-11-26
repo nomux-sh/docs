@@ -9,7 +9,7 @@ nomux is a native agentic development environment.
 You open a Task. nomux connects a Worktree and an agent Session to the Task. The agent does the work.
 You see each Agent run and each Child work with its status. You examine the changes in a diff, approve them and commit them.
 
-The terms on this page come from the [Glossary](/docs/reference/glossary/).
+This page describes the design. [Status](#status) at the end says which parts exist in nomux 0.4.0. The terms on this page come from the [Glossary](/docs/reference/glossary/).
 
 ## Three ideas
 
@@ -24,8 +24,10 @@ You can install and remove each one. An extension that you do not use is not loa
 The [extensions page](/docs/concepts/extensions/) says which parts of this exist now.
 
 **Each status has a known source.**
-nomux reads the status of an agent from adapter events, from the OSC 7501 terminal sequence, from a self-report, or from a fallback.
-It stores the source with the status. It does not show an estimated value as a certain value.
+nomux reads the status of an agent from six sources in a fixed order: adapter, program status (the OSC 7501 terminal sequence), self-report, session restore, prompt marks and foreground program. The last two are guesses.
+It stores the source with the status. It marks a guess as a guess and does not show it as a certain value.
+The adapters read the hook events of an agent tool. The adapter of Claude Code exists and has no release yet. The adapters of other tools are planned.
+The guide [Agent status](/docs/guides/agent-status/) shows the status with real commands.
 
 ## What the core contains
 
@@ -37,6 +39,8 @@ It stores the source with the status. It does not show an estimated value as a c
 - The Team Tab and its message boxes. The agents do the orchestration themselves.
 - The extension hosts, the theme engine and the UI language engine.
 - The clients: the CLI, the desktop application and the mobile applications.
+
+In nomux 0.4.0, the Hosts (local and through SSH), the Sessions with the holder and the daemon, the restore after a restart, the agent status engine and the daemon part of the extensions exist. The CLI is the only client. The Project, the Worktree, the Task, the Team, the Pane tree, the desktop application, the mobile applications, the theme engine, the UI language engine and the direct and QUIC connections do not exist yet.
 
 ## How the parts connect
 
@@ -70,5 +74,5 @@ The clients run on Linux, macOS and Windows. The mobile clients run on iOS and A
 ## Status
 
 nomux is in development. Versions earlier than 1.0.0 are pre-releases: interfaces can change between minor versions.
-The [roadmap](/docs/project/roadmap/) shows which parts exist now.
+The [roadmap](/docs/project/roadmap/) shows which parts exist now, and [How it works](/docs/concepts/how-it-works/) describes what the current release does.
 The [architecture decisions](/docs/reference/decisions/) record the main design choices.

@@ -17,9 +17,11 @@ hero:
 
 nomux is in development. Versions earlier than 1.0.0 are pre-releases: interfaces can change between minor versions.
 
-The current release is [nomux 0.3.0](https://github.com/nomux-sh/nomux/releases/tag/v0.3.0).
+The current release is [nomux 0.4.0](https://github.com/nomux-sh/nomux/releases/tag/v0.4.0).
 The CLI starts, lists and ends Sessions, attaches your terminal to a Session and detaches it. A Session continues when you detach and when the daemon stops. After a restart of the Host, a Session is dormant and starts again on demand, with its output from before.
 The CLI also uses remote Hosts through SSH and installs and calls extensions.
+nomux 0.4.0 shows what works in each Session, what is done and what needs you, with the source of each status. It also shows the memory of each Session, and it keeps ready holders for new Sessions.
+Not built yet: the desktop client, groups of Projects, a memory limit for a Session and the hibernation of idle agents.
 The [install page](/docs/guides/install/) has Homebrew, the install script and the other paths to the binaries.
 
 The [roadmap](/docs/project/roadmap/) is the one place that shows what comes next.
@@ -31,7 +33,11 @@ This site grows with the product. A page is added only when its content is ready
 - [Quick start](/docs/guides/quick-start/) starts a Session, attaches to it, detaches, stops the daemon, shows that the Session continues and reads its output.
 - [After a restart](/docs/guides/after-a-restart/) shows the dormant Sessions, the restore policies and the daemon at login.
 - [Remote hosts](/docs/guides/remote-hosts/) adds a server through SSH and uses its Sessions.
-- [Extensions](/docs/guides/extensions/) installs an extension with the permissions that you approve, and calls it.
+- [Agent status](/docs/guides/agent-status/) shows what works, what is done and what needs you in each Session, and why.
+- [Agent adapters and hooks](/docs/guides/agent-adapters/) lets an agent tool report its status, with a diff before nomux writes a settings file. [Claude Code adapter](/docs/guides/claude-code/) is the first adapter.
+- [Memory of Sessions](/docs/guides/session-memory/) shows how much memory each Session uses.
+- [Holder pool](/docs/guides/holder-pool/), [Environment of a Session](/docs/guides/session-environment/) and [Long home paths](/docs/guides/long-home-paths/) explain how a new Session opens fast, which variables it gets and what nomux does with a long home directory.
+- [Extensions](/docs/guides/extensions/) installs an extension with the permissions that you approve, and calls it. [Write an extension](/docs/guides/write-an-extension/) says how to write one in Rust, TypeScript or Go.
 - [CLI reference](/docs/reference/cli/) has each command, its JSON output and the exit codes.
 
 ## Understand nomux

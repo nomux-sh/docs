@@ -8,7 +8,7 @@ Hangisinin ne iş yaptığını [Nasıl çalışır](/docs/tr/concepts/how-it-wo
 
 ## Sürüm durumu
 
-Güncel sürüm [nomux 0.3.0](https://github.com/nomux-sh/nomux/releases/tag/v0.3.0).
+Güncel sürüm [nomux 0.4.0](https://github.com/nomux-sh/nomux/releases/tag/v0.4.0).
 `1.0.0` öncesindeki her sürüm gibi bu da bir ön sürümdür: minor sürümler arasında API, CLI ve protokol değişebilir.
 İşin ne durumda olduğunu [yol haritasından](/docs/tr/project/roadmap/) takip edebilirsiniz.
 
@@ -21,8 +21,8 @@ Binary'leri edinmenin dört yolu var. Size uyan ilkini kullanın:
 
 nomux'u yalnızca klavyesinde yazdığınız bilgisayara kurarsınız. Uzak bir Host'a kurulum gerekmez: binary'leri oraya `nomux host add` koyar. Ayrıntılar [Uzak Host'lar](/docs/tr/guides/remote-hosts/) sayfasında.
 
-Bu sayfadaki çıktılar, 0.3.0 sürümünün Linux x86_64 üzerindeki gerçek çıktısıdır. O çalıştırmada home dizini geçici bir dizindi: `/tmp/nomux-demo`.
-Tek istisna Homebrew komutları: bu sayfa için çalıştırılmadılar.
+Bu sayfadaki çıktılar, 0.4.0 sürümünün Linux x86_64 üzerindeki gerçek çıktısıdır. O çalıştırmada home dizini geçici bir dizindi: `/tmp/nomux-demo`.
+Tek istisna Homebrew: çalıştırmanın yapıldığı makinede Homebrew yoktu, bu yüzden `brew install` çalıştırılmadı. Onun yerine nelerin denetlendiği [Homebrew](#homebrew) bölümünde.
 
 ## Desteklenen makineler
 
@@ -54,7 +54,19 @@ nomux --version
 - Homebrew 6.0.0 ve sonrası, Homebrew'a ait olmayan bir tap'in formula'sını ancak siz ona güvendikten sonra yükler. Tam adla (`nomux-sh/tap/nomux`) yapılan kurulum yalnızca bu formula'ya güvenir. Ayrıntılar Homebrew dokümantasyonundaki [Tap Trust](https://docs.brew.sh/Tap-Trust) sayfasında.
 - Formula yeni sürüme nomux'un release'inden sonra geçer: tap'teki bir workflow günde bir kez yeni release olup olmadığına bakar, değişikliği bir maintainer merge eder.
 
-Bu komutlar ve bilgiler [tap'in README'sinden](https://github.com/nomux-sh/homebrew-tap#readme) alındı. Bu sayfa için çalıştırılmadılar.
+Bu komutlar ve bilgiler [tap'in README'sinden](https://github.com/nomux-sh/homebrew-tap#readme) alındı. `brew install` bu sayfa için çalıştırılmadı. Denetlenenler:
+
+- 0.4.0 sürümündeki formula dört arşiv adlandırır; yukarıdaki tablodaki her makine için bir tane. Formula'daki her arşivin SHA-256 değeri, URL'nin verdiği dosyanın SHA-256 değeriyle ve release'teki `SHA256SUMS` değeriyle aynıdır.
+- Formula'nın `test` bloğu `nomux --version`, `nomuxd --version` ve `nomux-holder --version` komutlarını çalıştırır ve `<binary> 0.4.0` bekler. Linux arşivindeki üç binary tam olarak bunu yazdırır:
+
+  ```console
+  $ nomux --version
+  nomux 0.4.0
+  $ nomuxd --version
+  nomuxd 0.4.0
+  $ nomux-holder --version
+  nomux-holder 0.4.0
+  ```
 
 ## Kurulum script'i
 
@@ -69,25 +81,26 @@ Script `sudo` kullanmaz. `curl`, `tar` ve `sha256sum` ya da `shasum` komutların
 
 ```console
 $ curl -fsSL https://raw.githubusercontent.com/nomux-sh/nomux/main/install.sh | sh
-Downloading nomux-0.3.0-x86_64-unknown-linux-musl.tar.gz
+Downloading nomux-0.4.0-x86_64-unknown-linux-musl.tar.gz
 The SHA-256 checksum is correct.
-Installed nomux 0.3.0 in /tmp/nomux-demo/.local/bin: nomux nomuxd nomux-holder
+Installed nomux 0.4.0 in /tmp/nomux-demo/.local/bin: nomux nomuxd nomux-holder
+/tmp/nomux-demo/.local/bin is not in PATH. Add it to PATH to run nomux by name.
 ```
 
-Dizin `PATH`'te değilse script, sonraki örnekteki gibi bir satır daha yazdırır. Shell'inizin başlangıç dosyasına eklemeniz gereken satır [Dosyalar nerede durur](#dosyalar-nerede-durur) bölümünde.
+Son satır, bu çalıştırmada `~/.local/bin` `PATH`'te olmadığı için var. Dizin `PATH`'teyse script bu satırı yazdırmaz. Shell'inizin başlangıç dosyasına eklemeniz gereken satır [Dosyalar nerede durur](#dosyalar-nerede-durur) bölümünde.
 
 | Seçenek | Varsayılan | Ne yapar |
 |---|---|---|
-| `--version <sürüm>` | Son eki olmayan en yeni sürüm | Kurulacak sürüm, örneğin `0.3.0` |
+| `--version <sürüm>` | Son eki olmayan en yeni sürüm | Kurulacak sürüm, örneğin `0.4.0` |
 | `--dir <dizin>` | `~/.local/bin` | Binary'lerin konacağı dizin |
 
 Seçenek vermek için `sh`'den sonra `-s --` ekleyin:
 
 ```console
-$ curl -fsSL https://raw.githubusercontent.com/nomux-sh/nomux/main/install.sh | sh -s -- --version 0.3.0 --dir ~/bin
-Downloading nomux-0.3.0-x86_64-unknown-linux-musl.tar.gz
+$ curl -fsSL https://raw.githubusercontent.com/nomux-sh/nomux/main/install.sh | sh -s -- --version 0.4.0 --dir ~/bin
+Downloading nomux-0.4.0-x86_64-unknown-linux-musl.tar.gz
 The SHA-256 checksum is correct.
-Installed nomux 0.3.0 in /tmp/nomux-demo/bin: nomux nomuxd nomux-holder
+Installed nomux 0.4.0 in /tmp/nomux-demo/bin: nomux nomuxd nomux-holder
 /tmp/nomux-demo/bin is not in PATH. Add it to PATH to run nomux by name.
 ```
 
@@ -95,7 +108,7 @@ Shell'in CLI'ı bulduğunu doğrulayın:
 
 ```console
 $ nomux --version
-nomux 0.3.0
+nomux 0.4.0
 ```
 
 ## Elle indirme
@@ -106,7 +119,7 @@ Arşivin içinde üç binary, README ve iki lisans dosyası vardır.
 1. Sürümü ve makinenizin target'ını belirleyin:
 
    ```sh
-   version=0.3.0
+   version=0.4.0
    target=x86_64-unknown-linux-musl
    ```
 
@@ -121,7 +134,7 @@ Arşivin içinde üç binary, README ve iki lisans dosyası vardır.
 
    ```console
    $ grep "nomux-$version-$target.tar.gz" SHA256SUMS | sha256sum --check
-   nomux-0.3.0-x86_64-unknown-linux-musl.tar.gz: OK
+   nomux-0.4.0-x86_64-unknown-linux-musl.tar.gz: OK
    ```
 
    macOS'te `sha256sum --check` yerine `shasum -a 256 --check` kullanın.
@@ -144,12 +157,12 @@ Binary'ler imzalı değildir, notarize da edilmemiştir. [`nomux` README'sine](h
 1. Sürümün kaynağını alın ve binary'leri derleyin:
 
    ```sh
-   git clone --branch v0.3.0 https://github.com/nomux-sh/nomux.git
+   git clone --branch v0.4.0 https://github.com/nomux-sh/nomux.git
    cd nomux
    cargo build --release
    ```
 
-   `--branch v0.3.0` vermezseniz `main` branch'ini derlersiniz; o da sürümden daha yeni olabilir.
+   `--branch v0.4.0` vermezseniz `main` branch'ini derlersiniz; o da sürümden daha yeni olabilir.
 
 2. Üç binary'yi `PATH`'inizdeki bir dizine kopyalayın. Üçü de aynı dizinde dursun:
 
@@ -168,10 +181,12 @@ Linux'ta kendi derlediğiniz binary makinenin C kütüphanesini kullanır; sür�
 | `~/.nomux/run/` | Runtime dizini: daemon'un socket'i, kilidi ve log'u ile çalışan her Session için bir dizin. nomux bu dizini ilk komutta kendisi oluşturur. |
 | Linux'ta `~/.local/state/nomux/`, macOS'te `~/Library/Application Support/nomux/` | State dizini: her Session'ın tanımı ve journal'ı. nomux'un bunlarla ne yaptığını [Yeniden başlatmadan sonra](/docs/tr/guides/after-a-restart/) sayfası anlatır. |
 | Linux'ta `~/.local/share/nomux/extensions/`, macOS'te `~/Library/Application Support/nomux/extensions/` | Kurduğunuz extension'lar ve onayladığınız izinler. Ayrıntılar [Extension'lar](/docs/tr/guides/extensions/) sayfasında. |
-| Linux'ta `~/.config/nomux/config.toml`, macOS'te `~/Library/Application Support/nomux/config.toml` | Ayar dosyası. `XDG_CONFIG_HOME` mutlak bir yolsa dosya `$XDG_CONFIG_HOME/nomux/config.toml` olur. nomux bu dosyayı uzak bir Host eklediğinizde oluşturur. |
+| Linux'ta `~/.local/share/nomux/hooks/`, macOS'te `~/Library/Application Support/nomux/hooks/` | Her `nomux hooks install --apply` komutunun kaydı: kurulumdan önce ayar dosyasının baytları. Ayrıntılar [Agent adapter'ları ve hook'lar](/docs/tr/guides/agent-adapters/) sayfasında. |
+| Linux'ta `~/.config/nomux/config.toml`, macOS'te `~/Library/Application Support/nomux/config.toml` | Ayar dosyası. `XDG_CONFIG_HOME` mutlak bir yolsa dosya `$XDG_CONFIG_HOME/nomux/config.toml` olur. nomux bu dosyayı uzak bir Host eklediğinizde oluşturur. Dosyada [havuz ayarları](/docs/tr/guides/holder-pool/#ayarlar) da bulunur. |
 | Linux'ta `~/.config/systemd/user/nomuxd.service`, macOS'te `~/Library/LaunchAgents/sh.nomux.nomuxd.plist` | Servis dosyası. Yalnızca `nomux daemon install-service` çalıştırıldıktan sonra vardır. |
 
 macOS yolları `nomux` reposundaki dokümanlardan alındı. Bu sayfadaki çıktıların hepsi Linux'tan.
+73 bayttan uzun bir home dizini, nomux'un `/tmp` içinde kısa bir bağlantı kullanmasına yol açar: [Uzun home dizinleri](/docs/tr/guides/long-home-paths/).
 
 CLI `nomuxd`'yi, daemon da `nomux-holder`'ı başlatır. Her biri aradığı binary'ye önce kendi dizininde, sonra `PATH`'te bakar.
 Bu yüzden üç binary ya aynı dizinde durmalı ya da üçü de `PATH`'te olmalıdır.
@@ -192,7 +207,7 @@ brew upgrade nomux-sh/tap/nomux
 ```
 
 Çalışmakta olan daemon ve holder'lar eski binary'lerle devam eder.
-Yeni daemon'a geçmek için eskisini durdurun:
+Yeni daemon'a geçmek için eskisini durdurun. Eski daemon'un havuzdaki holder'ları onunla birlikte sona erer; nedenini [Holder havuzu](/docs/tr/guides/holder-pool/) sayfası anlatır:
 
 ```sh
 nomux daemon stop
