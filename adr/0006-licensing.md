@@ -2,6 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-11-25
+- Amended: 2026-11-26, see "Amendment 2026-11-26: GPL crates of Zed"
 
 ## Context
 
@@ -79,6 +80,32 @@ We did not select it. A copyleft license can be an obstacle for extension author
 **A contributor license agreement.**
 We did not select it. The project uses the DCO only. No other reason is recorded.
 
+## Amendment 2026-11-26: GPL crates of Zed
+
+### What stays
+
+The decision stays: we do not copy code from a project or a crate with a GPL license. The class "Ideas only" of the table of reference projects stays.
+
+### What changes
+
+The table names only two crates of Zed as GPL: `ui` and `terminal_view`. Zed has more GPL crates.
+The [amendment of ADR-0004](0004-gpui-desktop.md#amendment-2026-11-25-pin-strategy) examined 23 crates at the `main` branch of `zed-industries/zed` (commit `8aeb64f`, 2026-11-25). These crates have `GPL-3.0-or-later` in the `license` field of their `Cargo.toml`:
+`terminal`, `terminal_view`, `ui`, `ui_input`, `ui_macros`, `theme`, `syntax_theme`, `rope`, `text`, `editor`, `workspace`, `settings`, `picker`, `menu`, `title_bar`, `command_palette` and `markdown`.
+
+These crates have `Apache-2.0`: `gpui`, `gpui_platform`, `gpui_macros`, `sum_tree`, `collections` and `util`.
+
+- The row "Ideas only" applies to each crate of the GPL list, not only to `ui` and `terminal_view`.
+- The list is not complete. A Zed crate that the list does not name is "Ideas only" until its `license` field says `Apache-2.0`. Examine the field before you copy code.
+
+### Why
+
+The table is the place where a contributor finds the class of a source. With two crates only, the table suggests that the other crates of Zed can be copied.
+
+### Not verified
+
+- This amendment examined no crate itself. The lists come from the amendment of ADR-0004.
+- The licenses of the Zed crates that the two lists do not name.
+
 ## Open questions
 
 The stage identifiers (M1 to M10) come from the [roadmap](../src/content/docs/project/roadmap.md).
@@ -86,3 +113,4 @@ The stage identifiers (M1 to M10) come from the [roadmap](../src/content/docs/pr
 - The license of gmux is MIT according to its README only. Examine the license file before code reuse. Owner: the person who wants to use the code.
 - The text of the trademark policy is not written. Owner: stage M10.
 - The license of each tmux plugin in the "other tmux plugins" group must be examined one by one before code reuse. Owner: the person who wants to use the code.
+- The license of each Zed crate that the amendment does not name. Owner: the person who wants to use the code.
