@@ -15,6 +15,7 @@ If you need a new concept, add it to this table first, in English and in Turkish
 |---|---|---|
 | Host | Host | A machine that runs `nomuxd`. A Host is local, or you connect to it through SSH or through a direct connection. |
 | Project | Proje | A repository on a Host. A Project has a folder, a default agent and a color. |
+| Group | Grup | Planned, not in nomux 0.4.0: a named item that holds Projects and other groups, to any depth. |
 | Worktree | Worktree | A git worktree of a Project. A Task usually runs in its own Worktree. |
 | Session | Session | One PTY that one holder process keeps. A shell, an agent and a development server are all Sessions. |
 | Agent run | Agent çalışması | One agent that runs in a Session. An Agent run has a tool, a model, a status and the session identifier of the provider. The provider identifier lets the agent resume. |
@@ -54,7 +55,36 @@ Write these terms in lowercase, but Session. The CLI shows the states as `runnin
 | restore | geri yükleme | To start the command of a dormant Session again, with its command, its working directory and its window size. The processes from before do not come back. The output from before stays in the journal. |
 | restore policy | geri yükleme politikası | When the daemon restores a dormant Session: `auto` (when the daemon starts), `on-focus` (at the first attach or `nomux start`, the default) or `manual` (only with `nomux start`). The CLI command is `nomux restore-policy`. |
 | retention time | saklama süresi | How long the daemon keeps an ended Session: 24 hours by default. |
-| hibernation | hazırda bekletme | Planned, not in nomux 0.3.0: the daemon stops the command of an idle agent and starts it again with its resume command when you open its Session. Not the same as a dormant Session, which comes from the end of its holder. |
+| hibernation | hazırda bekletme | Planned, not in nomux 0.4.0: the daemon stops the command of an idle agent and starts it again with its resume command when you open its Session. Not the same as a dormant Session, which comes from the end of its holder. |
+
+## Agent status
+
+These terms name what nomux knows about the work in a Session. Write them in lowercase. The CLI prints the states as `idle`, `working`, `done`, `needs you` and `error`.
+
+| English term | Turkish term | Definition |
+|---|---|---|
+| agent status | agent durumu | What nomux knows about the work of an Agent run and of its Child work: a state, the source of the state, and optionally a message, a title, a progress and a tool. `nomux status` shows it. |
+| state | durum | The value of an agent status: `idle`, `working`, `done`, `needs you` or `error`. `needs you` can have a kind: `permission`, `question` or `auth`. |
+| source | kaynak | Where an agent status comes from. The daemon asks the sources in a fixed order: adapter, program status, self-report, session restore, prompt marks and foreground program. The last two are guesses. |
+| guess | tahmin | A status that the daemon infers and that no program reported. The CLI marks it `(guess)`. |
+| adapter | adapter | An extension that reports the agent status of one agent tool from the hook events of that tool. Also called adapter extension. |
+| hook | hook | A command that an agent tool runs at an event of its work. The command for nomux is `nomux hook <tool> <event>`. `nomux hooks install` writes the hooks into the settings file of the tool. |
+| self-report | öz bildirim | A status that a program in a Session reports with `nomux status set`. |
+| seen | görüldü | For `done` and `error`: the user saw the result. An attach marks the results of the Session as seen. The CLI shows `(seen)`. |
+| kept run | saklanan çalışma | The last Agent run of an ended Session. The daemon keeps it until it removes the Session, so that `nomux status` and `nomux agent explain` still show the result and the resume command. |
+| event | olay | A change that the daemon writes to its event log, for example a new state of an Agent run. `nomux events --follow` prints the events. |
+| session token | session token | A random token that the holder gives to the command of a Session in `NOMUX_TOKEN`. The daemon accepts a report for a Session only with its token. |
+
+## Holder pool and memory
+
+Write these terms in lowercase.
+
+| English term | Turkish term | Definition |
+|---|---|---|
+| holder pool | holder havuzu | The holders that the daemon keeps ready for new Sessions, each with the shell of the user already started. The setting `pool.size` sets how many. |
+| pooled holder | havuzdaki holder | A holder in the holder pool. It has no Session yet. A new Session with the shell takes it. |
+| memory measure | bellek ölçüsü | How nomux counts the memory of a Session: `pss` (proportional set size, on Linux) or `rss` (resident set size). `nomux ls --memory` shows it in the column `MEASURE`. |
+| socket link | soket bağlantısı | The symbolic link `/tmp/nomux-<hash>` to the runtime directory. nomux uses it when a long home directory makes a socket path too long. |
 
 ## Remote Hosts
 
@@ -96,6 +126,6 @@ Thus a desktop client and a mobile client can connect to the same Session with d
 
 - Use the exact term. Do not use a synonym, for example "workspace" for Project or "window" for Pane.
 - In English text, write the English term. In Turkish text, write the Turkish term.
-- These terms are the same in the two languages: Host, Worktree, Session, Pane, Tab, holder, daemon, journal, checkpoint, epoch, bootstrap, attach, detach, extension and extension host.
+- These terms are the same in the two languages: Host, Worktree, Session, Pane, Tab, holder, daemon, journal, checkpoint, epoch, bootstrap, attach, detach, extension, extension host, adapter, hook and session token.
 - A value that the CLI prints or accepts is not translated: the states (`running`, `dormant`, `ended`) and the restore policies (`auto`, `on-focus`, `manual`).
 - Names in code follow the English term. Examples are the database tables `sessions`, `agent_runs` and `child_work`, and the environment variable `NOMUX_SURFACE_ID`.
