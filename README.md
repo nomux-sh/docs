@@ -124,4 +124,4 @@ To report a vulnerability, obey the [security policy](https://github.com/nomux-s
 
 ## License
 
-Documentation is licensed under [CC BY 4.0](LICENSE). Copyright: The nomux Authors.
+Documentation (`src/content`, `adr`, `research`) is licensed under [CC BY 4.0](LICENSE). The site code and the workflows are licensed under `MIT OR Apache-2.0`: [MIT](LICENSE-MIT) or [Apache 2.0](LICENSE-APACHE), at your option. Copyright: The nomux Authors.
