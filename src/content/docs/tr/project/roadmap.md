@@ -51,7 +51,7 @@ Aynı milestone'da şunlar da var:
 
 Güncel liste milestone sayfasındadır.
 
-### M2 aşaması: tamamlandı, istisnalarıyla
+### M2 aşaması: sürüyor, kabul testi henüz sağlanmıyor
 
 Uzak Host'lar nomux 0.3.0'da var: `nomux host add` SSH ile bağlanır, binary'leri kurar ve Host'u kaydeder; `--host` o Host'un daemon'unu kullanır; bağlantı koparsa attach çıktı kaybetmeden yeniden bağlanır. Ayrıntılar [Uzak Host'lar](/docs/tr/guides/remote-hosts/) sayfasında.
 Şunlar yapılmadı. Kaynak, nomux 0.3.0'ın [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.3.0/docs/remote.md#open-points-for-the-next-versions) belgesi:
@@ -94,9 +94,9 @@ Durum sütununda şu değerlerden biri bulunur:
 | Aşama | Hedef | Ne zaman bitmiş sayılır | Repolar | Durum |
 |---|---|---|---|---|
 | **M1** Kalıcı terminal çekirdeği | İstemci kopsa, daemon dursa ya da Host yeniden başlasa bile terminal Session'ı Host'ta yaşamaya devam eder. Session'lar CLI ile açılır, CLI ile bağlanılır. | SSH ile bağlandığınız bir Host'ta Session açıp laptop'u kapatırsınız; açıp yeniden bağlandığınızda ekran bıraktığınız gibidir. `nomuxd`'yi `kill -9` ile öldürürsünüz, Session yaşar. Host yeniden başladıktan sonra ilk ekran 1 saniyede gelir. | `nomux`, `proto` | `sürüyor` |
-| **M2** Uzak Host'lar | Tek komut, uzaktaki bir Host'u SSH üzerinden ekler ve binary'leri oraya kurar. Yavaş bağlantıda bile yazarken gecikme hissedilmez. | Yeni bir sunucuyu `nomux host add` ile eklersiniz; nomux binary'leri kurar ve bir Session açar. 100 ms gecikme ve %2 paket kaybında yazmak, local Host'ta yazmaktan farksızdır. | `nomux`, `proto` | `tamamlandı` |
+| **M2** Uzak Host'lar | Tek komut, uzaktaki bir Host'u SSH üzerinden ekler ve binary'leri oraya kurar. Yavaş bağlantıda bile yazarken gecikme hissedilmez. | Yeni bir sunucuyu `nomux host add` ile eklersiniz; nomux binary'leri kurar ve bir Session açar. 100 ms gecikme ve %2 paket kaybında yazmak, local Host'ta yazmaktan farksızdır. | `nomux`, `proto` | `sürüyor` |
 | **M3** Extension host'u, git ve dosyalar | Daemon, extension'ları ayrı process'ler olarak çalıştırır. İlk resmi extension'lar git durumunu ve dosya erişimini getirir. Proje ve Worktree veri modeli yerine oturur. | Bir extension'ı bir dizinden kurarsınız. Daemon, extension'ın daemon parçasını ilk kullanımda başlatır, boşta kalınca durdurur. Extension çökerse daemon durmaz, hiçbir Session sonlanmaz. Git extension'ı, bir dosya değiştiğinde Worktree'nin yeni durumunu polling yapmadan bildirir. | `nomux`, `extension-api`, `extensions` | `sürüyor` |
-| **M4** Agent durum motoru ve Takımlar | nomux her Agent çalışmasının ve her Alt işin durumunu, o durumun kaynağıyla birlikte gösterir. Farklı araçların agent'ları aynı Takımda birlikte çalışır. | Tanımlanmadı. | `nomux`, `proto`, `extensions` | `planlandı` |
+| **M4** Agent durum motoru ve Takımlar | nomux her Agent çalışmasının ve her Alt işin durumunu, o durumun kaynağıyla birlikte gösterir. Farklı araçların agent'ları aynı Takımda birlikte çalışır. | Tanımlanmadı. | `nomux`, `proto`, `extensions` | `sürüyor` |
 | **M5** Desktop istemcisi | Native desktop istemcisi Pane ağacını, Tab'ları ve terminali gösterir. Tema motoru ve arayüz dili motoru bu aşamada gelir. | Tanımlanmadı. | `desktop`, `themes`, `locales` | `sürüyor` |
 | **M6** Agent ve extension arayüzleri | Desktop istemcisi agent'ları, Takımları ve onay isteklerini gösterir. Resmi extension'lar arayüzlerine kavuşur: diff'li git, editörlü dosya gezgini, process'ler ve browser. | Tanımlanmadı. | `desktop`, `extensions` | `planlandı` |
 | **M7** Diller, registry ve skill'ler | Programlama dili extension'ları dil desteğini getirir. Registry; extension'ları, temaları ve dil paketlerini listeler. Agent skill'leri, agent'a nomux CLI'ını kullanmayı öğretir. Extension API'si son hâlini alır. | Tanımlanmadı. | `languages`, `registry`, `skills`, `extension-api`, `desktop` | `planlandı` |
