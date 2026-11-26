@@ -28,14 +28,14 @@ The daemon part can also send events. The daemon puts them in its event log, and
 
 ## What the SDKs have today
 
-The SDKs are in the [`extension-api`](https://github.com/nomux-sh/extension-api) repository. The version of an SDK is the version of the extension API that it implements. The three SDKs have the version 0.1.2.
+The SDKs are in the [`extension-api`](https://github.com/nomux-sh/extension-api) repository. The SDKs implement the extension API 0.1.1. The version of an SDK package is separate from the version of the extension API: the three SDKs have the version 0.1.3.
 
 | Part | Content |
 |---|---|
 | [Extension protocol](https://github.com/nomux-sh/extension-api/blob/main/spec/extension-protocol.md) | The specification of the messages between the daemon and a daemon part: the handshake, the life cycle, calls in the two directions, events, errors and cancellation. Its status is draft. |
-| Rust SDK: the crate [`nomux-extension`](https://crates.io/crates/nomux-extension) 0.1.2 | You register methods, and the crate does the protocol. The documentation is on [docs.rs](https://docs.rs/nomux-extension). |
-| TypeScript SDK: the package [`@nomux-sh/extension`](https://github.com/nomux-sh/extension-api/tree/main/sdk/typescript) 0.1.2 | It needs Node.js 22 or later. The package is on [npm](https://www.npmjs.com/package/@nomux-sh/extension). |
-| Go SDK: the module [`github.com/nomux-sh/extension-api/sdk/go`](https://github.com/nomux-sh/extension-api/tree/main/sdk/go) v0.1.2 | It needs Go 1.26 or later. |
+| Rust SDK: the crate [`nomux-extension`](https://crates.io/crates/nomux-extension) 0.1.3 | You register methods, and the crate does the protocol. The documentation is on [docs.rs](https://docs.rs/nomux-extension). |
+| TypeScript SDK: the package [`@nomux-sh/extension`](https://github.com/nomux-sh/extension-api/tree/main/sdk/typescript) 0.1.3 | It needs Node.js 22 or later. The package is on [npm](https://www.npmjs.com/package/@nomux-sh/extension). |
+| Go SDK: the module [`github.com/nomux-sh/extension-api/sdk/go`](https://github.com/nomux-sh/extension-api/tree/main/sdk/go) v0.1.3 | It needs Go 1.26 or later. |
 | [Conformance suite](https://github.com/nomux-sh/extension-api/tree/main/conformance) | One test host runs the same protocol cases against the `echo` extension of each SDK. An SDK is correct when its `echo` extension passes. |
 | Manifest | The [JSON Schema](https://github.com/nomux-sh/extension-api/blob/main/schema/extension.schema.json) of `extension.toml`, and a validator in the Rust crate (the feature `manifest`). |
 | Examples | The `echo` extension in [Rust](https://github.com/nomux-sh/extension-api/tree/main/examples/echo), [TypeScript](https://github.com/nomux-sh/extension-api/tree/main/examples/echo-typescript) and [Go](https://github.com/nomux-sh/extension-api/tree/main/examples/echo-go): one method and one event each. |
