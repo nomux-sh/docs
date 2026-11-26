@@ -31,8 +31,25 @@ export default defineConfig({
             { slug: 'guides/quick-start' },
             { slug: 'guides/after-a-restart' },
             { slug: 'guides/remote-hosts' },
-            { slug: 'guides/extensions' },
+            { slug: 'guides/session-memory' },
+            { slug: 'guides/holder-pool' },
+            { slug: 'guides/session-environment' },
+            { slug: 'guides/long-home-paths' },
           ],
+        },
+        {
+          label: 'Agents',
+          translations: { tr: "Agent'lar" },
+          items: [
+            { slug: 'guides/agent-status' },
+            { slug: 'guides/agent-adapters' },
+            { slug: 'guides/claude-code' },
+          ],
+        },
+        {
+          label: 'Extensions',
+          translations: { tr: "Extension'lar" },
+          items: [{ slug: 'guides/extensions' }, { slug: 'guides/write-an-extension' }],
         },
         {
           label: 'Concepts',
