@@ -1,15 +1,12 @@
 ---
 title: Extensions
-description: What a nomux extension is, which of its parts exist today, and what the extension SDK has.
+description: What a nomux extension is, what the daemon does with it, which of its parts exist today, and what the extension SDK has.
 ---
 
 In the design of nomux, each feature that is not in the core is an extension: git, files, agent adapters and more. The [concepts overview](/docs/concepts/overview/) describes that design.
 This page describes what exists today.
 
-:::caution
-nomux 0.1.0 does not run extensions. The daemon has no extension host yet, and no command installs an extension.
-Today you can write the daemon part of an extension with the SDK and test it. You cannot use it in nomux.
-:::
+nomux 0.3.0 runs the daemon part of an extension. The `nomux ext` commands install an extension from a directory, list it, call it and remove it. [Extensions](/docs/guides/extensions/) in the guides shows them.
 
 ## What an extension is
 
@@ -17,10 +14,10 @@ An extension is a package with a manifest, `extension.toml`, and one or more par
 
 | Part | Where it runs | State today |
 |---|---|---|
-| daemon part | On the Host, as a separate process | The protocol and a Rust SDK are published. The daemon does not start a daemon part yet. |
+| daemon part | On the Host, as a separate process | The protocol and a Rust SDK are published. `nomuxd` 0.3.0 starts and stops it. |
 | UI part | In a client | Does not exist. The work starts with the desktop client. |
 
-**The daemon part** is a program. In the design, the daemon starts it as a child process when a client needs it, and stops it when it is idle.
+**The daemon part** is a program. The daemon starts it as a child process at the first call, and stops it after 60 seconds without a call.
 The two processes exchange messages on the standard input and the standard output of the daemon part. The daemon part writes its log to the standard error.
 The daemon part is a separate process, thus its failure is not a failure of the daemon. The protocol has this rule: if the process of an extension ends, the daemon and the Sessions continue to run.
 
@@ -60,13 +57,15 @@ lazy = true
 
 - `api` gives the versions of the extension API that the extension can use. The extension API has its own version, which is the version of the `nomux-extension` crate. It is independent of the version of nomux.
 - `daemon.command` is the program of the daemon part. With `lazy = true`, which is the default, the daemon part starts only when a client needs it.
-- A `[permissions]` table names the directories, the programs, the network access and the scopes of host services that the extension needs. The protocol gives the approved permissions to the daemon part in the handshake. No version of nomux applies them yet.
+- A `[permissions]` table names the directories, the programs, the network access and the scopes of host services that the extension needs. You approve them with `nomux ext install`. The daemon gives the approved permissions to the daemon part in the handshake.
+- The daemon applies only the scopes of host services. The extension must obey the other permissions itself: the daemon does not restrict its files, its programs and its network in nomux 0.3.0.
 
 ## What is not there yet
 
-- The extension host in the daemon. `nomuxd` 0.1.0 starts no extension.
-- The host services that an extension can call, and the list of the scope names. The protocol specifies how an extension calls a host service, and names only the scope `sessions:read`.
+- The restriction of an extension to its approved directories, programs and network.
+- More host services. The daemon has one host service, `sessions.list`, with the scope `sessions:read`.
+- Events of an extension for the clients.
 - The UI part and its API.
-- Official extensions, a registry and a command to install an extension.
+- A release of an official extension, a registry, signature checks and an update command. The git extension is on the `main` branch of the [`extensions`](https://github.com/nomux-sh/extensions) repository.
 
 Extensions are the subject of stage M3 of the [roadmap](/docs/project/roadmap/). The terms on this page come from the [Glossary](/docs/reference/glossary/).

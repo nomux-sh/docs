@@ -1,15 +1,12 @@
 ---
 title: Extension'lar
-description: nomux'ta extension nedir, parçalarından hangileri bugün var ve extension SDK'sında neler bulunur.
+description: nomux'ta extension nedir, daemon onunla ne yapar, parçalarından hangileri bugün var ve extension SDK'sında neler bulunur.
 ---
 
 nomux'un tasarımında çekirdekte olmayan her özellik bir extension'dır: git, dosyalar, agent adapter'ları ve diğerleri. Bu tasarımı [kavramlara genel bakış](/docs/tr/concepts/overview/) sayfası anlatır.
 Bu sayfa ise bugün var olanı anlatır.
 
-:::caution
-nomux 0.1.0 extension çalıştırmaz. Daemon'da henüz bir extension host'u yok; extension kuran bir komut da yok.
-Bugün SDK ile bir extension'ın daemon parçasını yazıp test edebilirsiniz. Onu nomux'un içinde kullanamazsınız.
-:::
+nomux 0.3.0, extension'ların daemon parçasını çalıştırır. `nomux ext` komutları bir extension'ı bir dizinden kurar, listeler, çağırır ve kaldırır. Bu komutları rehberlerdeki [Extension'lar](/docs/tr/guides/extensions/) sayfası gösterir.
 
 ## Extension nedir
 
@@ -17,10 +14,10 @@ Extension; bir manifest'i (`extension.toml`) ve bir ya da daha fazla parçası o
 
 | Parça | Nerede çalışır | Bugünkü durum |
 |---|---|---|
-| daemon parçası | Host'ta, ayrı bir process olarak | Protokolü ve bir Rust SDK'sı yayında. Daemon henüz daemon parçası başlatmıyor. |
+| daemon parçası | Host'ta, ayrı bir process olarak | Protokolü ve bir Rust SDK'sı yayında. `nomuxd` 0.3.0 onu başlatır ve durdurur. |
 | arayüz parçası | İstemcide | Yok. Bu iş desktop istemcisiyle birlikte başlayacak. |
 
-**Daemon parçası** bir programdır. Tasarıma göre daemon onu, bir istemci ihtiyaç duyduğunda child process olarak başlatır ve boşta kalınca durdurur.
+**Daemon parçası** bir programdır. Daemon onu ilk çağrıda child process olarak başlatır, 60 saniye çağrı gelmezse durdurur.
 İki process, daemon parçasının standart girdisi ve standart çıktısı üzerinden mesajlaşır. Daemon parçası log'unu standart hataya yazar.
 Daemon parçası ayrı bir process olduğu için onun çökmesi daemon'un çökmesi demek değildir. Protokoldeki kural şudur: extension'ın process'i sonlanırsa daemon ve Session'lar çalışmaya devam eder.
 
@@ -60,13 +57,15 @@ lazy = true
 
 - `api`, extension'ın kullanabildiği extension API sürümlerini verir. Extension API'sinin kendi sürümü vardır; bu, `nomux-extension` crate'inin sürümüdür ve nomux'un sürümünden bağımsızdır.
 - `daemon.command`, daemon parçasının programıdır. Varsayılan olan `lazy = true` ile daemon parçası ancak bir istemci ihtiyaç duyduğunda başlar.
-- `[permissions]` tablosu extension'ın ihtiyaç duyduğu dizinleri, programları, ağ erişimini ve host servislerinin scope'larını sayar. Protokol, onaylanan izinleri handshake'te daemon parçasına iletir. Bu izinleri uygulayan bir nomux sürümü henüz yoktur.
+- `[permissions]` tablosu extension'ın ihtiyaç duyduğu dizinleri, programları, ağ erişimini ve host servislerinin scope'larını sayar. Bu izinleri `nomux ext install` ile siz onaylarsınız. Daemon, onaylanan izinleri handshake'te daemon parçasına iletir.
+- Daemon yalnızca host servislerinin scope'larını uygular. Diğer izinlere extension'ın kendisinin uyması gerekir: nomux 0.3.0'da daemon, extension'ın dosyalarını, programlarını ve ağ erişimini kısıtlamaz.
 
 ## Henüz olmayanlar
 
-- Daemon'daki extension host'u. `nomuxd` 0.1.0 hiçbir extension başlatmaz.
-- Extension'ın çağırabileceği host servisleri ve scope adlarının listesi. Protokol, bir extension'ın host servisini nasıl çağıracağını tanımlar; scope olarak yalnızca `sessions:read` adı geçer.
+- Extension'ı onaylanan dizinler, programlar ve ağ erişimiyle sınırlamak.
+- Daha fazla host servisi. Daemon'da tek bir host servisi var: `sessions:read` scope'lu `sessions.list`.
+- Extension event'lerinin istemcilere iletilmesi.
 - Arayüz parçası ve API'si.
-- Resmi extension'lar, bir registry ve extension kuran bir komut.
+- Resmi bir extension'ın release'i, bir registry, imza kontrolü ve bir güncelleme komutu. Git extension'ı [`extensions`](https://github.com/nomux-sh/extensions) reposunun `main` branch'inde duruyor.
 
 Extension'lar [yol haritasındaki](/docs/tr/project/roadmap/) M3 aşamasının konusudur. Bu sayfadaki terimler [Sözlük](/docs/tr/reference/glossary/) sayfasından gelir.
