@@ -26,7 +26,13 @@ export default defineConfig({
         {
           label: 'Guides',
           translations: { tr: 'Rehberler' },
-          items: [{ slug: 'guides/install' }, { slug: 'guides/quick-start' }],
+          items: [
+            { slug: 'guides/install' },
+            { slug: 'guides/quick-start' },
+            { slug: 'guides/after-a-restart' },
+            { slug: 'guides/remote-hosts' },
+            { slug: 'guides/extensions' },
+          ],
         },
         {
           label: 'Concepts',
