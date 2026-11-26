@@ -10,7 +10,7 @@ This page lists the targets and the values that are measured now. Each value has
 
 ## Targets
 
-The source of this table is [`bench/README.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/bench/README.md#targets).
+The source of this table is [`bench/README.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/bench/README.md#targets).
 The owner is the part of the project that measures the target.
 
 | Measurement | Target | Owner | Measured |
@@ -34,19 +34,20 @@ The owner is the part of the project that measures the target.
 "No" means that the part that the target applies to does not exist yet, or that no measurement is recorded.
 The [roadmap](/docs/project/roadmap/) shows the sequence of the work.
 
-The end-to-end tests in [`tests/session_lifecycle.rs`](https://github.com/nomux-sh/nomux/blob/v0.4.0/tests/session_lifecycle.rs) kill the daemon and its process group with `SIGKILL` and make sure that the Session continues.
-[`tests/attach.rs`](https://github.com/nomux-sh/nomux/blob/v0.4.0/tests/attach.rs) kills the daemon during an attach and makes sure that a new attach shows the same screen.
+The end-to-end tests in [`tests/session_lifecycle.rs`](https://github.com/nomux-sh/nomux/blob/v0.5.0/tests/session_lifecycle.rs) kill the daemon and its process group with `SIGKILL` and make sure that the Session continues.
+[`tests/attach.rs`](https://github.com/nomux-sh/nomux/blob/v0.5.0/tests/attach.rs) kills the daemon during an attach and makes sure that a new attach shows the same screen.
 
 ## Measured values
 
-The values are the values of the source documents at the tag [`v0.4.0`](https://github.com/nomux-sh/nomux/tree/v0.4.0).
+The values are the values of the source documents at the tag [`v0.5.0`](https://github.com/nomux-sh/nomux/tree/v0.5.0).
 All values are from Linux x86-64 with the release profile, except the row that says "debug build". There is no measurement on macOS and none on aarch64.
-The sections "Attach", "Remote hosts" and "Restore" have the same values as for 0.3.0: the documents of 0.4.0 did not measure these parts again. The sections "New Session", "Memory of Sessions" and "Hooks" are new, and the sections "Holder" and "Daemon" have new rows.
+The sections "Attach", "Remote hosts", "Restore", "Holder", "Hooks" and "CLI" have the same values as for 0.4.0: the documents of 0.5.0 did not measure these parts again. The values changed in "New Session" (the rows of the holder pool, measured again with a different shell and a directory that is not the home directory) and in "Daemon" (the three rows of memory of the pool). The sections "Hibernation" and "Workspace tree" are new, and "Memory of Sessions" has one new row.
+The source documents did not measure the sizes of the binaries again: the section "Binaries of the 0.5.0 archive" has the sizes of the release archive.
 "glibc" is a dynamic build for the C library of the machine. "musl" is the static build that a release archive contains.
 
 ### Attach
 
-The source is the section "Measurements" of [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/daemon.md#measurements).
+The source is the section "Measurements" of [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/daemon.md#measurements).
 
 "Key to echo" is the time from the write of one key to the terminal of `nomux attach` until that terminal has the echo of the key. The Session runs `cat`, and the terminal of the Session echoes the key.
 The path has the CLI, the daemon, the holder and the terminal of the Session, two times. It has no network and no desktop client, thus it is the core part of the target "local key press to screen".
@@ -57,9 +58,9 @@ The path has the CLI, the daemon, the holder and the terminal of the Session, tw
 | Key to echo during a flood of 10 MB/s in a second attached Session | 0.2 ms to 0.5 ms | 1.4 ms to 4.7 ms | No change that matters |
 | Key to echo during a flood without a limit in a second attached Session (19 MB/s to 36 MB/s to its client) | 0.2 ms to 0.8 ms | 3.1 ms to 5.3 ms | No change that matters |
 
-The program [`tests/measurements/attach.rs`](https://github.com/nomux-sh/nomux/blob/v0.4.0/tests/measurements/attach.rs) types 2000 keys with 2 ms between them. Each range is the result of 3 runs.
+The program [`tests/measurements/attach.rs`](https://github.com/nomux-sh/nomux/blob/v0.5.0/tests/measurements/attach.rs) types 2000 keys with 2 ms between them. Each range is the result of 3 runs.
 The largest value of a run is between 3 ms and 58 ms: a small number of keys wait for the scheduler of a computer that does other work. Thus the largest value is above the target in some runs.
-[`tests/README.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/tests/README.md#measurements) says how to run the program.
+[`tests/README.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/tests/README.md#measurements) says how to run the program.
 
 | Measurement | Result | Target |
 |---|---|---|
@@ -67,7 +68,7 @@ The largest value of a run is between 3 ms and 58 ms: a small number of keys wai
 
 ### Remote hosts
 
-The source is the section "Measurements" of [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/remote.md#measurements).
+The source is the section "Measurements" of [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/remote.md#measurements).
 The SSH server is `sshd` of OpenSSH 10.2 on the same computer. The client reaches it through a relay program that can add a delay. Each range is the result of 2 runs.
 
 | Measurement | Median | 99th percentile | Target |
@@ -93,7 +94,7 @@ The SSH server is `sshd` of OpenSSH 10.2 on the same computer. The client reache
 
 ### Restore
 
-The source is the section "Measurements" of [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/daemon.md#measurements).
+The source is the section "Measurements" of [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/daemon.md#measurements).
 
 | Measurement | Median | Slowest of 11 runs | Target |
 |---|---|---|---|
@@ -109,12 +110,13 @@ The source is the section "Measurements" of [`docs/daemon.md`](https://github.co
 
 ### New Session
 
-The source is the section "Measurements" of [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/daemon.md#measurements). The daemon keeps a few holders ready, each with the shell of the user already started: [How it works](/docs/concepts/how-it-works/#the-holder-pool) describes the holder pool.
+The source is the section "Measurements" of [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/daemon.md#measurements). The daemon keeps a few holders ready, each with the shell of the user already started: [How it works](/docs/concepts/how-it-works/#the-holder-pool) describes the holder pool.
 
 | Measurement | Without the pool | From the pool | Target |
 |---|---|---|---|
-| Request to the first command of the shell, `bash` with start files of 200 ms: median of 50 | 205.8 ms | 2.8 ms | < 10 ms |
-| `nomux new`, `sh` without start files: median of 50 | 3.2 ms | 3.1 ms | < 10 ms |
+| Request to the first command of the shell in a directory that is not the home directory, `bash` with start files of 200 ms: median of 50 | 205.9 ms | 1.1 ms | < 10 ms |
+| The same, `bash` with an empty start file | 2.7 ms | 1.1 ms | < 10 ms |
+| `nomux new`, `bash` with an empty start file: median of 50 | 3.2 ms | 2.0 ms | < 10 ms |
 
 | Measurement | Result | Target |
 |---|---|---|
@@ -122,17 +124,19 @@ The source is the section "Measurements" of [`docs/daemon.md`](https://github.co
 | `Session.Create` without the pool, connected client: median, slowest of 50 | 2.31 ms, 2.43 ms | No target |
 | The same, the part in the daemon: start of the holder process, wait for `ready`, lease, response | 0.12 ms to 0.19 ms, 2.2 ms, 0.08 ms, 0.03 ms | No target |
 
-- **The target is met from the pool, and it is missed without the pool for a slow shell.** A `bash` whose start files take 200 ms needs 205.8 ms without the pool, which is approximately 20 times the target. From the pool the same Session needs 2.8 ms.
-- **A shell without start files does not need the pool.** `nomux new` with `sh` takes the same time with and without the pool: the start of the CLI and its connection are the larger part, and the shell starts in a short time.
+- **The target is met from the pool, and it is missed without the pool for a slow shell.** A `bash` whose start files take 200 ms needs 205.9 ms without the pool, which is approximately 20 times the target. From the pool the same Session needs 1.1 ms: the shell ran its start files before the request, thus the time does not depend on them.
+- **A shell with an empty start file gains less.** `nomux new` takes 3.2 ms without the pool and 2.0 ms from the pool: the start of the CLI and its connection are the larger part.
+- **The directory of the Session is in the rows.** Since 0.5.0, a pooled `bash`, `zsh` or `fish` changes to the directory of the Session before its first prompt, and nothing is typed into the terminal. The first rows are for a directory that is not the home directory. The start files still run in the home directory, before a Session takes the holder.
+- **Only `bash`, `zsh` and `fish` get another directory from the pool.** For another shell, and for `pool.shell_start_files = false`, the pool takes only a Session in the home directory, and a Session in another directory gets a new holder. The documents have no measurement for that case.
 - **The pool has a holder when the holder is ready, not when its shell finished its start files.** A Session that takes the holder in that time shows its prompt later.
-- **A Session with a command always gets a new holder.** The pool gives only the shell of the user, and it is off for a shell that the daemon does not know.
-- The rows are from the program [`tests/measurements/new_session.rs`](https://github.com/nomux-sh/nomux/blob/v0.4.0/tests/measurements/new_session.rs) with the release build, a home directory without start files and `SHELL=/bin/sh`, except where a row says more. The part in the daemon was measured with log lines that are not in the code. The row "debug build" is the test `a_session_from_the_pool_opens_in_less_than_10_ms`.
+- **A Session with a command always gets a new holder.** The pool gives only the shell of the user. The pool is also off while `sessions.memory_limit` is set.
+- The rows are from the program [`tests/measurements/new_session.rs`](https://github.com/nomux-sh/nomux/blob/v0.5.0/tests/measurements/new_session.rs) with the release build and `SHELL=/bin/bash`, with an empty `.bashrc`, except where a row says more. The 0.4.0 document used `SHELL=/bin/sh` for the rows without start files, and the pool of 0.4.0 typed a `cd` line, thus these rows and the rows of 0.4.0 are not strictly comparable. The part in the daemon was measured with log lines that are not in the code. The row "debug build" is the test `a_session_from_the_pool_opens_in_less_than_10_ms`.
 - For comparison, the same document says that `bash -i` with the start files of a real user took 232 ms to its first prompt on the same computer.
 - The pool uses memory while it waits: see the rows of the pool in "Holder" and "Daemon".
 
 ### Holder
 
-The source is the section "Measurements" of [`docs/holder.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/holder.md#measurements). The holder of these values writes the journal.
+The source is the section "Measurements" of [`docs/holder.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/holder.md#measurements). The holder of these values writes the journal.
 
 | Measurement | Result | Target |
 |---|---|---|
@@ -162,7 +166,7 @@ The output values are the best of 11 runs on a machine that did other work at th
 
 ### Daemon
 
-The source is the section "Measurements" of [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/daemon.md#measurements). That section also has the commands of the measurement.
+The source is the section "Measurements" of [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/daemon.md#measurements). That section also has the commands of the measurement.
 
 | Measurement | Result | Target |
 |---|---|---|
@@ -180,18 +184,18 @@ The source is the section "Measurements" of [`docs/daemon.md`](https://github.co
 | Resident memory with the status engine, idle daemon with 20 Sessions, each with a status task (glibc) | 7.1 MB to 7.2 MB | < 10 MB |
 | CPU time and context switches in 60 s, idle daemon with 20 Sessions, each with a status task | 0 and 0 | 0 |
 | The same, and 10 of the Sessions reported a status with a Child work before the 60 s | 0 and 0 | 0 |
-| Resident memory of the daemon with a full pool of 2 holders, idle (glibc) | 4.4 MB | < 10 MB |
-| Resident memory of 2 pooled holders (glibc) | 5.5 MB, which is 2.75 MB for each holder | < 3 MB for each holder |
-| Resident memory of the 2 shells of the pool (`bash` 5.3 without start files) | 8.9 MB | No target |
+| Resident memory of the daemon with a full pool of 2 holders, idle (glibc) | 4.6 MB | < 10 MB |
+| Resident memory of 2 pooled holders (glibc) | 5.6 MB, which is 2.8 MB for each holder | < 3 MB for each holder |
+| Resident memory of the 2 shells of the pool (`bash` 5.3 with an empty start file) | 8.7 MB | No target |
 | CPU time in 30 s of the idle daemon with a full pool, its pooled holders and their shells | 0 | 0 |
 
 The same document has older rows for builds before the extension host and before the status engine. The rows without "with the extension host" or "with the status engine" are from an earlier measurement and an earlier build.
 The daemon with 20 Sessions needs 7.1 MB to 7.2 MB, against 4.4 MB without a Session: approximately 0.14 MB for each Session. This is a calculation from the two rows, not a measurement of its own.
-The pool adds memory that the daemon rows do not count. The 2 pooled holders use 5.5 MB and their 2 shells use 8.9 MB, in processes of their own. The setting `pool.size = 0` turns the pool off.
+The pool adds memory that the daemon rows do not count. The 2 pooled holders use 5.6 MB and their 2 shells use 8.7 MB, in processes of their own. These three rows were 4.4 MB, 5.5 MB and 8.9 MB in 0.4.0. The setting `pool.size = 0` turns the pool off.
 
 ### Memory of Sessions
 
-The source is the section "Measurements" of [`docs/memory.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/memory.md#measurements). The daemon measures the memory of the processes of each Session only when a client asks (`nomux ls --memory`).
+The source is the section "Measurements" of [`docs/memory.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/memory.md#measurements). The daemon measures the memory of the processes of each Session only when a client asks (`nomux ls --memory`), and since 0.5.0 also when a trigger of the [hibernation](#hibernation) needs the values.
 
 | Measurement | Result |
 |---|---|
@@ -205,18 +209,51 @@ The source is the section "Measurements" of [`docs/memory.md`](https://github.co
 | Context switches of the daemon in the same 42 s | 0 |
 | Threads of the daemon: before a request, immediately after a request, 12 s after a request | 1, 2, 1 |
 | Size of `nomuxd` (glibc) with the memory request | 1771 KiB (1813264 bytes) |
+| Start of a Session with a memory limit that the kernel applies: the cost of the transient scope for each start | Approximately 4.6 ms |
 
 No target applies to the time of this request. The rows with the CPU time, the context switches and the threads show that the daemon does nothing for the memory between two requests. [ADR-0009](https://github.com/nomux-sh/docs/blob/main/adr/0009-resource-budgets-for-disk-and-memory.md) records this rule.
 
 - The time has two parts: the read of the process table of the Host, which grows with the number of processes on the Host, and the read of the memory of each process, which grows with the number of processes of the Sessions and with their memory.
 - `nomux ls --memory --json` is approximately 10 times slower than `nomux ls --json` for the same 50 Sessions (10.9 ms and 1.1 ms). Without `--memory`, nothing is measured.
 - The daemon answers the other clients during a request: the work is not on its thread.
-- The program [`tests/measurements/memory.rs`](https://github.com/nomux-sh/nomux/blob/v0.4.0/tests/measurements/memory.rs) measures the first rows. The CPU time, the context switches and the threads are from commands on the daemon process.
+- The program [`tests/measurements/memory.rs`](https://github.com/nomux-sh/nomux/blob/v0.5.0/tests/measurements/memory.rs) measures the first rows. The CPU time, the context switches and the threads are from commands on the daemon process.
 - The macOS code of the memory request was compiled and tested only on the macOS runner of CI. Nobody examined it on a Mac with real Sessions.
+- **The memory limit.** The row with 4.6 ms is not from a measurement program. The document [`docs/memory.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/memory.md#memory-limit) calls it "the measurement of the design": the cost of the transient scope of `systemd-run --user --scope`, for each start of a Session with a limit. A Session without a limit does not have this cost. The pool is off while `sessions.memory_limit` is set, thus the target of the pool does not apply to such a Session, and the documents have no other measurement of its start.
+
+### Hibernation
+
+The source is the subsection "Hibernation" of the section "Measurements" of [`docs/memory.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/memory.md#measurements). The guide [Hibernation](/docs/guides/hibernation/) says how to use it. The program [`tests/measurements/hibernation.rs`](https://github.com/nomux-sh/nomux/blob/v0.5.0/tests/measurements/hibernation.rs) starts 3 agent Sessions of the test adapter whose agents each hold 200 MiB, hibernates them, and measures. It runs in a scope of its own (`systemd-run --user --scope`). The computer did other work at the same time (load average from 5 to 30 on 8 processors), thus the times have noise.
+
+| Measurement | Result |
+|---|---|
+| Memory of the commands of the 3 Sessions before the hibernation (`ls --memory`, `pss`) | 600.7 MiB |
+| Memory that the hibernations gave back (`ls --memory`, `FREED`) | 600.9 MiB |
+| Memory of the control group of the measurement (each process that it started: daemon, holders, agents), before and after | 614.2 MiB, 9.5 MiB |
+| Available memory of the Host (`MemAvailable`), before and after | 4436.5 MiB, 4636.6 MiB |
+| Attach of a hibernated Session to the first screen of the old run, and to the first output of the resumed run: 3 wakes | 11.7 ms and 12.2 ms, 4.2 ms and 4.2 ms, 4.2 ms and 4.2 ms |
+| Idle daemon with each trigger on (count, total threshold, pressure), 60 s after 75 s of rest: CPU time, context switches of each thread, threads | 0 clock ticks, 0, 1 |
+
+- **The memory comes back.** The 3 hibernations gave back 600.9 MiB, and the control group went from 614.2 MiB to 9.5 MiB. `MemAvailable` is not a good measure here, because other programs changed it at the same time.
+- **A wake needs approximately 4 ms to 12 ms to the old screen.** This is the time from the start of `nomux attach` (the CLI, the connection, the start of the holder, the redraw) to the screen. The agent of the test prints its line at its start, thus the resumed run is there 0 ms to 0.5 ms after the old screen. A real agent needs its own start time after that, and nobody measured it.
+- **The triggers do not wake the daemon.** 0 context switches in 60 s mean 0 wake-ups in each minute. The trigger of the memory pressure is one more descriptor of the reactor, not a thread. The 75 s of rest before the measurement are for two timers that exist without the hibernation: the adapter extension stops 60 s after its last event, and the thread of a memory measurement ends 10 s after it.
+- **The pressure trigger was examined once, on Linux.** In a scope with `MemoryHigh=32M` and `MemorySwapMax=0`, a program wrote to 400 MiB: an idle agent Session hibernated with the reason `memory-pressure`, and the event had 200 ms in a window of 2000 ms. macOS has no pressure trigger: the issue [#100](https://github.com/nomux-sh/nomux/issues/100) is open.
+- The measurement used the test adapter and an agent that the test writes, not a real agent tool.
+
+### Workspace tree
+
+The source is the section "Measurements" of [`docs/workspace.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/workspace.md#measurements). The [workspace tree](/docs/reference/glossary/) has the Groups and the Projects of a Host: the guide [Projects and Groups](/docs/guides/projects-and-groups/) says how to use them. The start of a Session does not read the tree, and the daemon reads its file only at its start. Measured on Linux (8 cores) with a release build. The tree of 800 nodes is the largest tree that the limits permit: names of 128 bytes and, for each Project, a directory of 1001 bytes.
+
+| Tree | Resident memory of the idle daemon | CPU time of the daemon in 30 s, idle | `nomux new`, warm pool: median of 30 | `group ls --tree`: median of 10 |
+|---|---|---|---|---|
+| 0 nodes | 4.6 MB | 0 clock ticks | 2.4 ms to 2.7 ms | 1.5 ms |
+| 800 nodes | 7.4 MB to 8.2 MB | 0 clock ticks | 2.0 ms to 4.0 ms | 7.1 ms to 7.8 ms |
+
+- **The targets hold with the largest tree.** The idle daemon needs 7.4 MB to 8.2 MB against < 10 MB, and a new Session from the pool needs 2.0 ms to 4.0 ms against < 10 ms. The tree adds approximately 2.8 MB to 3.6 MB to the daemon: this is a calculation from the two rows, not a measurement of its own.
+- No target applies to `group ls --tree`.
 
 ### Hooks
 
-The source is the section "Measurements" of [`docs/adapters.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/adapters.md#measurements). The program [`tests/measurements/hooks.rs`](https://github.com/nomux-sh/nomux/blob/v0.4.0/tests/measurements/hooks.rs) measures the time of `nomux hook` from the start of the process to its end, as an agent tool runs it. Release build, 100 runs each, with the test adapter installed.
+The source is the section "Measurements" of [`docs/adapters.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/adapters.md#measurements). The program [`tests/measurements/hooks.rs`](https://github.com/nomux-sh/nomux/blob/v0.5.0/tests/measurements/hooks.rs) measures the time of `nomux hook` from the start of the process to its end, as an agent tool runs it. Release build, 100 runs each, with the test adapter installed.
 
 | `nomux hook` | Median | Fastest | Slowest |
 |---|---|---|---|
@@ -229,7 +266,7 @@ The source is the section "Measurements" of [`docs/adapters.md`](https://github.
 
 ### CLI
 
-The CLI has no target. The SSH client made it larger. The source is the section "Measurements" of [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/remote.md#measurements):
+The CLI has no target. The SSH client made it larger. The source is the section "Measurements" of [`docs/remote.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/remote.md#measurements):
 
 | Build of `nomux` (glibc) | Size |
 |---|---|
@@ -238,29 +275,29 @@ The CLI has no target. The SSH client made it larger. The source is the section 
 
 The issue [#47](https://github.com/nomux-sh/nomux/issues/47) of the `nomux` repository is about this size.
 
-### Binaries of the 0.4.0 archive
+### Binaries of the 0.5.0 archive
 
-These sizes are not from a document. They are the sizes of the three files in the archive `nomux-0.4.0-x86_64-unknown-linux-musl.tar.gz` of the [0.4.0 release](https://github.com/nomux-sh/nomux/releases/tag/v0.4.0), read with `tar -tvzf` for this page. The last column is the size in the 0.3.0 archive.
+These sizes are not from a document. They are the sizes of the three files in the archive `nomux-0.5.0-x86_64-unknown-linux-musl.tar.gz` of the [0.5.0 release](https://github.com/nomux-sh/nomux/releases/tag/v0.5.0), read with `tar -tvzf` for this page. The SHA-256 of the archive is the value in the file `SHA256SUMS` of the release. The last column is the size in the 0.4.0 archive.
 
-| Binary | Size | Target | 0.3.0 |
+| Binary | Size | Target | 0.4.0 |
 |---|---|---|---|
-| `nomux-holder` | 746224 bytes (729 KiB) | < 1 MB | 725680 bytes (709 KiB) |
-| `nomuxd` | 2222280 bytes (2170 KiB) | < 10 MB | 1890216 bytes (1846 KiB) |
-| `nomux` | 5253320 bytes (5130 KiB) | No target | 4389032 bytes (4286 KiB) |
+| `nomux-holder` | 758512 bytes (741 KiB) | < 1 MB | 746224 bytes (729 KiB) |
+| `nomuxd` | 2566792 bytes (2507 KiB) | < 10 MB | 2222280 bytes (2170 KiB) |
+| `nomux` | 5646536 bytes (5514 KiB) | No target | 5253320 bytes (5130 KiB) |
 
-Each binary meets its target. The three binaries grew from 0.3.0: `nomux-holder` by 20544 bytes (2.8 %), `nomuxd` by 332064 bytes (17.6 %) and `nomux` by 864288 bytes (19.7 %). The size of `nomux-holder` in this table differs by 8256 bytes from the 737968 bytes in the table "Holder": the two are different builds.
+Each binary meets its target. The three binaries grew from 0.4.0: `nomux-holder` by 12288 bytes (1.6 %), `nomuxd` by 344512 bytes (15.5 %) and `nomux` by 393216 bytes (7.5 %). The size of `nomux-holder` in this table differs by 20544 bytes from the 737968 bytes in the table "Holder": the two are different builds.
 
 ### Values that miss a target
 
 - **Holder with the glibc build.** The resident memory with a full ring buffer is 3.1 MB, and 3.3 MB with full program reports, against < 3 MB. The musl build of the release archive meets the target.
-- **New Session without the pool.** A `bash` with start files of 200 ms needs 205.8 ms against < 10 ms. The pool meets the target for a Session with the shell of the user, but not for a Session with a command.
+- **New Session without the pool.** A `bash` with start files of 200 ms needs 205.9 ms against < 10 ms. The pool meets the target for a Session with the shell of the user in the home directory, and in another directory for `bash`, `zsh` and `fish`. It does not meet the target for a Session with a command, for another shell in another directory, and for a Session with a memory limit, because the pool is off then.
 - **Remote key press.** A key waits one round trip, because predictive echo does not exist. The target "< 10 ms visible" is not met for a remote Host.
 - **Largest key-to-echo value.** The largest value of a run is between 3 ms and 58 ms, above 10 ms in some runs. The 99th percentile meets the target.
-- **Not measured.** The reconnect time, the update of the daemon, the first screen after a restart, the network change, and each target of the desktop client.
+- **Not measured.** The reconnect time, the update of the daemon, the first screen after a restart, the network change, and each target of the desktop client. For 0.5.0, also: the wake of a real agent tool (only the test agent), the pool for `zsh` and `fish` (the rows use `bash`), the start of a Session with a memory limit with the finished code, the memory pressure trigger on macOS, and the 0.5.0 sizes of the glibc builds.
 
 ## Limits of these values
 
-- A person measured these values on one machine. No CI job measures them, and no CI job fails a build that is worse than a target. [`bench/README.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/bench/README.md) says that this job comes with the benchmarks of the holder and the daemon. The issue [#14](https://github.com/nomux-sh/nomux/issues/14) is about this job, and it is open in nomux 0.4.0.
+- A person measured these values on one machine. No CI job measures them, and no CI job fails a build that is worse than a target. [`bench/README.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/bench/README.md) says that this job comes with the benchmarks of the holder and the daemon. The issue [#14](https://github.com/nomux-sh/nomux/issues/14) is about this job, and it is open in nomux 0.5.0.
 - "Key to echo" is not the full target "local key press to screen". It does not have the time that a terminal emulator or the desktop client needs to draw the key.
 - The values change with the code. The source documents on the `main` branch have the current values.
 
