@@ -19,9 +19,10 @@ The site has no version. Each merge to `main` publishes it.
 | [`nomux`](https://github.com/nomux-sh/nomux) | The core: the holder, the daemon, the extension host, the SSH transport, the client library and the CLI. |
 | [`proto`](https://github.com/nomux-sh/proto) | The protocol between a client and the daemon, and the `nomux-proto` crate. |
 | [`extension-api`](https://github.com/nomux-sh/extension-api) | The extension SDK: the extension protocol, the `nomux-extension` crate and the format of `extension.toml`. |
-| [`extensions`](https://github.com/nomux-sh/extensions) | The official extensions. It has the git extension now. |
+| [`extensions`](https://github.com/nomux-sh/extensions) | The official extensions: `git` and `agent-claude`. |
 | [`themes`](https://github.com/nomux-sh/themes) | The design tokens, the themes and the `nomux-theme` crate. The [preview page](https://nomux-sh.github.io/themes/) shows each theme. |
 | [`homebrew-tap`](https://github.com/nomux-sh/homebrew-tap) | The Homebrew formula of nomux. |
+| [`desktop`](https://github.com/nomux-sh/desktop) | The desktop client. In development: it has no release yet. |
 | [`.github`](https://github.com/nomux-sh/.github) | The guides of the organization and the CI workflows that the repositories share. |
 
 ## Layout
