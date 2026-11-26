@@ -50,7 +50,7 @@ Komut tap'i ekler ve üç binary'yi kurar. Shell'in CLI'ı bulduğunu doğrulay�
 nomux --version
 ```
 
-- Formula nomux'u derlemez. Makinenize uygun sürüm arşivini indirir ve SHA-256 checksum'ını formula'daki değerle karşılaştırır. İkisi tutmazsa Homebrew hiçbir şey kurmaz.
+- Formula nomux'u derlemez. Homebrew, makinenizin release arşivindeki binary'leri içeren bir bottle kurar ve SHA-256 checksum'ını formula'daki değerle karşılaştırır: ikisi farklıysa Homebrew hiçbir şey kurmaz. Apple silicon'lu bir Mac'in Xcode'a ve Command Line Tools'a ihtiyacı yoktur; Intel bir Mac'in ise bunlardan bir sürüme ihtiyacı vardır, en yenisine değil.
 - Homebrew 6.0.0 ve sonrası, Homebrew'a ait olmayan bir tap'in formula'sını ancak siz ona güvendikten sonra yükler. Tam adla (`nomux-sh/tap/nomux`) yapılan kurulum yalnızca bu formula'ya güvenir. Ayrıntılar Homebrew dokümantasyonundaki [Tap Trust](https://docs.brew.sh/Tap-Trust) sayfasında.
 - Formula yeni sürüme nomux'un release'inden sonra geçer: tap'teki bir workflow günde bir kez yeni release olup olmadığına bakar, değişikliği bir maintainer merge eder.
 

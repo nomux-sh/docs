@@ -50,7 +50,7 @@ The command adds the tap and installs the three binaries. Make sure that the she
 nomux --version
 ```
 
-- The formula does not build nomux. It downloads the release archive of your machine and compares its SHA-256 checksum with the value in the formula. If the two are different, Homebrew installs nothing.
+- The formula does not build nomux. Homebrew installs a bottle with the binaries of the release archive of your machine and compares its SHA-256 checksum with the value in the formula: if the two are different, Homebrew installs nothing. A Mac with Apple silicon needs no Xcode and no Command Line Tools, and an Intel Mac needs them in some version, not the newest one.
 - Homebrew 6.0.0 and later versions load a formula of a tap that is not from Homebrew only after you trust it. An install with the full name `nomux-sh/tap/nomux` trusts this one formula. Refer to [Tap Trust](https://docs.brew.sh/Tap-Trust) in the Homebrew documentation.
 - The formula gets a new version after the release of nomux: a workflow of the tap looks for a new release one time each day, and a maintainer merges the change.
 
