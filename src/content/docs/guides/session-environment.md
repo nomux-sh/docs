@@ -6,7 +6,7 @@ description: Which environment variables the command of a Session gets, which on
 The command of a Session gets the environment of the daemon, with a few changes that nomux makes. The holder makes them.
 This matters when a service manager starts the daemon: launchd gives a job `PATH=/usr/bin:/bin:/usr/sbin:/sbin` and no `TERM` and no `LANG`, and a systemd user service has no `TERM`.
 
-The output on this page is the real output of nomux 0.4.0 on Linux. The home directory of the run is the temporary directory `/tmp/nomux-demo`.
+The output on this page is the real output of nomux 0.5.0 on Linux. The home directory of the runs is shown as `/home/user`.
 
 ## What the command gets
 
@@ -34,19 +34,20 @@ Here the daemon started with a small environment, as a service manager gives it:
 
 ```console
 $ small="env -i HOME=$HOME PATH=$HOME/.local/bin:/usr/bin:/bin TERM=screen COLUMNS=120 LINES=40 TERM_PROGRAM=demo"
+$ cd ~/project
 $ $small nomux ls
 no sessions
 $ $small nomux new --cmd sh -c 'env | sort | sed "s/^NOMUX_TOKEN=.*/NOMUX_TOKEN=<hidden>/"; sleep 3600'
-pxusdkeb
-$ nomux capture pxusdkeb
+d4r34zip
+$ nomux capture d4r34zip
 COLORTERM=truecolor
-HOME=/tmp/nomux-demo
+HOME=/home/user
 LC_CTYPE=C.UTF-8
-NOMUX_SESSION_ID=pxusdkeb
-NOMUX_SOCK=/tmp/nomux-demo/.nomux/run/nomuxd.sock
+NOMUX_SESSION_ID=d4r34zip
+NOMUX_SOCK=/home/user/.nomux/run/nomuxd.sock
 NOMUX_TOKEN=<hidden>
-PATH=/tmp/nomux-demo/.local/bin:/usr/bin:/bin
-PWD=/tmp/nomux-demo/project
+PATH=/home/user/.local/bin:/usr/bin:/bin
+PWD=/home/user/project
 SHLVL=1
 TERM=xterm-256color
 _=/usr/bin/env
@@ -60,8 +61,8 @@ A daemon that has a locale keeps it. Here the daemon started with `LANG=tr_TR.UT
 
 ```console
 $ $small nomux new --cmd sh -c 'env | sort | grep -E "^(LANG|LC_|TERM|COLORTERM)"; sleep 3600'
-2envbsrk
-$ nomux capture 2envbsrk
+gak3ck3g
+$ nomux capture gak3ck3g
 COLORTERM=truecolor
 LANG=tr_TR.UTF-8
 TERM=xterm-256color
@@ -93,5 +94,5 @@ The Linux and macOS lines come from the documents of nomux. They were not run fo
 ## Restore and the pool
 
 - A restore starts the command again with the environment of the daemon at the time of the restore, with the same rules.
-- A shell from the [holder pool](/docs/guides/holder-pool/) gets the same environment, because no part comes from the client.
+- A shell from the [holder pool](/docs/guides/holder-pool/) gets the same environment, because no part comes from the client. The pooled shell changes to the directory of the Session before its first prompt, so `PWD` is the directory of the Session. The [holder pool](/docs/guides/holder-pool/#how-a-pooled-shell-gets-its-directory) page says how.
 - A Session on a remote Host has the environment of the daemon of that Host.

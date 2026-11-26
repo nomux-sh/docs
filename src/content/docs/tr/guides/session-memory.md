@@ -1,23 +1,23 @@
 ---
 title: Session'ların belleği
-description: nomux ls --memory ile her Session'ın process'lerinin ne kadar bellek kullandığını görün, sayıların neyi saydığını ve nomux'un neyi ölçmediğini öğrenin.
+description: nomux ls --memory ile her Session'ın process'lerinin ne kadar bellek kullandığını görün, sayıların neyi saydığını, nomux'un neyi ölçmediğini ve bellek limitinin nerede olduğunu öğrenin.
 ---
 
 `nomux ls --memory`, her Session'ın process'lerinin şu an kullandığı belleği gösterir. Bellek azaldığında hangi Session'ın onu kullandığını görürsünüz.
 
-Bu sayfadaki çıktılar, nomux 0.4.0'ın Linux'taki gerçek çıktısıdır. Çalıştırmanın home dizini geçici `/tmp/nomux-demo` dizinidir.
+Bu sayfadaki çıktılar, nomux 0.5.0'ın Linux'taki gerçek çıktısıdır. Çalıştırmanın home dizini `/home/user` olarak gösterilir.
 Dört Session'ın komutları şunlardı: `python3 hog.py 200` (200 MiB ayıran bir program), iki böyle programı (50 MiB ve 30 MiB) başlatan bir `sh`, `sleep 3600` ve kullanıcının shell'i.
 
 ## Belleği göstermek
 
 ```console
 $ nomux ls --memory
-ID        STATE    MEMORY     PROCESSES  HOLDER     MEASURE  COMMAND
-epvdx7iy  running  155.0 KiB  1          325.0 KiB  pss      sleep 3600
-myuy5zl4  running  203.9 MiB  1          332.0 KiB  pss      python3 hog.py 200
-nubgqpss  running  88.2 MiB   3          332.0 KiB  pss      sh -c python3 hog.py 50 & python3 hog.py 30 & wait
-ynz3inyu  running  784.0 KiB  1          355.0 KiB  pss      /bin/bash
-total: 293.1 MiB in 6 processes of 4 sessions, and 1.3 MiB in the holders (pss)
+ID        STATE    MEMORY     PROCESSES  HOLDER     MEASURE  LIMIT  FREED  COMMAND
+2e4zs63j  running  141.0 KiB  1          337.0 KiB  pss      -      -      sleep 3600
+3qbpriwd  running  738.0 KiB  1          350.0 KiB  pss      -      -      /bin/bash
+mh47dxf4  running  88.4 MiB   3          337.0 KiB  pss      -      -      sh -c python3 hog.py 50 & python3 hog.py 30 & wait
+pdo3uuvt  running  204.0 MiB  1          336.0 KiB  pss      -      -      python3 hog.py 200
+total: 293.3 MiB in 6 processes of 4 sessions, and 1.3 MiB in the holders (pss)
 ```
 
 | Sütun | Anlamı |
@@ -26,27 +26,52 @@ total: 293.1 MiB in 6 processes of 4 sessions, and 1.3 MiB in the holders (pss)
 | `PROCESSES` | Bu ağaçtaki process sayısı. |
 | `HOLDER` | Session'ın holder'ının belleği. **Holder `MEMORY` içinde değildir.** nomux onu ayrı bir değer olarak gösterir. |
 | `MEASURE` | nomux'un iki değeri nasıl saydığı: `pss` ya da `rss`. |
+| `LIMIT` | İşletim sisteminin komutun process'lerine uyguladığı [bellek limiti](/docs/tr/guides/hibernation/#bellek-limiti). Uygulanan limit yoksa `-`. |
+| `FREED` | [Hazırda bekleyen bir Session](/docs/tr/guides/hibernation/) için: hazırda bekletmenin geri verdiği bellek. Diğer her Session için `-`. |
 
-`nubgqpss` Session'ının 3 process'i var: `sh` ve iki child'ı. 88.2 MiB'ı, child'ların 50 MiB ve 30 MiB'ından ve shell ile interpreter'ların belleğinden oluşur.
+`mh47dxf4` Session'ının 3 process'i var: `sh` ve iki child'ı. 88.4 MiB'ı, child'ların 50 MiB ve 30 MiB'ından ve shell ile interpreter'ların belleğinden oluşur.
 
-Process'i olmayan bir Session'ın değeri yoktur ve toplama girmez. Burada `epvdx7iy` Session'ının holder'ı `kill -9` ile sonlandı; Host'un yeniden başlaması da onu böyle sonlandırırdı:
+Process'i olmayan bir Session'ın değeri yoktur ve toplama girmez. Burada `2e4zs63j` Session'ının holder'ı `kill -9` ile sonlandı; Host'un yeniden başlaması da onu böyle sonlandırırdı:
 
 ```console
 $ nomux ls --memory
-ID        STATE    MEMORY     PROCESSES  HOLDER     MEASURE  COMMAND
-epvdx7iy  dormant  -          -          -          -        sleep 3600
-myuy5zl4  running  204.1 MiB  1          352.0 KiB  pss      python3 hog.py 200
-nubgqpss  running  88.7 MiB   3          352.0 KiB  pss      sh -c python3 hog.py 50 & python3 hog.py 30 & wait
-ynz3inyu  running  785.0 KiB  1          376.0 KiB  pss      /bin/bash
-total: 293.6 MiB in 5 processes of 3 sessions, and 1.0 MiB in the holders (pss)
+ID        STATE    MEMORY     PROCESSES  HOLDER     MEASURE  LIMIT  FREED  COMMAND
+2e4zs63j  dormant  -          -          -          -        -      -      sleep 3600
+3qbpriwd  running  742.0 KiB  1          376.0 KiB  pss      -      -      /bin/bash
+mh47dxf4  running  88.4 MiB   3          358.0 KiB  pss      -      -      sh -c python3 hog.py 50 & python3 hog.py 30 & wait
+pdo3uuvt  running  204.0 MiB  1          362.0 KiB  pss      -      -      python3 hog.py 200
+total: 293.2 MiB in 5 processes of 3 sessions, and 1.0 MiB in the holders (pss)
 ```
+
+[Hazırda bekleyen bir Session](/docs/tr/guides/hibernation/) de process'i olmayan bir Session'dır. İlk beş sütunda `-` vardır, `FREED` sütununda ise geri verdiği bellek. Çıktının son satırlarında toplam yer alır:
+
+```console
+$ nomux ls --memory
+ID        STATE       MEMORY  PROCESSES  HOLDER  MEASURE  LIMIT  FREED      COMMAND
+57anosge  hibernated  -       -          -       -        -      159.5 MiB  claude
+total: no session has a process
+hibernated: 159.5 MiB given back by 1 session
+```
+
+(Bu çalıştırma [hazırda bekletme rehberinden](/docs/tr/guides/hibernation/): Session bir agent aracının taklidini çalıştırdı.)
 
 Değerler komutun çalıştığı andan alınır. İkinci bir komut yeniden ölçer. Canlı görünüm isteyen bir istemci isteği kendi aralığında yeniden gönderir. Böyle bir istemci henüz yok.
 
-`--json` ile her Session'ın bir `memory` nesnesi olur:
+`--json` ile her Session'ın bir `memory` nesnesi olur. Process'i olmayan bir Session için `null`'dır. Uygulanan limit yoksa `limit_bytes` değeri `null`'dır:
 
 ```json
-"memory":{"command_bytes":158720,"command_processes":1,"holder_bytes":332800,"measure":"pss"}
+"memory":{"command_bytes":144384,"command_processes":1,"holder_bytes":345088,"measure":"pss","limit_bytes":null}
+```
+
+Dar bir terminalde tablo, her satır sığsın diye sütun bırakır. Önce `MEASURE`'ı, sonra `LIMIT`, `FREED`, `PROCESSES` ve `HOLDER`'ı bırakır. Toplam satırı ölçüyü söyler, son satır `FREED` toplamını verir. 60 sütunluk bir terminal şunu gösterdi (komutu o genişlikte bir sözde terminal çalıştırdı):
+
+```console
+$ nomux ls --memory
+ID        STATE    MEMORY     PROCESSES  HOLDER     COMMAND
+3gb2lalj  running  204.9 MiB  1          388.0 KiB  python3…
+4oxnfuld  running  158.0 KiB  1          376.0 KiB  sleep 3…
+total: 205.0 MiB in 2 processes of 2 sessions, and 764.0 KiB
+in the holders (pss)
 ```
 
 Tam doküman [CLI başvurusunda](/docs/tr/reference/cli/).
@@ -77,8 +102,19 @@ nomux önce process tablosunu, sonra her process'in belleğini, sonra her proces
 - İş, isteğin 10 saniye sonra biten bir thread'de çalışır. Boştaki daemon CPU zamanı kullanmaz.
 - [Performans sayfasında](/docs/tr/reference/performance/), `nomux` reposunun ölçümlerinden, 50 Session ve 200 Session için bir isteğin süresi var.
 
-## Bellek limiti yapılmadı
+## Bellek limiti
 
-nomux 0.4.0 belleği gösterir. Sınırlamaz. `memory_limit` anahtarı, her Session için bir limit ve limit sütunu, [`docs/memory.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/memory.md#design-an-optional-memory-limit-for-a-session) dosyasındaki bir tasarımdır: kodu yok. Tasarım Linux'ta control group'ları kullanır, macOS'ta limit vermez.
+Yapılandırma dosyasındaki `sessions.memory_limit`, bir Session'ın belleğini sınırlar. systemd kullanıcı yöneticisi olan Linux'ta limiti kernel uygular: limite ulaşan Session'ın process'lerini sonlandırır ve `ls --memory` limiti `LIMIT` sütununda gösterir. macOS'te ve kullanıcı yöneticisi olmayan Linux'ta limit yalnızca, boştaki agent Session'larının [hazırda bekletilmesi](/docs/tr/guides/hibernation/) için bir eşiktir ve `LIMIT` `-` gösterir.
 
-Bunun için [#38](https://github.com/nomux-sh/nomux/issues/38) numaralı issue açık. Boştaki agent'ların hazırda bekletilmesi ([#36](https://github.com/nomux-sh/nomux/issues/36)) de açık. Disk ve bellek bütçeleri hakkındaki karar [ADR-0009](https://github.com/nomux-sh/docs/blob/main/adr/0009-resource-budgets-for-disk-and-memory.md)'da kayıtlı.
+`nomux daemon status` iki durumdan hangisinin Host'unuz için geçerli olduğunu söyleyen bir satır yazdırır:
+
+```console
+$ nomux daemon status
+nomuxd 0.5.0 runs: process ID 4034392, 3 sessions
+memory limit: the kernel ends the processes of a session at its limit: a systemd user scope with MemoryMax
+configuration file: /home/user/.config/nomux/config.toml
+```
+
+Limit, `ls --memory`'nin saymadığı belleği de sayar (kernel'in process'ler için kullandığı bellek ve page cache); bu yüzden bir Session, tablo daha azını gösterirken limitine ulaşabilir. [Hazırda bekletme ve bellek limiti](/docs/tr/guides/hibernation/) rehberinde ayarlar, platform farkları, hazırda bekletmenin tetikleyicileri ve kernel'in sonlandırdığı bir Session'ın gerçek çıktısı var.
+
+Disk ve bellek bütçeleri hakkındaki karar [ADR-0009](https://github.com/nomux-sh/docs/blob/main/adr/0009-resource-budgets-for-disk-and-memory.md)'da kayıtlı.

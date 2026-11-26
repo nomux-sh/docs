@@ -6,7 +6,7 @@ description: Bir Session'ın komutunun hangi ortam değişkenlerini aldığı, n
 Bir Session'ın komutu daemon'un ortamını alır; nomux buna birkaç değişiklik yapar. Bu değişiklikleri holder yapar.
 Bir servis yöneticisi daemon'u başlattığında bu önemlidir: launchd bir job'a `PATH=/usr/bin:/bin:/usr/sbin:/sbin` verir, `TERM` ve `LANG` vermez; bir systemd kullanıcı servisinde de `TERM` yoktur.
 
-Bu sayfadaki çıktılar, nomux 0.4.0'ın Linux'taki gerçek çıktısıdır. Çalıştırmanın home dizini geçici `/tmp/nomux-demo` dizinidir.
+Bu sayfadaki çıktılar, nomux 0.5.0'ın Linux'taki gerçek çıktısıdır. Çalıştırmaların home dizini `/home/user` olarak gösterilir.
 
 ## Komut neleri alır
 
@@ -34,19 +34,20 @@ Burada daemon, bir servis yöneticisinin vereceği gibi küçük bir ortamla ba�
 
 ```console
 $ small="env -i HOME=$HOME PATH=$HOME/.local/bin:/usr/bin:/bin TERM=screen COLUMNS=120 LINES=40 TERM_PROGRAM=demo"
+$ cd ~/project
 $ $small nomux ls
 no sessions
 $ $small nomux new --cmd sh -c 'env | sort | sed "s/^NOMUX_TOKEN=.*/NOMUX_TOKEN=<hidden>/"; sleep 3600'
-pxusdkeb
-$ nomux capture pxusdkeb
+d4r34zip
+$ nomux capture d4r34zip
 COLORTERM=truecolor
-HOME=/tmp/nomux-demo
+HOME=/home/user
 LC_CTYPE=C.UTF-8
-NOMUX_SESSION_ID=pxusdkeb
-NOMUX_SOCK=/tmp/nomux-demo/.nomux/run/nomuxd.sock
+NOMUX_SESSION_ID=d4r34zip
+NOMUX_SOCK=/home/user/.nomux/run/nomuxd.sock
 NOMUX_TOKEN=<hidden>
-PATH=/tmp/nomux-demo/.local/bin:/usr/bin:/bin
-PWD=/tmp/nomux-demo/project
+PATH=/home/user/.local/bin:/usr/bin:/bin
+PWD=/home/user/project
 SHLVL=1
 TERM=xterm-256color
 _=/usr/bin/env
@@ -60,8 +61,8 @@ Locale'i olan bir daemon onu korur. Burada daemon `LANG=tr_TR.UTF-8` ve aynı k�
 
 ```console
 $ $small nomux new --cmd sh -c 'env | sort | grep -E "^(LANG|LC_|TERM|COLORTERM)"; sleep 3600'
-2envbsrk
-$ nomux capture 2envbsrk
+gak3ck3g
+$ nomux capture gak3ck3g
 COLORTERM=truecolor
 LANG=tr_TR.UTF-8
 TERM=xterm-256color
@@ -93,5 +94,5 @@ Linux ve macOS satırları nomux dokümanlarından geliyor. Bu sayfa için çal�
 ## Geri yükleme ve havuz
 
 - Geri yükleme komutu, geri yükleme anındaki daemon'un ortamıyla, aynı kurallarla yeniden başlatır.
-- [Holder havuzundan](/docs/tr/guides/holder-pool/) gelen bir shell aynı ortamı alır, çünkü hiçbir parça istemciden gelmez.
+- [Holder havuzundan](/docs/tr/guides/holder-pool/) gelen bir shell aynı ortamı alır, çünkü hiçbir parça istemciden gelmez. Havuzdaki shell ilk prompt'tan önce Session'ın dizinine geçer; bu yüzden `PWD` Session'ın dizinidir. Nasıl olduğunu [Holder havuzu](/docs/tr/guides/holder-pool/#havuzdaki-shell-dizinini-nasıl-alır) sayfası anlatır.
 - Uzak bir Host'taki Session, o Host'taki daemon'un ortamını alır.
