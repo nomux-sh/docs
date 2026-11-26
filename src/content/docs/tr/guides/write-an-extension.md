@@ -16,15 +16,15 @@ Bu sayfadaki çıktılar, nomux 0.4.0'ın Linux'taki gerçek çıktısıdır.
 
 | Dil | SDK | Sürüm | Gerekenler | Rehber |
 |---|---|---|---|---|
-| Rust | crate [`nomux-extension`](https://crates.io/crates/nomux-extension) | 0.1.2 | Bir Rust toolchain'i | Reponun README'sindeki [Write an extension](https://github.com/nomux-sh/extension-api#write-an-extension) bölümü ve [docs.rs](https://docs.rs/nomux-extension) |
-| TypeScript | paket [`@nomux-sh/extension`](https://www.npmjs.com/package/@nomux-sh/extension) | 0.1.2 | Extension'ı çalıştıran Host'ta Node.js 22 ya da üstü | [TypeScript SDK'nın README'si](https://github.com/nomux-sh/extension-api/blob/main/sdk/typescript/README.md) |
-| Go | modül `github.com/nomux-sh/extension-api/sdk/go` | v0.1.2 | Derlemek için Go 1.26 ya da üstü | [Go SDK'nın README'si](https://github.com/nomux-sh/extension-api/blob/main/sdk/go/README.md) |
+| Rust | crate [`nomux-extension`](https://crates.io/crates/nomux-extension) | 0.1.3 | Bir Rust toolchain'i | Reponun README'sindeki [Write an extension](https://github.com/nomux-sh/extension-api#write-an-extension) bölümü ve [docs.rs](https://docs.rs/nomux-extension) |
+| TypeScript | paket [`@nomux-sh/extension`](https://www.npmjs.com/package/@nomux-sh/extension) | 0.1.3 | Extension'ı çalıştıran Host'ta Node.js 22 ya da üstü | [TypeScript SDK'nın README'si](https://github.com/nomux-sh/extension-api/blob/main/sdk/typescript/README.md) |
+| Go | modül `github.com/nomux-sh/extension-api/sdk/go` | v0.1.3 | Derlemek için Go 1.26 ya da üstü | [Go SDK'nın README'si](https://github.com/nomux-sh/extension-api/blob/main/sdk/go/README.md) |
 
 Bir Python SDK'sı planlanıyor ([issue #5](https://github.com/nomux-sh/extension-api/issues/5)). Henüz yok.
 
 SDK sürümleri bu sayfa için registry'lerden okundu: crates.io, npm ve Go module proxy.
-`extension-api` reposunun README'si TypeScript paketinin henüz npm'de olmadığını söylemeye devam ediyor. Paket var: npm'de 0.1.2 sürümü duruyor.
-nomux 0.4.0, `nomux-extension` 0.1.1'e karşı derlenir. Bir extension ihtiyaç duyduğu API sürümünü manifest'inde ister (`api = "^0.1"`). Bir adapter `^0.1.1` ister.
+`extension-api` reposunun README'si TypeScript paketinin henüz npm'de olmadığını söylemeye devam ediyor. Paket var: npm'de 0.1.3 sürümü duruyor.
+nomux 0.4.0, `nomux-extension` 0.1.1'e karşı derlenir; yani extension API'si 0.1.1'dir. Extension API sürümü SDK paketinin sürümünden ayrıdır: 0.1.3 sürümündeki SDK'lar extension API 0.1.1'i uygular. Varsayılan olarak bir extension, kullandığı her özelliği taşıyan en düşük sürümü ister: `^0.1.0`. Sonraki bir özelliği kullanan extension, aynı minimumla sürümü `api` alanında belirtir. Bir adapter `^0.1.1` ister. Kuralın tam hâli, README'deki [sürümleme kuralları](https://github.com/nomux-sh/extension-api#versioning-rules) ile protokolün spesifikasyonundaki [version rule](https://github.com/nomux-sh/extension-api/blob/main/spec/extension-protocol.md#version-rule) bölümündedir.
 
 Her SDK programınız için aynı kuralları getirir:
 

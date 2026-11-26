@@ -28,14 +28,14 @@ Extension modeli ve gerekçeleri [ADR-0005](https://github.com/nomux-sh/docs/blo
 
 ## SDK'larda bugün neler var
 
-SDK'lar [`extension-api`](https://github.com/nomux-sh/extension-api) reposundadır. Bir SDK'nın sürümü, uyguladığı extension API'sinin sürümüdür. Üç SDK'nın da sürümü 0.1.2'dir. Repodaki dokümanlar İngilizcedir.
+SDK'lar [`extension-api`](https://github.com/nomux-sh/extension-api) reposundadır. SDK'lar extension API 0.1.1'i uygular. Bir SDK paketinin sürümü, extension API'sinin sürümünden ayrıdır: üç SDK'nın sürümü 0.1.3'tür. Repodaki dokümanlar İngilizcedir.
 
 | Parça | İçerik |
 |---|---|
 | [Extension protokolü](https://github.com/nomux-sh/extension-api/blob/main/spec/extension-protocol.md) | Daemon ile daemon parçası arasındaki mesajların spesifikasyonu: handshake, yaşam döngüsü, iki yönlü çağrılar, event'ler, hatalar ve iptal. Durumu taslaktır. |
-| Rust SDK: [`nomux-extension`](https://crates.io/crates/nomux-extension) crate'i 0.1.2 | Siz metotları kaydedersiniz, protokolü crate yürütür. Dokümantasyonu [docs.rs](https://docs.rs/nomux-extension)'te. |
-| TypeScript SDK: [`@nomux-sh/extension`](https://github.com/nomux-sh/extension-api/tree/main/sdk/typescript) paketi 0.1.2 | Node.js 22 ya da üstü gerekir. Paket [npm](https://www.npmjs.com/package/@nomux-sh/extension)'de yayında. |
-| Go SDK: [`github.com/nomux-sh/extension-api/sdk/go`](https://github.com/nomux-sh/extension-api/tree/main/sdk/go) modülü v0.1.2 | Go 1.26 ya da üstü gerekir. |
+| Rust SDK: [`nomux-extension`](https://crates.io/crates/nomux-extension) crate'i 0.1.3 | Siz metotları kaydedersiniz, protokolü crate yürütür. Dokümantasyonu [docs.rs](https://docs.rs/nomux-extension)'te. |
+| TypeScript SDK: [`@nomux-sh/extension`](https://github.com/nomux-sh/extension-api/tree/main/sdk/typescript) paketi 0.1.3 | Node.js 22 ya da üstü gerekir. Paket [npm](https://www.npmjs.com/package/@nomux-sh/extension)'de yayında. |
+| Go SDK: [`github.com/nomux-sh/extension-api/sdk/go`](https://github.com/nomux-sh/extension-api/tree/main/sdk/go) modülü v0.1.3 | Go 1.26 ya da üstü gerekir. |
 | [Conformance suite](https://github.com/nomux-sh/extension-api/tree/main/conformance) | Tek bir test host'u, aynı protokol senaryolarını her SDK'nın `echo` extension'ına karşı çalıştırır. `echo` extension'ı suite'i geçen SDK doğrudur. |
 | Manifest | `extension.toml` dosyasının [JSON Schema'sı](https://github.com/nomux-sh/extension-api/blob/main/schema/extension.schema.json) ve Rust crate'inin içindeki doğrulayıcı (`manifest` feature'ı). |
 | Örnekler | `echo` extension'ı [Rust](https://github.com/nomux-sh/extension-api/tree/main/examples/echo), [TypeScript](https://github.com/nomux-sh/extension-api/tree/main/examples/echo-typescript) ve [Go](https://github.com/nomux-sh/extension-api/tree/main/examples/echo-go) ile: her birinde tek metot ve tek event. |
