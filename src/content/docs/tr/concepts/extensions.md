@@ -6,7 +6,7 @@ description: nomux'ta extension nedir, daemon onunla ne yapar, parçalarından h
 nomux'un tasarımında çekirdekte olmayan her özellik bir extension'dır: git, dosyalar, agent adapter'ları ve diğerleri. Bu tasarımı [kavramlara genel bakış](/docs/tr/concepts/overview/) sayfası anlatır.
 Bu sayfa ise bugün var olanı anlatır.
 
-nomux 0.4.0, extension'ların daemon parçasını çalıştırır. `nomux ext` komutları bir extension'ı bir dizinden kurar, listeler, çağırır ve kaldırır. Bu komutları rehberlerdeki [Extension'lar](/docs/tr/guides/extensions/) sayfası gösterir. Bir extension yazmak için [Extension yazmak](/docs/tr/guides/write-an-extension/) rehberine bakın.
+nomux 0.5.0, extension'ların daemon parçasını çalıştırır. `nomux ext` komutları bir extension'ı bir dizinden kurar, listeler, çağırır, devre dışı bırakır ve kaldırır. Bu komutları rehberlerdeki [Extension'lar](/docs/tr/guides/extensions/) sayfası gösterir. Bir extension yazmak için [Extension yazmak](/docs/tr/guides/write-an-extension/) rehberine bakın.
 
 ## Extension nedir
 
@@ -14,7 +14,7 @@ Extension; bir manifest'i (`extension.toml`) ve bir ya da daha fazla parçası o
 
 | Parça | Nerede çalışır | Bugünkü durum |
 |---|---|---|
-| daemon parçası | Host'ta, ayrı bir process olarak | Protokolü ve Rust, TypeScript ve Go SDK'ları yayında. `nomuxd` 0.4.0 onu başlatır ve durdurur. |
+| daemon parçası | Host'ta, ayrı bir process olarak | Protokolü ve Rust, TypeScript ve Go SDK'ları yayında. `nomuxd` 0.5.0 onu başlatır ve durdurur. |
 | arayüz parçası | İstemcide | Yok. Bu iş desktop istemcisiyle birlikte başlayacak. |
 
 **Daemon parçası** bir programdır. Daemon onu ilk çağrıda child process olarak başlatır, 60 saniye çağrı gelmezse durdurur.
@@ -28,7 +28,7 @@ Extension modeli ve gerekçeleri [ADR-0005](https://github.com/nomux-sh/docs/blo
 
 ## SDK'larda bugün neler var
 
-SDK'lar [`extension-api`](https://github.com/nomux-sh/extension-api) reposundadır. SDK'lar extension API 0.1.1'i uygular. Bir SDK paketinin sürümü, extension API'sinin sürümünden ayrıdır: üç SDK'nın sürümü 0.1.3'tür. Repodaki dokümanlar İngilizcedir.
+SDK'lar [`extension-api`](https://github.com/nomux-sh/extension-api) reposundadır. SDK'lar extension API 0.1.1'i uygular. Bir SDK paketinin sürümü, extension API'sinin sürümünden ayrıdır: üç SDK'nın sürümü 0.1.3'tür ve nomux 0.5.0 `nomux-extension` crate'inin 0.1.3 sürümünü kullanır. Repodaki dokümanlar İngilizcedir.
 
 | Parça | İçerik |
 |---|---|
@@ -63,10 +63,10 @@ lazy = true
 ```
 
 - `api`, extension'ın kullanabildiği extension API sürümlerini verir. Extension API'sinin kendi sürümü vardır; bu, SDK'ların sürümüdür ve nomux'un sürümünden bağımsızdır.
-- nomux 0.4.0, `nomux-extension` 0.1.1 ile derlenir; yani extension API'si en yeni SDK'ların 0.1.2'si değil, 0.1.1'dir. nomux 0.4.0, daha yeni bir sürüm isteyen manifest'i, örneğin `api = "^0.1.2"`, reddeder. `^0.1` yazın; manifest'te bir `[adapter]` tablosu varsa `^0.1.1` yazın.
+- nomux 0.5.0'ın extension API'si 0.1.1'dir. nomux 0.5.0, daha yeni bir sürüm isteyen manifest'i, örneğin `api = "^0.1.2"`, reddeder: mesaj `the extension needs the extension API version ^0.1.2, but the host supplies 0.1.1` olur. `^0.1` yazın; manifest'te bir `[adapter]` tablosu varsa `^0.1.1` yazın.
 - `daemon.command`, daemon parçasının programıdır. Varsayılan olan `lazy = true` ile daemon parçası ancak bir istemci ihtiyaç duyduğunda başlar.
 - `[permissions]` tablosu extension'ın ihtiyaç duyduğu dizinleri, programları, ağ erişimini ve host servislerinin scope'larını sayar. Bu izinleri `nomux ext install` ile siz onaylarsınız. Daemon, onaylanan izinleri handshake'te daemon parçasına iletir.
-- Daemon yalnızca host servislerinin scope'larını uygular. Diğer izinlere extension'ın kendisinin uyması gerekir: nomux 0.4.0'da daemon, extension'ın dosyalarını, programlarını ve ağ erişimini kısıtlamaz.
+- Daemon yalnızca host servislerinin scope'larını uygular. Diğer izinlere extension'ın kendisinin uyması gerekir: nomux 0.5.0'da daemon, extension'ın dosyalarını, programlarını ve ağ erişimini kısıtlamaz.
 
 ## Host servisleri
 
@@ -112,11 +112,11 @@ network = false
 - Bir aracın adını birden fazla extension sayarsa, kimliği en küçük olan extension adapter olur.
 - Bu sürümde `hook` çağrısının cevabı boştur: nomux henüz bir izin istemine karar vermez.
 
-[Agent adapter'ları ve hook'lar](/docs/tr/guides/agent-adapters/) rehberi adapter yazmayı anlatır. [Claude Code adapter'ı](/docs/tr/guides/claude-code/) rehberi Claude Code adapter'ını iş başında gösterir.
+[Agent adapter'ları ve hook'lar](/docs/tr/guides/agent-adapters/) rehberi hook'ların nasıl kurulacağını ve adapter yazmayı anlatır. [Claude Code adapter'ı](/docs/tr/guides/claude-code/) rehberi Claude Code adapter'ını iş başında gösterir.
 
 ## Resmi extension'lar
 
-Resmi extension'lar [`extensions`](https://github.com/nomux-sh/extensions) reposundadır. Üçüncü taraf bir extension'ın kullandığı aynı herkese açık extension API'sini kullanırlar. İkisinin de release'i yok: kaynaktan derler, bir dizinden kurarsınız.
+Resmi extension'lar [`extensions`](https://github.com/nomux-sh/extensions) reposundadır. Üçüncü taraf bir extension'ın kullandığı aynı herkese açık extension API'sini kullanırlar. İkisinin de 0.1.0 release'i var (GitHub ikisini de pre-release olarak işaretler) ve dört hedef için birer arşivi var: x86-64 ve ARM64 üzerinde Linux ve macOS. `nomux ext install` bir dizin okur; bu yüzden önce arşivi açarsınız: adımları [Claude Code adapter'ı](/docs/tr/guides/claude-code/#extension-kurulumu) sayfası gösterir.
 
 | Extension | Kimlik | Bugün ne yapar |
 |---|---|---|
@@ -132,6 +132,6 @@ Resmi extension'lar [`extensions`](https://github.com/nomux-sh/extensions) repos
 - Daemon'dan extension'a event'ler. Adapter, hook olaylarını `hook` metodunun çağrıları olarak alır.
 - Başka agent araçları için adapter'lar ve kullanıcının kararını taşıyan bir `hook` cevabı.
 - Arayüz parçası ve API'si.
-- Resmi bir extension'ın release'i, bir registry, imza kontrolü ve bir güncelleme komutu.
+- Bir extension'ı arşivden ya da URL'den kurmak, bir registry, imza kontrolü ve bir güncelleme komutu. Yeni bir sürümü kurmak için extension'ı kaldırın ve yeniden kurun.
 
 Extension'lar [yol haritasındaki](/docs/tr/project/roadmap/) M3 aşamasının konusudur. Bu sayfadaki terimler [Sözlük](/docs/tr/reference/glossary/) sayfasından gelir.
