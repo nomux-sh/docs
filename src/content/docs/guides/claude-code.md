@@ -6,7 +6,7 @@ description: Install the nomux.agent-claude extension and the hooks of Claude Co
 The extension `nomux.agent-claude` is the [adapter](/docs/guides/agent-adapters/) of the tool `claude` ([Claude Code](https://code.claude.com)).
 It reads the hook events of Claude Code and reports the [status](/docs/guides/agent-status/) of the Agent run and of its Child work to the daemon.
 
-**This extension has no release yet.** The `extensions` repository has no package to download. You build it from source and install it from a directory.
+**This extension has release 0.1.0.** Its archive is on the [releases page](https://github.com/nomux-sh/extensions/releases). You can also build it from source and install it from a directory.
 The README of the extension says that it was tested with Claude Code 2.1.332 on Linux, in five short runs. The repository has the hook data of those runs. The data of the events that these runs did not show come from the documentation of Claude Code.
 
 The output on this page is the real output of nomux 0.4.0 on Linux. The home directory of the run is the temporary directory `/tmp/nomux-demo`.

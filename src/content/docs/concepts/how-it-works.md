@@ -147,7 +147,7 @@ An adapter is an extension that takes the hook events of one agent tool. The too
 
 `nomux hooks install <tool>` prints the change that the hooks need in the settings file of the tool. It writes the file only with `--apply`. In this version a hook gets no answer from nomux: nomux decides no permission request yet.
 
-The adapter of Claude Code is in the `extensions` repository and has no release yet: the [extensions page](/docs/concepts/extensions/) says what exists. The guides [Agent status](/docs/guides/agent-status/), [Agent adapters and hooks](/docs/guides/agent-adapters/) and [Claude Code adapter](/docs/guides/claude-code/) show the commands.
+The adapter of Claude Code is in the `extensions` repository and has release 0.1.0: the [extensions page](/docs/concepts/extensions/) says what exists. The guides [Agent status](/docs/guides/agent-status/), [Agent adapters and hooks](/docs/guides/agent-adapters/) and [Claude Code adapter](/docs/guides/claude-code/) show the commands.
 
 ## The holder pool
 
@@ -269,7 +269,7 @@ The directories have the mode 0700, and the files and each socket have the mode 
 - An attach that starts a dormant Session again shows 1 MiB of the old output at most.
 - You cannot change the detach keys.
 - The command of a Session gets the environment of the daemon, thus of the shell that started the daemon, with the changes of [the environment of a Session](#the-environment-of-a-session). A restore gives the command the environment of the daemon at that time. Its terminal has 24 rows and 80 columns until a client attaches.
-- No adapter has a release yet. A tool that sends no OSC 7501 has only the self-report and the two guesses as sources.
+- The Claude Code adapter has release 0.1.0. A tool that sends no OSC 7501 has only the self-report and the two guesses as sources.
 - The size limit of the journal is fixed at 32 MiB for each Session.
 
 The [roadmap](/docs/project/roadmap/) is the one place for the work that comes next.

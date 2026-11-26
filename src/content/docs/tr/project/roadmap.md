@@ -18,7 +18,7 @@ Sürüm kuralları ve yayın adımları [sürüm rehberinde](https://github.com/
 
 ## Bugünkü durum
 
-Sekiz repo açık, hepsinin CI'ı çalışıyor: [`.github`](https://github.com/nomux-sh/.github), [`nomux`](https://github.com/nomux-sh/nomux), [`proto`](https://github.com/nomux-sh/proto), [`extension-api`](https://github.com/nomux-sh/extension-api), [`extensions`](https://github.com/nomux-sh/extensions), [`themes`](https://github.com/nomux-sh/themes), [`homebrew-tap`](https://github.com/nomux-sh/homebrew-tap) ve [`docs`](https://github.com/nomux-sh/docs).
+Dokuz repo var. Sekizinde CI çalışıyor: [`.github`](https://github.com/nomux-sh/.github), [`nomux`](https://github.com/nomux-sh/nomux), [`proto`](https://github.com/nomux-sh/proto), [`extension-api`](https://github.com/nomux-sh/extension-api), [`extensions`](https://github.com/nomux-sh/extensions), [`themes`](https://github.com/nomux-sh/themes), [`homebrew-tap`](https://github.com/nomux-sh/homebrew-tap) ve [`docs`](https://github.com/nomux-sh/docs). Dokuzuncusu, [`desktop`](https://github.com/nomux-sh/desktop), geliştirme aşamasında.
 
 ### Yayınlananlar
 
@@ -30,7 +30,7 @@ Sekiz repo açık, hepsinin CI'ı çalışıyor: [`.github`](https://github.com/
 | Extension SDK'ları | 0.1.3 | Rust için [`nomux-extension`](https://crates.io/crates/nomux-extension) crate'i, TypeScript için [`@nomux-sh/extension`](https://www.npmjs.com/package/@nomux-sh/extension) paketi ve Go için `github.com/nomux-sh/extension-api/sdk/go` modülü; `extension-api` reposundan. Üçünü birlikte denetleyen bir conformance suite'i de var. Nasıl kullanılacağı [Extension yazmak](/docs/tr/guides/write-an-extension/) sayfasında. nomux 0.4.0, `nomux-extension` 0.1.1 sürümünü kullanır. |
 | [`nomux-theme`](https://crates.io/crates/nomux-theme) | 0.3.1 | Temayı yükleyip denetleyen crate; `themes` reposundan. Her temayı [önizleme sayfası](https://nomux-sh.github.io/themes/) gösterir. |
 
-Resmi extension'ların hiçbiri henüz yayınlanmadı. Git extension'ı (`nomux.git`) ile Claude Code adapter'ı (`nomux.agent-claude`), arayüz parçası olmadan, `extensions` reposunun `main` branch'inde duruyor. Onları kaynaktan derlersiniz: [Claude Code adapter'ı](/docs/tr/guides/claude-code/).
+Resmi extension'ların ikisi de 0.1.0 sürümüyle yayında: Git extension'ı (`nomux.git`) ve Claude Code adapter'ı (`nomux.agent-claude`). İkisinde de arayüz parçası yok. Arşivi indirip [Yayınlanmış bir extension'ı kurma](https://github.com/nomux-sh/extensions#install-a-released-extension) bölümündeki adımlarla kurabilirsiniz.
 
 ### Süren işler
 
@@ -72,12 +72,12 @@ Aynı belgeye göre gerçek paket kaybıyla bir ölçüm yapılmadı: ölçümle
 
 - `nomuxd` 0.4.0'da extension host var. Bir extension'ı, kullanıcının onayladığı izinlerle bir dizinden kurar; daemon parçasını ilk çağrıda başlatır, boşta kalınca durdurur. Extension istemcilere olay gönderebilir, adapter extension ise bir durum bildirebilir. Komutlar [Extension'lar](/docs/tr/guides/extensions/) rehberinde.
 - Extension SDK'ları Rust, TypeScript ve Go için var. Python SDK'sı planlanıyor.
-- Git extension'ı ile Claude Code adapter'ı `extensions` reposunun `main` branch'inde. Yayınlanmış bir sürümleri yok.
+- Git extension'ı ile Claude Code adapter'ının sürümü 0.1.0. İkisi `extensions` reposunda yayında.
 - Yapılmayanlar: dosya erişimi için bir extension, bir extension'ın dosyalarının, programlarının ve ağ erişiminin kısıtlanması, extension'ın arayüz parçası, Proje ve Worktree veri modeli.
 
 #### M4 aşaması: sürüyor
 
-nomux 0.4.0'da agent durum motoru var: her Session'ın kaynağıyla birlikte bir durumu vardır, bir Agent çalışmasının Alt iş ağacı vardır ve kaynakların sırası sabittir. Ayrıntılar [Agent durumu](/docs/tr/guides/agent-status/) sayfasında. Claude Code adapter'ı ([rehber](/docs/tr/guides/claude-code/)) ilk adapter'dır ve yayınlanmış bir sürümü yok.
+nomux 0.4.0'da agent durum motoru var: her Session'ın kaynağıyla birlikte bir durumu vardır, bir Agent çalışmasının Alt iş ağacı vardır ve kaynakların sırası sabittir. Ayrıntılar [Agent durumu](/docs/tr/guides/agent-status/) sayfasında. Claude Code adapter'ı ([rehber](/docs/tr/guides/claude-code/)) ilk adapter'dır ve 0.1.0 sürümü yayında.
 Yapılmayanlar: Takımlar, diğer agent araçları için adapter'lar ve hook'un araca verdiği cevap; onay kartları buna ihtiyaç duyar. M4'ün henüz bir kabul testi yok.
 
 #### M5 aşaması: sürüyor, desktop istemcisi geliştiriliyor
@@ -97,7 +97,7 @@ Bir grup, Projeleri ve başka grupları istenen derinlikte içerir; kapalı bir 
 - Session adları ve tmux ile screen tarzı CLI komutları: geliştiriliyor, bkz. [#88](https://github.com/nomux-sh/nomux/issues/88).
 - Session için bellek limiti, boşta duran agent'ların hazırda bekletilmesi ve Worktree'lerin yaşam döngüsü.
 - SSH olmadan doğrudan bağlantı ve port yönlendirme.
-- Resmi bir extension'ın yayını ve bir registry.
+- Bir registry.
 
 ## Aşamalar
 

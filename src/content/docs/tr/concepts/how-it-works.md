@@ -147,7 +147,7 @@ Adapter, tek bir agent aracının hook olaylarını alan extension'dır. Araç, 
 
 `nomux hooks install <araç>`, hook'ların aracın ayar dosyasında gerektirdiği değişikliği yazdırır. Dosyayı yalnızca `--apply` ile yazar. Bu sürümde hook, nomux'tan cevap almaz: nomux henüz bir izin istemine karar vermez.
 
-Claude Code adapter'ı `extensions` reposundadır ve henüz release edilmedi: ne olduğunu [extension'lar sayfası](/docs/tr/concepts/extensions/) anlatır. Komutları [Agent durumu](/docs/tr/guides/agent-status/), [Agent adapter'ları ve hook'lar](/docs/tr/guides/agent-adapters/) ve [Claude Code adapter'ı](/docs/tr/guides/claude-code/) rehberleri gösterir.
+Claude Code adapter'ı `extensions` reposundadır ve 0.1.0 sürümü yayında: ne olduğunu [extension'lar sayfası](/docs/tr/concepts/extensions/) anlatır. Komutları [Agent durumu](/docs/tr/guides/agent-status/), [Agent adapter'ları ve hook'lar](/docs/tr/guides/agent-adapters/) ve [Claude Code adapter'ı](/docs/tr/guides/claude-code/) rehberleri gösterir.
 
 ## Holder havuzu
 
@@ -269,7 +269,7 @@ Dizinlerin modu 0700, dosyaların ve socket'lerin modu 0600'dür. Daemon ve hold
 - Uykudaki bir Session'ı yeniden başlatan attach, eski çıktının en fazla 1 MiB'ını gösterir.
 - Detach tuşları değiştirilemez.
 - Session'ın komutu daemon'un ortam değişkenlerini, yani daemon'u başlatan shell'inkileri alır; [Ortam değişkenleri](#ortam-değişkenleri) bölümündeki değişikliklerle birlikte. Geri yükleme de komuta daemon'un o anki ortamını verir. Bir istemci attach olana kadar terminal 24 satır, 80 sütundur.
-- Hiçbir adapter'ın release'i henüz yok. OSC 7501 göndermeyen bir aracın kaynakları yalnızca öz bildirim ve iki tahmindir.
+- Claude Code adapter'ının release'i 0.1.0. OSC 7501 göndermeyen bir aracın kaynakları yalnızca öz bildirim ve iki tahmindir.
 - Journal'ın boyut sınırı her Session için sabit 32 MiB'tır.
 
 Sırada ne olduğunun tek adresi [yol haritasıdır](/docs/tr/project/roadmap/).

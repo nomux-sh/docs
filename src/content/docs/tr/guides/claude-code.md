@@ -6,7 +6,7 @@ description: nomux.agent-claude extension'ını ve Claude Code'un hook'larını 
 `nomux.agent-claude` extension'ı, `claude` aracının ([Claude Code](https://code.claude.com)) [adapter'ıdır](/docs/tr/guides/agent-adapters/).
 Claude Code'un hook olaylarını okur; Agent çalışmasının ve Alt işlerinin [durumunu](/docs/tr/guides/agent-status/) daemon'a bildirir.
 
-**Bu extension'ın henüz release'i yok.** `extensions` reposunda indirilecek bir paket yok. Onu kaynağından derler ve bir dizinden kurarsınız.
+**Bu extension'ın 0.1.0 sürümü yayında.** Arşivini [sürümler sayfasında](https://github.com/nomux-sh/extensions/releases) bulabilirsiniz. Kaynağından da derleyip bir dizinden kurabilirsiniz.
 Extension'ın README'si, onun Linux'ta Claude Code 2.1.332 ile, beş kısa çalıştırmada test edildiğini söyler. Repoda bu çalıştırmaların hook verisi var. Bu çalıştırmaların göstermediği olayların verisi, Claude Code dokümantasyonundan geliyor.
 
 Bu sayfadaki çıktılar, nomux 0.4.0'ın Linux'ta verdiği gerçek çıktılardır. Çalıştırmanın home dizini, geçici `/tmp/nomux-demo` dizinidir.

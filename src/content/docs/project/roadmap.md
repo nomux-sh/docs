@@ -18,7 +18,7 @@ The [release guide](https://github.com/nomux-sh/.github/blob/main/RELEASING.md) 
 
 ## State today
 
-Eight repositories exist, each with CI: [`.github`](https://github.com/nomux-sh/.github), [`nomux`](https://github.com/nomux-sh/nomux), [`proto`](https://github.com/nomux-sh/proto), [`extension-api`](https://github.com/nomux-sh/extension-api), [`extensions`](https://github.com/nomux-sh/extensions), [`themes`](https://github.com/nomux-sh/themes), [`homebrew-tap`](https://github.com/nomux-sh/homebrew-tap) and [`docs`](https://github.com/nomux-sh/docs).
+Nine repositories exist. Eight of them have CI: [`.github`](https://github.com/nomux-sh/.github), [`nomux`](https://github.com/nomux-sh/nomux), [`proto`](https://github.com/nomux-sh/proto), [`extension-api`](https://github.com/nomux-sh/extension-api), [`extensions`](https://github.com/nomux-sh/extensions), [`themes`](https://github.com/nomux-sh/themes), [`homebrew-tap`](https://github.com/nomux-sh/homebrew-tap) and [`docs`](https://github.com/nomux-sh/docs). The ninth, [`desktop`](https://github.com/nomux-sh/desktop), is in development.
 
 ### Released
 
@@ -30,7 +30,7 @@ Eight repositories exist, each with CI: [`.github`](https://github.com/nomux-sh/
 | Extension SDKs | 0.1.3 | The crate [`nomux-extension`](https://crates.io/crates/nomux-extension) for Rust, the package [`@nomux-sh/extension`](https://www.npmjs.com/package/@nomux-sh/extension) for TypeScript and the Go module `github.com/nomux-sh/extension-api/sdk/go`, from the `extension-api` repository, with a conformance suite that checks the three. [Write an extension](/docs/guides/write-an-extension/) says how to use them. nomux 0.4.0 uses `nomux-extension` 0.1.1. |
 | [`nomux-theme`](https://crates.io/crates/nomux-theme) | 0.3.1 | The crate that loads and checks a theme, from the `themes` repository. The [preview page](https://nomux-sh.github.io/themes/) shows each theme. |
 
-No official extension has a release. The git extension (`nomux.git`) and the Claude Code adapter (`nomux.agent-claude`) are on the `main` branch of the `extensions` repository, without a UI part. You build them from source: [Claude Code adapter](/docs/guides/claude-code/).
+The official extensions have release 0.1.0: the git extension (`nomux.git`) and the Claude Code adapter (`nomux.agent-claude`). They have no UI part. Download an archive and install it as [Install a released extension](https://github.com/nomux-sh/extensions#install-a-released-extension) describes.
 
 ### What is in progress
 
@@ -72,12 +72,12 @@ The same document says that a measurement with real packet loss was not made: th
 
 - `nomuxd` 0.4.0 has the extension host. It installs an extension from a directory with the permissions that the user approves, starts its daemon part at the first call and stops it when it is idle. An extension can send events to the clients, and an adapter extension can report a status. [Extensions](/docs/guides/extensions/) shows the commands.
 - The extension SDKs exist for Rust, TypeScript and Go. A Python SDK is planned.
-- The git extension and the Claude Code adapter are on the `main` branch of the `extensions` repository. They have no release.
+- The git extension and the Claude Code adapter have release 0.1.0 in the `extensions` repository.
 - Not done: an extension for file access, the restriction of the files, programs and network of an extension, the UI part of an extension, and the data model of Projects and Worktrees.
 
 #### Stage M4: in progress
 
-nomux 0.4.0 has the agent status engine: each Session has a status with its source, an Agent run has a tree of Child work, and the order of the sources is fixed. [Agent status](/docs/guides/agent-status/) shows it. The Claude Code adapter ([guide](/docs/guides/claude-code/)) is the first adapter, and it has no release.
+nomux 0.4.0 has the agent status engine: each Session has a status with its source, an Agent run has a tree of Child work, and the order of the sources is fixed. [Agent status](/docs/guides/agent-status/) shows it. The Claude Code adapter ([guide](/docs/guides/claude-code/)) is the first adapter, and it has release 0.1.0.
 Not done: Teams, adapters for other agent tools, and the answer of a hook to the tool, which approval cards need. Stage M4 has no acceptance test yet.
 
 #### Stage M5: in progress, the desktop client is in development
@@ -97,7 +97,7 @@ These parts do not exist in nomux 0.4.0:
 - Session names and the CLI commands in the style of tmux and screen: in development, see [#88](https://github.com/nomux-sh/nomux/issues/88).
 - A memory limit for a Session, the hibernation of idle agents and the life cycle of Worktrees.
 - A direct connection without SSH, and port forwarding.
-- A release of an official extension, and a registry.
+- A registry.
 
 ## Stages
 

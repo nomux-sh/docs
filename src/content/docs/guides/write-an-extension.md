@@ -23,7 +23,6 @@ All three SDKs are from the [`extension-api`](https://github.com/nomux-sh/extens
 A Python SDK is planned ([issue #5](https://github.com/nomux-sh/extension-api/issues/5)). It does not exist yet.
 
 The SDK versions were read from the registries for this page: crates.io, npm and the Go module proxy.
-The README of the `extension-api` repository still says that the TypeScript package is not on npm yet. The package exists: npm has version 0.1.3.
 nomux 0.4.0 builds against `nomux-extension` 0.1.1, thus its extension API is 0.1.1. The extension API version is separate from the SDK version: the SDKs at version 0.1.3 implement the extension API 0.1.1. By default, an extension asks the host for the lowest version that has each feature that its SDK uses: `^0.1.0`. An extension that uses a later feature states the version in `api` with the same minimum. An adapter needs `^0.1.1`. The [versioning rules](https://github.com/nomux-sh/extension-api#versioning-rules) of the README and the [version rule](https://github.com/nomux-sh/extension-api/blob/main/spec/extension-protocol.md#version-rule) of the protocol have the exact rule.
 
 Each SDK has the same rules for your program:
