@@ -8,7 +8,7 @@ nomux has three binaries: `nomux` (the CLI), `nomuxd` (the daemon) and `nomux-ho
 
 ## Release status
 
-The current release is [nomux 0.4.0](https://github.com/nomux-sh/nomux/releases/tag/v0.4.0).
+The current release is [nomux 0.5.0](https://github.com/nomux-sh/nomux/releases/tag/v0.5.0).
 It is a pre-release, as each version earlier than `1.0.0` is: interfaces can change between minor versions.
 The [roadmap](/docs/project/roadmap/) shows the state of the work.
 
@@ -21,7 +21,7 @@ There are four paths to the binaries. Use the first one that applies:
 
 You install nomux only on the computer on which you type. A remote Host needs no install: `nomux host add` puts the binaries there. Refer to [Remote hosts](/docs/guides/remote-hosts/).
 
-The output on this page is the real output of version 0.4.0 on Linux x86_64. The home directory of that run is the temporary directory `/tmp/nomux-demo`.
+The output on this page is the real output of version 0.5.0 on Linux x86_64. The home directory of that run was a temporary directory. The page shows it as `/home/user`.
 Homebrew is the exception: the machine of the run had no Homebrew, thus `brew install` did not run. [Homebrew](#homebrew) says what was checked instead.
 
 ## Supported machines
@@ -56,16 +56,17 @@ nomux --version
 
 These commands and statements come from the [README of the tap](https://github.com/nomux-sh/homebrew-tap#readme). `brew install` was not run for this page. What was checked:
 
-- The formula at version 0.4.0 names four archives, one for each machine of the table above. The SHA-256 value of each archive in the formula is the same as the SHA-256 value of the file that the URL gives, and the same as the value in `SHA256SUMS` of the release.
-- The `test` block of the formula runs `nomux --version`, `nomuxd --version` and `nomux-holder --version` and expects `<binary> 0.4.0`. The three binaries of the Linux archive print exactly that:
+- The formula at version 0.5.0 names four archives, one for each machine of the table above. The SHA-256 value of each archive in the formula is the same as the value of that archive in `SHA256SUMS` of the release.
+- The formula has a bottle for four Homebrew platforms: `arm64_big_sur`, `big_sur`, `arm64_linux` and `x86_64_linux`. The tap release `nomux-0.5.0` has one bottle file for each of them, and its SHA-256 value is the value in the formula. The `x86_64_linux` bottle was downloaded: it has `nomux`, `nomuxd` and `nomux-holder` in `nomux/0.5.0/bin`.
+- The `test` block of the formula runs `nomux --version`, `nomuxd --version` and `nomux-holder --version` and expects `<binary> 0.5.0`. The three binaries of that bottle print exactly that:
 
   ```console
   $ nomux --version
-  nomux 0.4.0
+  nomux 0.5.0
   $ nomuxd --version
-  nomuxd 0.4.0
+  nomuxd 0.5.0
   $ nomux-holder --version
-  nomux-holder 0.4.0
+  nomux-holder 0.5.0
   ```
 
 ## Install script
@@ -81,34 +82,34 @@ The script does not use `sudo`. It needs `curl`, `tar`, and `sha256sum` or `shas
 
 ```console
 $ curl -fsSL https://raw.githubusercontent.com/nomux-sh/nomux/main/install.sh | sh
-Downloading nomux-0.4.0-x86_64-unknown-linux-musl.tar.gz
+Downloading nomux-0.5.0-x86_64-unknown-linux-musl.tar.gz
 The SHA-256 checksum is correct.
-Installed nomux 0.4.0 in /tmp/nomux-demo/.local/bin: nomux nomuxd nomux-holder
-/tmp/nomux-demo/.local/bin is not in PATH. Add it to PATH to run nomux by name.
+Installed nomux 0.5.0 in /home/user/.local/bin: nomux nomuxd nomux-holder
+/home/user/.local/bin is not in PATH. Add it to PATH to run nomux by name.
 ```
 
 The last line is there because `~/.local/bin` was not in `PATH` in this run. If the directory is in `PATH`, the script does not print it. [Where the files are](#where-the-files-are) has the line for the startup file of your shell.
 
 | Option | Default | Function |
 |---|---|---|
-| `--version <version>` | The newest version that has no suffix | The version to install, for example `0.4.0` |
+| `--version <version>` | The newest version that has no suffix | The version to install, for example `0.5.0` |
 | `--dir <directory>` | `~/.local/bin` | The directory for the binaries |
 
 To give an option, add `-s --` after `sh`:
 
 ```console
-$ curl -fsSL https://raw.githubusercontent.com/nomux-sh/nomux/main/install.sh | sh -s -- --version 0.4.0 --dir ~/bin
-Downloading nomux-0.4.0-x86_64-unknown-linux-musl.tar.gz
+$ curl -fsSL https://raw.githubusercontent.com/nomux-sh/nomux/main/install.sh | sh -s -- --version 0.5.0 --dir ~/bin
+Downloading nomux-0.5.0-x86_64-unknown-linux-musl.tar.gz
 The SHA-256 checksum is correct.
-Installed nomux 0.4.0 in /tmp/nomux-demo/bin: nomux nomuxd nomux-holder
-/tmp/nomux-demo/bin is not in PATH. Add it to PATH to run nomux by name.
+Installed nomux 0.5.0 in /home/user/bin: nomux nomuxd nomux-holder
+/home/user/bin is not in PATH. Add it to PATH to run nomux by name.
 ```
 
 Make sure that the shell finds the CLI:
 
 ```console
 $ nomux --version
-nomux 0.4.0
+nomux 0.5.0
 ```
 
 ## Manual download
@@ -119,7 +120,7 @@ An archive contains the three binaries, the README and the two license files.
 1. Set the version and the target of the machine:
 
    ```sh
-   version=0.4.0
+   version=0.5.0
    target=x86_64-unknown-linux-musl
    ```
 
@@ -134,7 +135,7 @@ An archive contains the three binaries, the README and the two license files.
 
    ```console
    $ grep "nomux-$version-$target.tar.gz" SHA256SUMS | sha256sum --check
-   nomux-0.4.0-x86_64-unknown-linux-musl.tar.gz: OK
+   nomux-0.5.0-x86_64-unknown-linux-musl.tar.gz: OK
    ```
 
    On macOS, replace `sha256sum --check` with `shasum -a 256 --check`.
@@ -157,12 +158,12 @@ You need `git` and [rustup](https://rustup.rs). The repository pins the Rust ver
 1. Get the source of the release and build the binaries:
 
    ```sh
-   git clone --branch v0.4.0 https://github.com/nomux-sh/nomux.git
+   git clone --branch v0.5.0 https://github.com/nomux-sh/nomux.git
    cd nomux
    cargo build --release
    ```
 
-   Without `--branch v0.4.0`, you build the `main` branch, which can be newer than the release.
+   Without `--branch v0.5.0`, you build the `main` branch, which can be newer than the release.
 
 2. Copy the three binaries to a directory that is in `PATH`. Keep them in the same directory:
 
@@ -179,13 +180,13 @@ A build on Linux uses the C library of the machine. It is not the static binary 
 |---|---|
 | `~/.local/bin/nomux`, `nomuxd`, `nomux-holder` | The binaries. The path is different if you used Homebrew or `--dir`, or copied them to a different directory. |
 | `~/.nomux/run/` | The runtime directory: the socket, the lock and the log of the daemon, and one directory for each Session that runs. nomux makes it at the first command. |
-| `~/.local/state/nomux/` on Linux, `~/Library/Application Support/nomux/` on macOS | The state directory: for each Session, its description and its journal. [After a restart](/docs/guides/after-a-restart/) says what nomux does with them. |
+| `~/.local/state/nomux/` on Linux, `~/Library/Application Support/nomux/` on macOS | The state directory: for each Session, its description, its name and its journal, and the file `workspace.json` with your [Groups and Projects](/docs/guides/projects-and-groups/). [After a restart](/docs/guides/after-a-restart/) says what nomux does with them. |
 | `~/.local/share/nomux/extensions/` on Linux, `~/Library/Application Support/nomux/extensions/` on macOS | The extensions that you installed, with the permissions that you approved. Refer to [Extensions](/docs/guides/extensions/). |
 | `~/.local/share/nomux/hooks/` on Linux, `~/Library/Application Support/nomux/hooks/` on macOS | The record of each `nomux hooks install --apply`: the bytes of the settings file before the install. Refer to [Agent adapters and hooks](/docs/guides/agent-adapters/). |
-| `~/.config/nomux/config.toml` on Linux, `~/Library/Application Support/nomux/config.toml` on macOS | The configuration file. If `XDG_CONFIG_HOME` is an absolute path, the file is `$XDG_CONFIG_HOME/nomux/config.toml`. nomux makes the file when you add a remote Host. It also has the [pool settings](/docs/guides/holder-pool/#the-settings). |
+| `~/.config/nomux/config.toml` on Linux, `~/Library/Application Support/nomux/config.toml` on macOS | The configuration file. If `XDG_CONFIG_HOME` is an absolute path, the file is `$XDG_CONFIG_HOME/nomux/config.toml`. nomux makes the file when you add a remote Host. It also has the [pool settings](/docs/guides/holder-pool/#the-settings), the [memory and hibernation settings](/docs/guides/hibernation/) and the [prefix keys](/docs/guides/sessions/) of an attach. `nomux daemon status` prints the path that the daemon reads. |
 | `~/.config/systemd/user/nomuxd.service` on Linux, `~/Library/LaunchAgents/sh.nomux.nomuxd.plist` on macOS | The service file. It exists only after `nomux daemon install-service`. |
 
-The paths for macOS come from the documents of the `nomux` repository. This page has output from Linux only.
+The paths for macOS come from the documents of the `nomux` repository. This page has output from Linux only. On macOS, the daemon reads `config.toml` only in `~/Library/Application Support/nomux`, not in `~/.config/nomux`, unless `XDG_CONFIG_HOME` is set.
 A home directory of more than 73 bytes makes nomux use a short link in `/tmp`: [Long home paths](/docs/guides/long-home-paths/).
 
 The CLI starts `nomuxd`, and the daemon starts `nomux-holder`. Each one looks for the other binary in its own directory first, and then in `PATH`.
@@ -219,10 +220,10 @@ If you installed the service file and the path of the binaries changed, run `nom
 
 ## Remove
 
-1. End each Session and stop the daemon. `nomux kill` also removes a dormant Session with its output:
+1. End each Session and stop the daemon. `nomux kill --all --include-dormant` also removes the dormant Sessions with their output. On a terminal it asks you first:
 
    ```sh
-   for id in $(nomux ls --quiet); do nomux kill "$id"; done
+   nomux kill --all --include-dormant
    nomux daemon uninstall-service
    nomux daemon stop
    ```

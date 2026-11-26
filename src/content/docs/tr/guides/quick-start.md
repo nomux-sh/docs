@@ -1,10 +1,10 @@
 ---
 title: Hızlı başlangıç
-description: Bir Session açıp ona attach olun, detach olun, yeniden attach olun, daemon'u durdurun, Session'ın yaşadığını görün, çıktısını, durumunu ve belleğini okuyun ve onu sonlandırın.
+description: Bir Session açıp ona attach olun, detach olun, yeniden attach olun, Session'a ad verin, daemon'u durdurun, Session'ın yaşadığını görün, çıktısını, durumunu ve belleğini okuyun ve onu sonlandırın.
 ---
 
 Bu sayfa, [kurulum sayfasındaki](/docs/tr/guides/install/) üç binary'nin kurulu olduğunu varsayar.
-Buradaki çıktılar, nomux 0.4.0 ile Linux'ta yapılan tek bir çalıştırmanın gerçek çıktısıdır. Sizdeki session kimlikleri ve process ID'leri farklı olacaktır.
+Buradaki çıktılar, nomux 0.5.0 ile Linux'ta yapılan tek bir çalıştırmanın gerçek çıktısıdır. Sizdeki session kimlikleri ve process ID'leri farklı olacaktır.
 
 Örneklerde `$` kendi shell'inizin prompt'u, `sh-5.3$` ise Session'ın içindeki shell'in prompt'udur.
 
@@ -16,7 +16,7 @@ $ nomux new --attach -- sh
 
 `nomux new`, daemon çalışmıyorsa onu başlatır ve bir Session açar.
 `--`'den sonra gelen argümanlar Session'ın komutudur; burada `sh`. Vermezseniz komut kendi shell'iniz olur: bunu [Shell açmak](#shell-açmak) bölümü gösterir.
-`--attach` ile terminaliniz Session'ın terminali olur: CLI terminali temizler ve Session'ın ekranını gösterir.
+`--attach` (`-a`) ile terminaliniz Session'ın terminali olur: CLI terminali temizler ve Session'ın ekranını gösterir.
 
 ```console
 sh-5.3$ echo hello from the session
@@ -41,13 +41,13 @@ Argümanlarından biri `--` olan bir komut için `--`'li biçimi kullanın: `nom
 
 ## Detach olmak
 
-Önce `Ctrl-\`, sonra `d` tuşuna basın.
+Önce `Ctrl-a`, sonra `d` tuşuna basın. `Ctrl-\` ve ardından `d` de çalışır.
 
 ```console
 sh-5.3$ echo hello from the session
 hello from the session
 sh-5.3$
-detached from session d3g6u2x6
+detached from session cmyd3fud
 $
 ```
 
@@ -56,16 +56,17 @@ Mesajda session kimliği yazar. Aynı kimliği `nomux ls` de gösterir:
 
 ```console
 $ nomux ls
-ID        STATE    PID     COMMAND
-d3g6u2x6  running  885451  sh
+ID        STATE    PID      COMMAND
+cmyd3fud  running  4107953  sh
 ```
 
 `PID`, holder'ın değil, Session'ın komutunun process ID'sidir.
+Attach sırasındaki diğer tuşları ve prefix tuşlarının nasıl değiştirileceğini [Session'lar](/docs/tr/guides/sessions/#prefix-tuşları) sayfası gösterir.
 
 ## Yeniden attach olmak
 
 ```console
-$ nomux attach d3g6u2x6
+$ nomux attach cmyd3fud
 ```
 
 Terminalde detach olmadan önceki ekranın aynısı durur:
@@ -79,7 +80,7 @@ sh-5.3$
 Ekran Session'ın holder'ından gelir; holder onu hiçbir istemci attach değilken de tutar. Ekranını daha önce çizmiş bir program, örneğin bir editör, hemen görünür.
 
 Aynı Session'a aynı anda birden fazla terminal attach olabilir. Hepsi aynı çıktıyı görür, hepsinden yazılabilir.
-Burada ikinci bir terminalde aynı `nomux attach d3g6u2x6` çalıştırılıyor ve komut o terminalden yazılıyor. Sonunda iki terminalde de şu ekran durur:
+Burada ikinci bir terminalde aynı `nomux attach cmyd3fud` çalıştırılıyor ve komut o terminalden yazılıyor. Sonunda iki terminalde de şu ekran durur:
 
 ```console
 sh-5.3$ echo hello from the session
@@ -92,11 +93,42 @@ sh-5.3$
 Başına geçemediğiniz bir terminali detach etmek için başka bir terminalden `nomux detach` çalıştırın. Bu komut Session'a attach olmuş bütün istemcileri detach eder:
 
 ```console
-$ nomux detach d3g6u2x6
-detached 1 client from session d3g6u2x6
+$ nomux detach cmyd3fud
+detached 1 client from session cmyd3fud
 ```
 
-Attach olan terminalde, detach tuşlarına basılmış gibi `detached from session d3g6u2x6` yazar.
+Attach olan terminalde, detach tuşlarına basılmış gibi `detached from session cmyd3fud` yazar.
+
+## Session'a ad vermek
+
+Ad, kimlikten daha kısa yazılır. `nomux rename` bir Session'a ad verir; `nomux new -n` adı daha açılırken verir:
+
+```console
+$ nomux rename cmyd3fud shell
+session cmyd3fud is now named shell
+$ nomux new -n api -- sleep 600
+ordcoebj
+$ nomux ls
+ID        NAME   STATE    PID      COMMAND
+cmyd3fud  shell  running  4107953  sh
+ordcoebj  api    running  4109980  sleep 600
+```
+
+Session alan her komut kimliği, adı ya da ikisinden birinin başını kabul eder: `nomux attach shell` ve `nomux attach sh` ikisi de ilk Session'a attach olur. Birden fazla Session'a uyan bir baş, adayların listesiyle birlikte hata verir.
+
+Şu kısa yollar da var:
+
+- `nomux new -n work -a`, `work` Session'ını açar ve ona attach olur.
+- `nomux new -A -n shell`, `shell` Session'ına attach olur; yoksa onu açar.
+- `nomux attach` hedefsiz, bir istemcinin en son attach olduğu Session'a attach olur. `nomux a` aynı komuttur.
+- Terminalde yalın `nomux`, `nomux attach` ile aynı işi yapar. Host'ta hiç Session yoksa shell'inizle bir tane açar.
+
+```console
+$ nomux new -A -n shell
+detached from session shell (cmyd3fud)
+```
+
+Adların ve hedeflerin kurallarını, her seçeneğin ne yaptığını [Session'lar](/docs/tr/guides/sessions/) sayfasında bulursunuz.
 
 ## Daemon'u durdurmak: Session yaşar
 
@@ -105,12 +137,17 @@ Bir terminalde Session'a attach olun, ikinci bir terminalden daemon'u durdurun:
 
 ```console
 $ nomux daemon status
-nomuxd 0.4.0 runs: process ID 885447, 1 session
+nomuxd 0.5.0 runs: process ID 4107950, 2 sessions
+memory limit: the kernel ends the processes of a session at its limit: a systemd user scope with MemoryMax
+configuration file: /home/user/.config/nomux/config.toml
 $ nomux daemon stop
 nomuxd stopped
 $ nomux daemon status
 nomuxd does not run
+configuration file: /home/user/.config/nomux/config.toml
 ```
+
+`daemon status` ayrıca işletim sisteminin bir Session'a bellek limiti uygulayıp uygulamadığını ve yapılandırma dosyasının yerini söyler. Daemon çalışmıyorsa çıkış kodu 2 olur.
 
 İlk terminaldeki attach 1 çıkış koduyla biter, çünkü bağlantısı daemon üzerinden geçiyordu:
 
@@ -119,33 +156,42 @@ sh-5.3$ echo hello from the session
 hello from the session
 sh-5.3$ echo typed in terminal B
 typed in terminal B
+sh-5.3$ echo second terminal
+second terminal
 sh-5.3$
-nomux: the daemon stopped. The session continues: run `nomux attach d3g6u2x6` to attach again
+nomux: the daemon stopped. The session continues: run `nomux attach shell` to attach again
 $
 ```
 
-Şu an çalışan bir daemon yok. Daemon'a ihtiyaç duyan ilk komut yenisini başlatır, yeni daemon da Session'ı bulur:
+Şu an çalışan bir daemon yok. Daemon'a ihtiyaç duyan ilk komut yenisini başlatır, yeni daemon da Session'ları bulur:
 
 ```console
 $ nomux ls
-ID        STATE    PID     COMMAND
-d3g6u2x6  running  885451  sh
+ID        NAME   STATE    PID      COMMAND
+cmyd3fud  shell  running  4107953  sh
+ordcoebj  api    running  4109980  sleep 600
 $ nomux daemon status
-nomuxd 0.4.0 runs: process ID 886734, 1 session
+nomuxd 0.5.0 runs: process ID 4112638, 2 sessions
+memory limit: the kernel ends the processes of a session at its limit: a systemd user scope with MemoryMax
+configuration file: /home/user/.config/nomux/config.toml
 ```
 
-Komutun process ID'si öncekiyle aynı: komut hiç durmadı. Değişen tek şey daemon'un process ID'si.
+Komutların process ID'leri öncekiyle aynı: komutlar hiç durmadı. Değişen tek şey daemon'un process ID'si.
 
 Daemon düzgün kapanmadan ölürse de sonuç değişmez:
 
 ```console
-$ kill -9 886734
+$ kill -9 4112638
 $ nomux daemon status
 nomuxd does not run
+configuration file: /home/user/.config/nomux/config.toml
 $ nomux ls
-ID        STATE    PID     COMMAND
-d3g6u2x6  running  885451  sh
+ID        NAME   STATE    PID      COMMAND
+cmyd3fud  shell  running  4107953  sh
+ordcoebj  api    running  4109980  sleep 600
 ```
+
+Bu çalıştırmada `daemon status`, `kill`'den bir saniye sonra çalıştı. Onu `kill` ile aynı anda çalıştırırsanız nomux 0.5.0 `nomux: the connection to the daemon failed: Connection reset by peer (os error 104)` cevabını 1 çıkış koduyla verebilir. Komutu yeniden çalıştırın.
 
 Bunun nedenini [Nasıl çalışır](/docs/tr/concepts/how-it-works/) sayfası anlatır. Host'un yeniden başlaması ise başka bir durum: komut durur ve Session uykuya geçer. Bunu [Yeniden başlatmadan sonra](/docs/tr/guides/after-a-restart/) sayfası gösterir.
 
@@ -156,28 +202,29 @@ Komutu başka bir dizinde başlatmak için `--cwd` ekleyin. Dizinin var olması 
 
 ```console
 $ nomux new --cwd project -- sleep 600
-m6jfaybz
+suzsh5xl
 $ nomux ls
-ID        STATE    PID     COMMAND
-d3g6u2x6  running  885451  sh
-m6jfaybz  running  886750  sleep 600
+ID        NAME   STATE    PID      COMMAND
+cmyd3fud  shell  running  4107953  sh
+suzsh5xl  -      running  4114787  sleep 600
 ```
 
 ## Shell açmak
 
 Komut vermezseniz Session kendi shell'inizi çalıştırır. Daemon, her birinde shell'i çoktan çalışan birkaç holder'ı hazır tutar: [holder havuzu](/docs/tr/guides/holder-pool/). Shell ile açılan yeni bir Session bunlardan birini alır; bu yüzden shell'in prompt'u hemen gelir. Havuz, daemon başlarken değil, daemon'un aldığı ilk istekte başlar.
 
-Havuzdan gelen bir Session home dizininizde başlar. `--cwd` başka bir dizin gösteriyorsa nomux shell'e ` cd '<dizin>'` yazar. Bu satır Session'ın ekranında görünür. Satır bir boşlukla başlar; bu sayede böyle ayarlanmış bir shell satırı geçmişine eklemez:
+Havuzdaki bir `bash`, `zsh` ya da `fish`, ilk prompt'tan önce Session'ın dizinine geçer. `--cwd` bir dizin gösteriyorsa ekranda yazılmış bir satır görünmez; shell zaten oradadır:
 
 ```console
 $ nomux new --cwd project
-aipxxh7r
-$ nomux attach aipxxh7r
-bash-5.3$  cd '/tmp/nomux-demo/project'
+ws3qfqzs
+$ nomux attach ws3qfqzs
+bash-5.3$ pwd
+/home/user/demo/project
 bash-5.3$
 ```
 
-Yukarıdaki örneklerdeki gibi komutlu bir Session her zaman yeni bir holder alır ve `cd` satırı olmaz.
+Yukarıdaki örneklerdeki gibi komutlu bir Session her zaman yeni bir holder alır.
 
 ## Session'ın çıktısını okumak
 
@@ -185,9 +232,9 @@ Yukarıdaki örneklerdeki gibi komutlu bir Session her zaman yeni bir holder al�
 Bu Session'daki komut 1'den 200'e kadar sayıları yazdırıp bekliyor:
 
 ```console
-$ nomux new -- sh -c 'seq 1 200; exec sleep 600'
-wuvotgo2
-$ nomux capture wuvotgo2 --lines 3
+$ nomux new -n count -- sh -c 'seq 1 200; exec sleep 600'
+3iljg56n
+$ nomux capture count --lines 3
 198
 199
 200
@@ -197,18 +244,19 @@ Satırlar Session'ın ekranından değil, diskteki journal'ından gelir. Bu yüz
 Holder çıktıyı, okuduktan en geç 1 saniye sonra journal'a yazar. `new`'den hemen sonra çalıştırılan `capture`, komutun yazdığından daha azını yazdırabilir.
 Çıktı, komutun yazdığı baytların escape sequence'leriyle birlikte aynısıdır. Bir shell'in çıktısında prompt'unun escape sequence'leri de bulunur.
 
-Attach o anki ekranı ve o andan sonraki çıktıyı gösterir; ekrandan çıkmış satırları göstermez. Onlar için `capture` kullanın.
+Attach o anki ekranı ve o andan sonraki çıktıyı gösterir; ekrandan çıkmış satırları göstermez. Onlar için `capture` kullanın. `nomux capture -f` yeni çıktıyı da izler: bunu [Session'ları script'lemek](/docs/tr/guides/scripting-sessions/) sayfası gösterir.
 
 ## Durumu ve belleği görmek
 
-`nomux status` her Session için bir satır yazdırır: komutu, durumu, o durumda geçen süre ve bir mesaj. Hiçbir programın bir şey bildirmediği Session `idle` olur:
+`nomux status` her Session için bir satır yazdırır: adı ya da kimliği, komutu, durumu, o durumda geçen süre ve bir mesaj. Hiçbir programın bir şey bildirmediği Session `idle` olur:
 
 ```console
 $ nomux status
   SESSION   COMMAND                          STATE  FOR  MESSAGE
-  d3g6u2x6  sh                               idle   9s
-  m6jfaybz  sleep 600                        idle   9s
-  wuvotgo2  sh -c seq 1 200; exec sleep 600  idle   9s
+  count     sh -c seq 1 200; exec sleep 600  idle   1s
+  shell     sh                               idle   8s
+  suzsh5xl  sleep 600                        idle   3s
+  ws3qfqzs  /bin/bash                        idle   3s
 ```
 
 Bir agent aracı ya da `nomux status set` ile bildiren bir program diğer durumları verir; örneğin `working` ve `needs you`. Bunları [Agent durumu](/docs/tr/guides/agent-status/) sayfası gösterir.
@@ -217,14 +265,15 @@ Bir agent aracı ya da `nomux status set` ile bildiren bir program diğer duruml
 
 ```console
 $ nomux ls --memory
-ID        STATE    MEMORY     PROCESSES  HOLDER     MEASURE  COMMAND
-d3g6u2x6  running  749.0 KiB  1          282.0 KiB  pss      sh
-m6jfaybz  running  145.0 KiB  1          268.0 KiB  pss      sleep 600
-wuvotgo2  running  151.0 KiB  1          290.0 KiB  pss      sh -c seq 1 200; exec sleep 600
-total: 1.0 MiB in 3 processes of 3 sessions, and 840.0 KiB in the holders (pss)
+ID        STATE    MEMORY     PROCESSES  HOLDER     MEASURE  LIMIT  FREED  COMMAND
+3iljg56n  running  161.0 KiB  1          275.0 KiB  pss      -      -      sh -c seq 1 200; exec sleep 600
+cmyd3fud  running  734.0 KiB  1          271.0 KiB  pss      -      -      sh
+suzsh5xl  running  145.0 KiB  1          260.0 KiB  pss      -      -      sleep 600
+ws3qfqzs  running  737.0 KiB  1          271.0 KiB  pss      -      -      /bin/bash
+total: 1.7 MiB in 4 processes of 4 sessions, and 1.0 MiB in the holders (pss)
 ```
 
-`MEMORY`, komutun ve ondan türeyen her process'in belleğidir; `PROCESSES` onların sayısıdır. `HOLDER` holder'ın belleğidir ve `MEMORY`'nin parçası değildir. `MEASURE` Linux'ta `pss`, macOS'ta `rss` olur. Sayıların neyi saydığını [Session'ların belleği](/docs/tr/guides/session-memory/) sayfası anlatır.
+`MEMORY`, komutun ve ondan türeyen her process'in belleğidir; `PROCESSES` onların sayısıdır. `HOLDER` holder'ın belleğidir ve `MEMORY`'nin parçası değildir. `MEASURE` Linux'ta `pss`, macOS'ta `rss` olur. `LIMIT`, işletim sisteminin Session'a bellek limiti uyguladığı yerde değer alır; `FREED` ise [hazırda bekleyen](/docs/tr/guides/hibernation/) bir Session için değer alır. Sayıların neyi saydığını [Session'ların belleği](/docs/tr/guides/session-memory/) sayfası anlatır.
 
 ## Session'ı sonlandırmak
 
@@ -234,7 +283,7 @@ Komutu biten Session sonlanır. O anda attach olmuş bir terminal varsa CLI komu
 sh-5.3$ exit 3
 exit
 
-session d3g6u2x6 ended with exit status 3
+session shell (cmyd3fud) ended with exit status 3
 $ echo $?
 3
 ```
@@ -242,37 +291,43 @@ $ echo $?
 `nomux kill` ise Session'ı dışarıdan sonlandırır. Terminal kapandığında olduğu gibi komuta `SIGHUP` gönderir ve komut bitene kadar bekler:
 
 ```console
-$ nomux kill m6jfaybz
-session m6jfaybz ended
+$ nomux kill suzsh5xl
+session suzsh5xl ended
 ```
+
+`nomux kill --all` çalışan her Session'ı sonlandırır ve terminalde önce sorar: bunu [Session'ları script'lemek](/docs/tr/guides/scripting-sessions/#çok-sayıda-sessionı-sonlandırmak-kill---all) sayfasında bulursunuz.
 
 Biten Session `nomux ls` listesinden düşer. Daemon onu çıktısıyla birlikte 24 saat saklar; `nomux ls --all` onu, komutun nasıl bittiğini söyleyen bir notla gösterir:
 
 ```console
 $ nomux ls
-ID        STATE    PID     COMMAND
-wuvotgo2  running  886755  sh -c seq 1 200; exec sleep 600
+ID        NAME   STATE    PID      COMMAND
+3iljg56n  count  running  4114800  sh -c seq 1 200; exec sleep 600
+ws3qfqzs  -      running  4113272  /bin/bash
 $ nomux ls --all
-ID        STATE    PID     COMMAND                          NOTE
-d3g6u2x6  ended    -       sh                               exit status 3
-m6jfaybz  ended    -       sleep 600                        signal 1
-wuvotgo2  running  886755  sh -c seq 1 200; exec sleep 600
+ID        NAME     STATE    PID      COMMAND                          NOTE
+3iljg56n  count    running  4114800  sh -c seq 1 200; exec sleep 600
+54kiobxv  scratch  ended    -        sh                               signal 1
+cmyd3fud  shell    ended    -        sh                               exit status 3
+ordcoebj  api      ended    -        sleep 600                        signal 1
+suzsh5xl  -        ended    -        sleep 600                        signal 1
+ws3qfqzs  -        running  4113272  /bin/bash
 ```
 
-Biten bir Session'ın çıktısını `nomux capture` yine yazdırır. Onun için çalıştırılan diğer her komut 2 çıkış koduyla başarısız olur:
+Biten bir Session'ın çıktısını `nomux capture` yine yazdırır. Onun için çalıştırılan diğer her komut 2 çıkış koduyla başarısız olur. Ad yalnızca bitmemiş Session'ları bulur; bu yüzden kimliği kullanın:
 
 ```console
-$ nomux kill m6jfaybz
-nomux: session m6jfaybz ended: its command does not run
+$ nomux kill suzsh5xl
+nomux: session suzsh5xl ended: its command does not run
 ```
 
 ## Komutları script'te kullanmak
 
-Her komut `--json` ve `--quiet` seçeneklerini kabul eder. Üç Session'ın, biri bitmeden önceki JSON listesi şöyledir:
+Her komut `--json` ve `--quiet` seçeneklerini kabul eder. Çalışan iki Session'ın JSON listesi şöyledir:
 
 ```console
 $ nomux ls --json
-{"schema_version":1,"sessions":[{"id":"d3g6u2x6","state":"running","pid":885451,"command":["sh"],"cwd":"/tmp/nomux-demo","rows":24,"columns":80,"started_at":1795690878,"epoch":1,"restore_policy":"on-focus"},{"id":"m6jfaybz","state":"running","pid":886750,"command":["sleep","600"],"cwd":"/tmp/nomux-demo/project","rows":24,"columns":80,"started_at":1795690885,"epoch":1,"restore_policy":"on-focus"},{"id":"wuvotgo2","state":"running","pid":886755,"command":["sh","-c","seq 1 200; exec sleep 600"],"cwd":"/tmp/nomux-demo","rows":24,"columns":80,"started_at":1795690885,"epoch":1,"restore_policy":"on-focus"}]}
+{"schema_version":1,"sessions":[{"id":"3iljg56n","name":"count","state":"running","pid":4114800,"command":["sh","-c","seq 1 200; exec sleep 600"],"cwd":"/home/user/demo","rows":24,"columns":80,"started_at":1795706787,"epoch":1,"restore_policy":"on-focus","project":null},{"id":"ws3qfqzs","name":null,"state":"running","pid":4113272,"command":["/bin/bash"],"cwd":"/home/user/demo/project","rows":24,"columns":80,"started_at":1795706785,"epoch":1,"restore_policy":"on-focus","project":null}]}
 ```
 
 `--json` ve `--quiet` seçeneklerini `--`'den önce yazın. `--`'den sonra gelen her argüman Session'ın komutuna gider.
@@ -280,10 +335,13 @@ $ nomux ls --json
 
 Bir terminalde `ls` ve `status` tabloları terminalin genişliğine sığar: önce komut sütunu kısaltılır ve kesilen yeri bir üç nokta (`…`) gösterir. Bir script'in çıktısı ile JSON çıktısı hiçbir zaman kısaltılmaz.
 
-Bütün komutlar, attach sırasındaki tuşlar, JSON dokümanları ve çıkış kodları [CLI başvurusunda](/docs/tr/reference/cli/) yer alır.
+Bir Session'a yazmayı, çıktısını izlemeyi ve çok sayıda Session'ı sonlandırmayı [Session'ları script'lemek](/docs/tr/guides/scripting-sessions/) sayfası gösterir. Bütün komutlar, attach sırasındaki tuşlar, JSON dokümanları ve çıkış kodları [CLI başvurusunda](/docs/tr/reference/cli/) yer alır.
 
 ## Sıradaki adımlar
 
+- [Session'lar](/docs/tr/guides/sessions/): adlar, hedefler, `-A` ve attach sırasındaki prefix tuşları.
+- [Session'ları script'lemek](/docs/tr/guides/scripting-sessions/): `send`, `capture -f` ve `kill --all`.
+- [tmux ve screen'den gelenler için](/docs/tr/guides/coming-from-tmux-and-screen/): alıştığınız komutlar.
 - [Yeniden başlatmadan sonra](/docs/tr/guides/after-a-restart/): uykudaki Session'lar, geri yükleme politikaları ve oturum açılışında daemon.
 - [Uzak Host'lar](/docs/tr/guides/remote-hosts/): aynı komutlar, SSH üzerinden bir sunucuda.
 - [Extension'lar](/docs/tr/guides/extensions/): bir extension kurun, izinlerini onaylayın ve onu çağırın.

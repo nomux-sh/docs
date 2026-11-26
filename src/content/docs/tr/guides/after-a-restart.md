@@ -1,12 +1,12 @@
 ---
 title: Yeniden başlatmadan sonra
-description: Host yeniden başladığında Session'lara ne olur, uykudaki bir Session nasıl yeniden başlar, geri yükleme politikaları, servis dosyası ve neyin geri gelip neyin gelmediği.
+description: Host yeniden başladığında Session'lara ne olur, uykudaki bir Session nasıl yeniden başlar, geri yükleme politikaları, yapılandırma dosyası, servis dosyası ve neyin geri gelip neyin gelmediği.
 ---
 
 Host yeniden başladığında her process durur; her holder ve her Session'ın komutu da buna dahil.
 nomux her Session'ın tanımını ve çıktısını diskte tutar. Bu yüzden yeniden başlatmadan sonra `nomux ls` her Session'ı **dormant** (uykuda) olarak gösterir ve tek bir komut onu yeniden başlatır.
 
-Bu sayfadaki çıktılar, nomux 0.4.0'ın Linux'taki tek bir çalıştırmasının gerçek çıktısıdır. Bu çalıştırmada bilgisayar yeniden başlatılmadı: geçici bir home dizinindeki her nomux process'i (daemon, holder'lar ve Session'ların komutları) `kill -9` ile durduruldu. Yeniden başlatma da bu process'lere tam olarak bunu yapar. Sizin session kimlikleriniz ve process ID'leriniz farklı olacaktır.
+Bu sayfadaki çıktılar, nomux 0.5.0'ın Linux'taki tek bir çalıştırmasının gerçek çıktısıdır. Çalıştırmanın home dizini `/home/user` olarak gösterilir. Bu çalıştırmada bilgisayar yeniden başlatılmadı: geçici bir home dizinindeki her nomux process'i (daemon, holder'lar ve Session'ların komutları) `kill -9` ile durduruldu. Yeniden başlatma da bu process'lere tam olarak bunu yapar. Sizin session kimlikleriniz ve process ID'leriniz farklı olacaktır.
 
 ## Ne geri gelir, ne gelmez
 
@@ -16,6 +16,7 @@ Bu sayfadaki çıktılar, nomux 0.4.0'ın Linux'taki tek bir çalıştırmasın�
 | Komut, argümanları, çalışma dizini ve pencere boyutu | Evet: geri yükleme aynı komutu aynı yerde başlatır |
 | Yeniden başlatmadan önceki çıktı | Evet: diskteki journal'da durur. Attach sonunu gösterir, `nomux capture` tamamını yazdırır |
 | Session'ın geri yükleme politikası | Evet |
+| [Hazırda bekleyen Session](/docs/tr/guides/hibernation/) | Evet: hazırda bekler durumda kalır. Daemon onu, politikası `auto` olsa bile, kendi açılışında hiçbir zaman başlatmaz |
 | Session'ın process'leri: shell, içinde çalışan programlar, onların belleği | **Hayır.** Yeni komut sıfırdan başlar |
 | Komutun ortam değişkenleri | **Hayır.** Yeni komut, daemon'un geri yükleme anında hazırladığı [Session ortamını](/docs/tr/guides/session-environment/) alır: daemon'un ortamı, ayrıca `TERM`, `COLORTERM`, UTF-8 karakter kümesi ve Session'ın üç `NOMUX_*` değişkeni. Ortamda secret olabileceği için nomux eski komutun ortamını saklamaz |
 | Durmadan önceki son saniyenin çıktısı | Belki gelmez. Holder çıktıyı en geç 1 saniye içinde diske yazar. Elektrik kesilirse kernel'in henüz diske yazmadığı veri de kaybolabilir |
@@ -24,34 +25,34 @@ Kendi işine devam edebilen bir program, örneğin resume komutu olan bir agent,
 
 ## Yeniden başlatmadan önce
 
-Bu çalıştırmada üç Session var: bir shell, bir sunucu ve kendiliğinden yeniden başlamaması gereken bir komut.
+Bu çalıştırmada üç Session var: bir shell, bir sunucu ve kendiliğinden yeniden başlamaması gereken bir komut. Shell'e bir attach'te bir satır yazıldı (attach bir sözde terminalde çalıştı).
 
 ```console
 $ nomux new --cwd project -- sh
-rgubz6li
-$ nomux attach rgubz6li
+ded2ph33
+$ nomux attach ded2ph33
 sh-5.3$ echo written before the restart
 written before the restart
 sh-5.3$
-detached from session rgubz6li
+detached from session ded2ph33
 $ nomux new -- sh -c 'echo server started; exec sleep 600'
-lbfxvjl3
+o6kczknv
 $ nomux new -- sleep 700
-f255tn7t
+7e27dogj
 ```
 
 Her Session'ın bir [geri yükleme politikası](#geri-yükleme-politikaları) vardır; varsayılanı `on-focus`'tur. Burada sunucuya `auto`, son komuta `manual` veriliyor:
 
 ```console
-$ nomux restore-policy lbfxvjl3 auto
-session lbfxvjl3 has the restore policy auto
-$ nomux restore-policy f255tn7t manual
-session f255tn7t has the restore policy manual
+$ nomux restore-policy o6kczknv auto
+session o6kczknv has the restore policy auto
+$ nomux restore-policy 7e27dogj manual
+session 7e27dogj has the restore policy manual
 $ nomux ls
-ID        STATE    PID     COMMAND
-f255tn7t  running  896121  sleep 700
-lbfxvjl3  running  896118  sh -c echo server started; exec sleep 600
-rgubz6li  running  896082  sh
+ID        STATE    PID      COMMAND
+7e27dogj  running  4187180  sleep 700
+ded2ph33  running  4187171  sh
+o6kczknv  running  4187177  sh -c echo server started; exec sleep 600
 ```
 
 ## Yeniden başlatmadan sonra
@@ -60,14 +61,25 @@ rgubz6li  running  896082  sh
 
 ```console
 $ nomux ls
-ID        STATE    PID     COMMAND
-f255tn7t  dormant  -       sleep 700
-lbfxvjl3  running  896453  sh -c echo server started; exec sleep 600
-rgubz6li  dormant  -       sh
+ID        STATE    PID      COMMAND
+7e27dogj  dormant  -        sleep 700
+ded2ph33  dormant  -        sh
+o6kczknv  running  4187842  sh -c echo server started; exec sleep 600
 ```
 
-- `rgubz6li` ve `f255tn7t` uykuda. Hiçbir process'leri çalışmıyor, `PID` sütunu `-`.
-- `lbfxvjl3`'ün politikası `auto` olduğu için daemon kendi açılışında onun komutunu yeniden başlattı. Yeni bir process ID'si var.
+- `ded2ph33` ve `7e27dogj` uykuda. Hiçbir process'leri çalışmıyor, `PID` sütunu `-`.
+- `o6kczknv`'nin politikası `auto` olduğu için daemon kendi açılışında onun komutunu yeniden başlattı. Yeni bir process ID'si var.
+
+`nomux daemon status` yeni daemon'u, Session sayısını ve daemon'un okuduğu yapılandırma dosyasının yolunu gösterir:
+
+```console
+$ nomux daemon status
+nomuxd 0.5.0 runs: process ID 4187840, 3 sessions
+memory limit: the kernel ends the processes of a session at its limit: a systemd user scope with MemoryMax
+configuration file: /home/user/.config/nomux/config.toml
+```
+
+İkinci satır, işletim sisteminin bir Session'a [bellek limiti](/docs/tr/guides/hibernation/#bellek-limiti) uygulayıp uygulamadığını söyler. Daemon'un belleğini geri vermek için bilerek durdurduğu **hazırda bekleyen** bir Session kazara uykuya geçmiş bir Session değildir: hazırda bekler durumda kalır ve `nomux ls` onu `hibernated` olarak gösterir. Çıktı [Hazırda bekletme ve bellek limiti](/docs/tr/guides/hibernation/#yeniden-başlatmadan-sonra) sayfasında.
 
 Uykudaki bir Session'ın process'i yoktur. `nomux status` onu `idle` olarak, `nomux ls --memory` ise belleği için `-` gösterir. Kurallar [Session'ların belleği](/docs/tr/guides/session-memory/) sayfasında.
 
@@ -76,7 +88,7 @@ Havuzdaki bir holder Session değildir ve daemon'uyla birlikte biter; yeniden ba
 Uykudaki bir Session'ın çıktısı diskte durur. `nomux capture` onu geri yükleme yapmadan yazdırır:
 
 ```console
-$ nomux capture rgubz6li --lines 2
+$ nomux capture ded2ph33 --lines 2
 written before the restart
 sh-5.3$
 ```
@@ -88,7 +100,7 @@ Gerçek çıktıda shell prompt'unun escape sequence'leri de var. Bunları [hız
 **Attach ile.** `nomux attach` komutu yeniden başlatır ve Session'a bağlanır. Komut terminalinizin pencere boyutunu alır. Terminal önce eski çıktının sonunu, sonra nomux'un bir satırını, ardından yeni komutu gösterir:
 
 ```console
-$ nomux attach rgubz6li
+$ nomux attach ded2ph33
 sh-5.3$ echo written before the restart
 written before the restart
 sh-5.3$
@@ -97,34 +109,34 @@ sh-5.3$
 sh-5.3$ echo typed after the restart
 typed after the restart
 sh-5.3$
-detached from session rgubz6li
+detached from session ded2ph33
 ```
 
-Gerçek çalıştırmada nomux'un satırıyla yeni prompt arasında boş satırlar vardı: eski çıktı ve o satır terminalinizin scrollback'ine kayar, yeni shell ekranını onların altına çizer. Örnekte tek boş satır gösteriliyor.
+Gerçek çalıştırmada nomux'un satırıyla yeni prompt arasında çok sayıda boş satır vardı: eski çıktı ve o satır terminalinizin scrollback'ine kayar, yeni shell ekranını onların altına çizer. Örnekte tek boş satır gösteriliyor.
 Yeni shell yeni bir process'tir; yeniden başlatmadan önce yazdığınız komutlardan haberi yoktur.
 
 **Attach olmadan.** `nomux start` komutu Session'ın son pencere boyutuyla yeniden başlatır. Politikası `manual` olan bir Session yalnızca bu yolla başlar:
 
 ```console
-$ nomux attach f255tn7t
-nomux: session f255tn7t is dormant and its restore policy is manual: run `nomux start f255tn7t`
-$ nomux start f255tn7t
-session f255tn7t runs
+$ nomux attach 7e27dogj
+nomux: session 7e27dogj is dormant and its restore policy is manual: run `nomux start 7e27dogj`
+$ nomux start 7e27dogj
+session 7e27dogj runs
 $ nomux ls
-ID        STATE    PID     COMMAND
-f255tn7t  running  896488  sleep 700
-lbfxvjl3  running  896453  sh -c echo server started; exec sleep 600
-rgubz6li  running  896462  sh
+ID        STATE    PID      COMMAND
+7e27dogj  running  4188320  sleep 700
+ded2ph33  running  4187852  sh
+o6kczknv  running  4187842  sh -c echo server started; exec sleep 600
 ```
 
-`manual` bir Session'a `attach` 1 çıkış koduyla biter. Komutu zaten çalışan bir Session için `nomux start` başarılı olur ve hiçbir şeyi değiştirmez.
+`manual` bir Session'a `attach` 1 çıkış koduyla biter. Komutu zaten çalışan bir Session için `nomux start` başarılı olur ve hiçbir şeyi değiştirmez. Hazırda bekleyen bir Session için `nomux start`, `nomux wake` gibi devam komutunu başlatır.
 
 Komut başlayamazsa, örneğin çalışma dizini silinmişse, komut 1 çıkış koduyla hata verir ve Session uykuda kalır.
 
-`capture` artık komutun iki çalışmasının, eskisinin ve yenisinin, çıktısını birlikte yazdırır:
+`capture` artık komutun iki çalışmasının, eskisinin ve yenisinin, çıktısını birlikte yazdırır (escape sequence'ler olmadan):
 
 ```console
-$ nomux capture rgubz6li
+$ nomux capture ded2ph33
 sh-5.3$ echo written before the restart
 written before the restart
 sh-5.3$ sh-5.3$ echo typed after the restart
@@ -136,7 +148,7 @@ sh-5.3$
 
 | Politika | Daemon komutu ne zaman yeniden başlatır |
 |---|---|
-| `auto` | Daemon başlarken, örneğin oturum açılışında. Dev server ya da watcher için kullanın |
+| `auto` | Daemon başlarken, örneğin oturum açılışında. Dev server ya da watcher için kullanın. Hazırda bekleyen bir Session için hiçbir zaman |
 | `on-focus` | İlk `nomux attach` ya da `nomux start` ile. Varsayılan budur |
 | `manual` | Yalnızca `nomux start` ile. `nomux attach` 1 çıkış koduyla hata verir |
 
@@ -144,7 +156,15 @@ sh-5.3$
 - `auto` yalnızca daemon başlarken uygulanır. Daemon çalışırken uykuya geçen bir Session bir istemcinin gelmesini bekler.
 - `nomux ls --json` her Session'ın politikasını `restore_policy` alanında gösterir.
 
-Kendi politikası olmayan Session'ların varsayılanı yapılandırma dosyasındadır; Linux'ta `~/.config/nomux/config.toml`:
+Kendi politikası olmayan Session'ların varsayılanı daemon'un yapılandırma dosyasındadır:
+
+| Host | Yol |
+|---|---|
+| Linux | `~/.config/nomux/config.toml` |
+| macOS | `~/Library/Application Support/nomux/config.toml` |
+| Her Host, `XDG_CONFIG_HOME` mutlak bir yolsa | `$XDG_CONFIG_HOME/nomux/config.toml` |
+
+Daemon başka bir yol okumaz. macOS'te `XDG_CONFIG_HOME` ayarlı değilse `~/.config/nomux` içindeki bir dosyanın etkisi olmaz. `nomux daemon status` daemon'un okuduğu yolu yazdırır (yukarıdaki bloğun son satırı). Linux yolu bu çalıştırmanın yoludur; macOS yolu nomux dokümanlarından gelir, çünkü bu sayfa için bir Mac çalışmadı.
 
 ```toml
 [restore]
@@ -154,20 +174,23 @@ default_policy = "on-focus"   # auto | on-focus | manual
 ended_retention = "24h"       # a number with the unit s, m, h or d
 ```
 
-Daemon dosyayı yalnızca açılışta bir kez okur. Geçersiz bir dosya daemon'u durdurmaz: daemon sorunu log'una yazar ve varsayılanları kullanır. Bu iki anahtar, nomux 0.4.0'ın [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.4.0/docs/daemon.md#configuration) dosyasından alındı; bu sayfa için değiştirilip denenmedi. Dosyanın üçüncü bir tablosu daha var: holder havuzunun `[pool]` tablosu. Onu [Holder havuzu](/docs/tr/guides/holder-pool/) sayfası anlatır.
+Daemon dosyayı yalnızca açılışta bir kez okur. Geçersiz bir dosya daemon'u durdurmaz: daemon sorunu log'una yazar ve varsayılanları kullanır. Bu iki anahtar, nomux 0.5.0'ın [`docs/daemon.md`](https://github.com/nomux-sh/nomux/blob/v0.5.0/docs/daemon.md#configuration) dosyasından alındı. Dosyanın başka tabloları da var: holder havuzunun `[pool]` tablosu ([Holder havuzu](/docs/tr/guides/holder-pool/)), bellek limitleri için `[sessions]` anahtarları ve hazırda bekletme için `[agents]` tablosu ([Hazırda bekletme ve bellek limiti](/docs/tr/guides/hibernation/#ayarlar)).
 
 ## Uykudaki bir Session'ı silmek
 
-Uykudaki bir Session'ın bitirilecek komutu yoktur. `nomux kill` onu çıktısıyla birlikte siler:
+Uykudaki bir Session'ın bitirilecek komutu yoktur. `nomux kill` onu çıktısıyla birlikte siler. Bu komuttan önce, nomux process'lerinin ikinci kez durdurulması `ded2ph33` Session'ını yeniden uykuya geçirdi:
 
 ```console
-$ nomux kill rgubz6li
-session rgubz6li ended
-$ nomux capture rgubz6li
-nomux: no session has the identifier rgubz6li
+$ nomux ls
+ID        STATE    PID      COMMAND
+7e27dogj  dormant  -        sleep 700
+ded2ph33  dormant  -        sh
+o6kczknv  running  4188967  sh -c echo server started; exec sleep 600
+$ nomux kill ded2ph33
+session ded2ph33 ended
+$ nomux capture ded2ph33
+nomux: no session has the identifier or the name ded2ph33, and no session has a name or an identifier that starts with it
 ```
-
-Bu komuttan önce, nomux process'lerinin ikinci kez durdurulması `rgubz6li` Session'ını yeniden uykuya geçirdi.
 
 Uykudaki bir Session'ı başka hiçbir şey silmez. Journal'ı en fazla 32 MiB dosya tutar.
 
@@ -180,20 +203,20 @@ Daemon'u oturum açılışında başlatmak için servis dosyasını yazın:
 
 ```console
 $ nomux daemon install-service --dry-run
-# /tmp/nomux-demo/.config/systemd/user/nomuxd.service
+# /home/user/.config/systemd/user/nomuxd.service
 [Unit]
 Description=nomux daemon
-Documentation=https://nomux.sh
+Documentation=https://nomux-sh.github.io/docs/
 
 [Service]
-ExecStart="/tmp/nomux-demo/.local/bin/nomuxd" --replace
+ExecStart="/home/user/.local/bin/nomuxd" --replace
 KillMode=process
 Restart=on-failure
 
 [Install]
 WantedBy=default.target
 $ nomux daemon install-service
-wrote /tmp/nomux-demo/.config/systemd/user/nomuxd.service
+wrote /home/user/.config/systemd/user/nomuxd.service
 To start the daemon at each login, run: systemctl --user daemon-reload && systemctl --user enable --now nomuxd.service
 ```
 
@@ -216,7 +239,7 @@ Dosyayı kaldırmak için:
 
 ```console
 $ nomux daemon uninstall-service
-removed /tmp/nomux-demo/.config/systemd/user/nomuxd.service
+removed /home/user/.config/systemd/user/nomuxd.service
 The daemon that runs continues. To make the service manager forget the file, run: systemctl --user daemon-reload
 ```
 
@@ -224,7 +247,7 @@ The daemon that runs continues. To make the service manager forget the file, run
 
 ```console
 $ nomux daemon uninstall-service
-no service file: /tmp/nomux-demo/.config/systemd/user/nomuxd.service does not exist
+no service file: /home/user/.config/systemd/user/nomuxd.service does not exist
 ```
 
 **Oturumu kapatmak.** systemd, son oturum kapandığında kullanıcı yöneticisini durdurur; onunla birlikte unit'lerinin her process'ini de, yani daemon'u ve holder'ları. `loginctl enable-linger` kullanıcı yöneticisini, dolayısıyla Session'ları, oturum kapandıktan sonra da ayakta tutar. Bu davranış systemd dokümantasyonundan geliyor; nomux dokümanlarına göre test edilmedi.
