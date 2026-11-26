@@ -26,7 +26,7 @@ Bunun bugün ne kadarının var olduğunu [extension'lar sayfası](/docs/tr/conc
 **Her durumun kaynağı bellidir.**
 nomux bir agent'ın durumunu sabit bir sırayla altı kaynaktan okur: adapter, program durumu (OSC 7501 terminal dizisi), öz bildirim, session geri yükleme, prompt işaretleri ve ön plandaki program. Son ikisi tahmindir.
 Durumu, geldiği kaynakla birlikte saklar. Tahmini tahmin olarak işaretler, kesinmiş gibi göstermez.
-Adapter'lar bir agent aracının hook olaylarını okur. Claude Code adapter'ı var ve henüz release edilmedi. Diğer araçların adapter'ları planlanıyor.
+Adapter'lar bir agent aracının hook olaylarını okur. Claude Code adapter'ı var ve 0.1.0 sürümü yayında. Diğer araçların adapter'ları planlanıyor.
 [Agent durumu](/docs/tr/guides/agent-status/) rehberi durumu gerçek komutlarla gösterir.
 
 ## Çekirdekte ne var

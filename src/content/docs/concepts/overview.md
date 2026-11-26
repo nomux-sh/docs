@@ -26,7 +26,7 @@ The [extensions page](/docs/concepts/extensions/) says which parts of this exist
 **Each status has a known source.**
 nomux reads the status of an agent from six sources in a fixed order: adapter, program status (the OSC 7501 terminal sequence), self-report, session restore, prompt marks and foreground program. The last two are guesses.
 It stores the source with the status. It marks a guess as a guess and does not show it as a certain value.
-The adapters read the hook events of an agent tool. The adapter of Claude Code exists and has no release yet. The adapters of other tools are planned.
+The adapters read the hook events of an agent tool. The adapter of Claude Code exists and has release 0.1.0. The adapters of other tools are planned.
 The guide [Agent status](/docs/guides/agent-status/) shows the status with real commands.
 
 ## What the core contains

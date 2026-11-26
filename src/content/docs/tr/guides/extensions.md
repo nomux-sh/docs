@@ -10,14 +10,14 @@ Bu sayfadaki çıktılar, nomux 0.4.0'ın Linux'ta geçici bir home dizininde (`
 
 ## Hangi extension'lar var
 
-Henüz hiçbir extension'ın release'i yok. Registry de, indirilecek paket de yok: `nomux ext install` bir dizinden kurar.
+Resmi extension'lar `git` ve `agent-claude` 0.1.0 sürümüyle yayında; arşivleri [sürümler sayfasında](https://github.com/nomux-sh/extensions/releases). Registry yok: arşivi açın, `nomux ext install` dizinden kurar.
 Bu sayfada iki extension kullanılıyor; ikisi de bu çalıştırma için kaynağından derlendi. Üçüncüsünün yalnızca manifest'i kontrol ediliyor:
 
 | Extension | Kimlik | Kaynak | Manifest'teki izinler |
 |---|---|---|---|
 | Echo | `nomux.echo` | SDK'nın örneği: `v0.1.1` etiketindeki [`extension-api/examples/echo`](https://github.com/nomux-sh/extension-api/tree/v0.1.1/examples/echo) | Yok |
-| Git | `nomux.git` | `extensions` reposunun `main` branch'indeki [`git`](https://github.com/nomux-sh/extensions/tree/main/git) dizini. 0.1.0 sürümü yayımlanmadı | `fs=${worktree}`, `process=git` |
-| Claude Code adapter'ı | `nomux.agent-claude` | `extensions` reposunun `main` branch'indeki [`agent-claude`](https://github.com/nomux-sh/extensions/tree/main/agent-claude) dizini. 0.1.0 sürümü yayımlanmadı | `scope=hooks:read`, `scope=agent:report` |
+| Git | `nomux.git` | `extensions` reposunun `main` branch'indeki [`git`](https://github.com/nomux-sh/extensions/tree/main/git) dizini. 0.1.0 sürümü [sürümler sayfasında](https://github.com/nomux-sh/extensions/releases) | `fs=${worktree}`, `process=git` |
+| Claude Code adapter'ı | `nomux.agent-claude` | `extensions` reposunun `main` branch'indeki [`agent-claude`](https://github.com/nomux-sh/extensions/tree/main/agent-claude) dizini. 0.1.0 sürümü [sürümler sayfasında](https://github.com/nomux-sh/extensions/releases) | `scope=hooks:read`, `scope=agent:report` |
 
 Claude Code adapter'ı Claude Code'un durumunu bildirir. Bu sayfa yalnızca manifest'ini kontrol eder. Onu derlemeyi, kurmayı ve kullanmayı [Claude Code adapter'ı](/docs/tr/guides/claude-code/) rehberi anlatır.
 

@@ -10,14 +10,14 @@ The output on this page is the real output of nomux 0.4.0 on Linux in a temporar
 
 ## Which extensions exist
 
-No extension has a release yet. There is no registry and no package to download: `nomux ext install` installs from a directory.
+The official extensions `git` and `agent-claude` have release 0.1.0. Their archives are on the [releases page](https://github.com/nomux-sh/extensions/releases). There is no registry: extract an archive, then `nomux ext install` installs its directory.
 This page uses two extensions, built from their source for this run, and checks the manifest of a third one:
 
 | Extension | Identifier | Source | Permissions in its manifest |
 |---|---|---|---|
 | Echo | `nomux.echo` | The example of the SDK: [`extension-api/examples/echo`](https://github.com/nomux-sh/extension-api/tree/v0.1.1/examples/echo) at the tag `v0.1.1` | None |
-| Git | `nomux.git` | The [`git`](https://github.com/nomux-sh/extensions/tree/main/git) directory of the `extensions` repository, on its `main` branch. Version 0.1.0 is not released | `fs=${worktree}`, `process=git` |
-| Claude Code adapter | `nomux.agent-claude` | The [`agent-claude`](https://github.com/nomux-sh/extensions/tree/main/agent-claude) directory of the `extensions` repository, on its `main` branch. Version 0.1.0 is not released | `scope=hooks:read`, `scope=agent:report` |
+| Git | `nomux.git` | The [`git`](https://github.com/nomux-sh/extensions/tree/main/git) directory of the `extensions` repository, on its `main` branch. Release 0.1.0 is on the [releases page](https://github.com/nomux-sh/extensions/releases) | `fs=${worktree}`, `process=git` |
+| Claude Code adapter | `nomux.agent-claude` | The [`agent-claude`](https://github.com/nomux-sh/extensions/tree/main/agent-claude) directory of the `extensions` repository, on its `main` branch. Release 0.1.0 is on the [releases page](https://github.com/nomux-sh/extensions/releases) | `scope=hooks:read`, `scope=agent:report` |
 
 The Claude Code adapter reports the status of Claude Code. This page only checks its manifest. The [Claude Code adapter guide](/docs/guides/claude-code/) builds, installs and uses it.
 

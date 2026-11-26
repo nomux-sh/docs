@@ -23,7 +23,6 @@ Bu sayfadaki çıktılar, nomux 0.4.0'ın Linux'taki gerçek çıktısıdır.
 Bir Python SDK'sı planlanıyor ([issue #5](https://github.com/nomux-sh/extension-api/issues/5)). Henüz yok.
 
 SDK sürümleri bu sayfa için registry'lerden okundu: crates.io, npm ve Go module proxy.
-`extension-api` reposunun README'si TypeScript paketinin henüz npm'de olmadığını söylemeye devam ediyor. Paket var: npm'de 0.1.3 sürümü duruyor.
 nomux 0.4.0, `nomux-extension` 0.1.1'e karşı derlenir; yani extension API'si 0.1.1'dir. Extension API sürümü SDK paketinin sürümünden ayrıdır: 0.1.3 sürümündeki SDK'lar extension API 0.1.1'i uygular. Varsayılan olarak bir extension, kullandığı her özelliği taşıyan en düşük sürümü ister: `^0.1.0`. Sonraki bir özelliği kullanan extension, aynı minimumla sürümü `api` alanında belirtir. Bir adapter `^0.1.1` ister. Kuralın tam hâli, README'deki [sürümleme kuralları](https://github.com/nomux-sh/extension-api#versioning-rules) ile protokolün spesifikasyonundaki [version rule](https://github.com/nomux-sh/extension-api/blob/main/spec/extension-protocol.md#version-rule) bölümündedir.
 
 Her SDK programınız için aynı kuralları getirir:
